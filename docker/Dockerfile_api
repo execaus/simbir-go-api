@@ -1,0 +1,29 @@
+FROM golang:1.20-rc-buster AS srv-dependencies
+
+WORKDIR /app
+
+ENV GOPATH=/
+
+COPY ././go.mod go.sum ./
+
+RUN go mod download
+
+FROM srv-dependencies AS build
+
+WORKDIR /app
+
+COPY ./././ .
+
+RUN go build -o main ./cmd/main.go
+
+FROM ubuntu:jammy
+
+WORKDIR /app
+
+COPY --from=build ./app/main .
+COPY --from=build ./app/wait-for-it.sh ./wait-for-it.sh
+COPY --from=build ./app/configs/config.docker.json ./configs/config.json
+
+CMD ["./wait-for-it.sh", "database:5432", "-t", "4", "--", "/app/main"]
+
+EXPOSE 8080
