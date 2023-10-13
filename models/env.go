@@ -9,6 +9,7 @@ import (
 type Environment struct {
 	PostgresUser     string `env:"POSTGRES_USER,required,notEmpty"`
 	PostgresPassword string `env:"POSTGRES_PASSWORD,required,notEmpty"`
+	JWTSigningKey    string `env:"JWT_KEY,required,notEmpty"`
 }
 
 const envFilePath = ".env.local"

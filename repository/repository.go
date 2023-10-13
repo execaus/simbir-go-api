@@ -7,6 +7,7 @@ import (
 type Account interface {
 	Create(username, password string, isAdmin bool, balance float64) (*queries.Account, error)
 	IsExist(username string) (bool, error)
+	Get(username string) (*queries.Account, error)
 }
 
 type Repository struct {

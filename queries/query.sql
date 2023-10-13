@@ -9,3 +9,8 @@ SELECT EXISTS (
   FROM "Account"
   WHERE username=$1
 );
+
+-- name: GetAccount :one
+SELECT *
+FROM "Account"
+WHERE username=$1;

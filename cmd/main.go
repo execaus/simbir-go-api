@@ -18,6 +18,11 @@ import (
 // @title           SimbirGoAPI
 // @version         1.0.0
 // @description     API for transportation rental service
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 // @BasePath  /api/
 func main() {
 	var serverInstance server.Server
@@ -28,7 +33,7 @@ func main() {
 	database := repository.NewBusinessDatabase(env, config)
 
 	repos := repository.NewRepository(database)
-	services := service.NewService(repos)
+	services := service.NewService(repos, env)
 	handlers := handler.NewHandler(services)
 
 	go runServer(&serverInstance, handlers, config.Server)

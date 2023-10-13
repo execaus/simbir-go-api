@@ -39,6 +39,24 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 	return i, err
 }
 
+const getAccount = `-- name: GetAccount :one
+SELECT username, password, "isAdmin", balance
+FROM "Account"
+WHERE username=$1
+`
+
+func (q *Queries) GetAccount(ctx context.Context, username string) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccount, username)
+	var i Account
+	err := row.Scan(
+		&i.Username,
+		&i.Password,
+		&i.IsAdmin,
+		&i.Balance,
+	)
+	return i, err
+}
+
 const isAccountExist = `-- name: IsAccountExist :one
 SELECT EXISTS (
   SELECT 1

@@ -7,15 +7,25 @@ definitions:
       message:
         type: string
     type: object
-  models.SignUpInput:
+  models.SignInInput:
     properties:
-      firstName:
-        type: string
       password:
         type: string
+      username:
+        type: string
     required:
-    - firstName
     - password
+    - username
+    type: object
+  models.SignUpInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
     type: object
 info:
   contact: {}
@@ -23,6 +33,34 @@ info:
   title: SimbirGoAPI
   version: 1.0.0
 paths:
+  /Account/SignIn:
+    post:
+      consumes:
+      - application/json
+      description: Generates and returns a new jwt user token.
+      parameters:
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Authorization
+      tags:
+      - account
   /Account/SignUp:
     post:
       consumes:
@@ -51,4 +89,9 @@ paths:
       summary: Registration
       tags:
       - account
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

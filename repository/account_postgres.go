@@ -10,6 +10,16 @@ type AccountPostgres struct {
 	db *queries.Queries
 }
 
+func (r *AccountPostgres) Get(username string) (*queries.Account, error) {
+	account, err := r.db.GetAccount(context.Background(), username)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &account, nil
+}
+
 func (r *AccountPostgres) IsExist(username string) (bool, error) {
 	isExist, err := r.db.IsAccountExist(context.Background(), username)
 

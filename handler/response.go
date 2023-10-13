@@ -25,8 +25,10 @@ const (
 )
 
 const (
-	serverError    = "internal server error"
-	accountIsExist = "user with this name already exists"
+	serverError       = "internal server error"
+	accountIsExist    = "user with this name already exists"
+	accountIsNotExist = "user with this name does not exist"
+	invalidAuthData   = "invalid user data"
 )
 
 type Error struct {
