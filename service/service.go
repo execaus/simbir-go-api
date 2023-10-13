@@ -8,9 +8,11 @@ import (
 
 type Account interface {
 	GenerateToken(username string) (string, error)
+	ParseToken(token string) (string, error)
 	SignUp(username, password string) (*queries.Account, error)
 	IsExist(username string) (bool, error)
 	Authorize(username, password string) (*models.Account, error)
+	GetByUsername(username string) (*models.Account, error)
 }
 
 type Service struct {

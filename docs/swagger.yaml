@@ -7,6 +7,17 @@ definitions:
       message:
         type: string
     type: object
+  models.Account:
+    properties:
+      balance:
+        type: number
+      isAdmin:
+        type: boolean
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   models.SignInInput:
     properties:
       password:
@@ -33,6 +44,35 @@ info:
   title: SimbirGoAPI
   version: 1.0.0
 paths:
+  /Account/Me:
+    get:
+      consumes:
+      - application/json
+      description: Returns the full data of the request author.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Account'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Account information
+      tags:
+      - account
   /Account/SignIn:
     post:
       consumes:

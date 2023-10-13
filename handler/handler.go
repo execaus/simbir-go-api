@@ -24,8 +24,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	account := api.Group("/Account")
 	{
-		account.POST("/SignUp", h.signUp)
-		account.POST("/SignIn", h.signIn)
+		account.GET("/Me", h.accountIdentity, h.GetAccount)
+		account.POST("/SignUp", h.SignUp)
+		account.POST("/SignIn", h.SignIn)
 	}
 
 	return router

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/execaus/exloggo"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -15,7 +16,44 @@ type AccountService struct {
 	env  *models.Environment
 }
 
-const tokenTTL = 12 * time.Hour
+const (
+	invalidJwtMethod = "invalid signing method"
+	tokenTTL         = 12 * time.Hour
+)
+
+func (s *AccountService) GetByUsername(username string) (*models.Account, error) {
+	account, err := s.repo.Get(username)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Account{
+		Username: account.Username,
+		Password: "",
+		IsAdmin:  account.IsAdmin,
+		Balance:  account.Balance,
+	}, nil
+}
+
+func (s *AccountService) ParseToken(accessToken string) (string, error) {
+	token, err := jwt.ParseWithClaims(accessToken, &models.JWTTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New(invalidJwtMethod)
+		}
+
+		return []byte(s.env.JWTSigningKey), nil
+	})
+	if err != nil {
+		return "", nil
+	}
+
+	claims, ok := token.Claims.(*models.JWTTokenClaims)
+	if !ok {
+		return "", errors.New("token claims are not of type *tokenClaims")
+	}
+
+	return claims.Username, nil
+}
 
 func (s *AccountService) Authorize(username, password string) (*models.Account, error) {
 	account, err := s.repo.Get(username)

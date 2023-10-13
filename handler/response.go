@@ -25,10 +25,13 @@ const (
 )
 
 const (
-	serverError       = "internal server error"
-	accountIsExist    = "user with this name already exists"
-	accountIsNotExist = "user with this name does not exist"
-	invalidAuthData   = "invalid user data"
+	serverError                = "internal server error"
+	accountIsExist             = "user with this name already exists"
+	accountIsNotExist          = "user with this name does not exist"
+	invalidAuthData            = "invalid user data"
+	accountContextEmpty        = "account context was not found"
+	accountTokenNotFound       = "the user token was not detected in the request header"
+	invalidAuthorizationHeader = "invalid \"Authorization\" header"
 )
 
 type Error struct {

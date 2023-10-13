@@ -1,10 +1,10 @@
 package models
 
 type Account struct {
-	Username string
-	Password string
-	IsAdmin  bool
-	Balance  float64
+	Username string  `json:"username"`
+	Password string  `json:"password"`
+	IsAdmin  bool    `json:"isAdmin"`
+	Balance  float64 `json:"balance"`
 }
 
 type SignUpInput struct {

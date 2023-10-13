@@ -15,7 +15,7 @@ import (
 // @Failure      400  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Router       /Account/SignUp [post]
-func (h *Handler) signUp(c *gin.Context) {
+func (h *Handler) SignUp(c *gin.Context) {
 	var input *models.SignUpInput
 
 	if err := c.BindJSON(&input); err != nil {
@@ -59,7 +59,7 @@ func (h *Handler) signUp(c *gin.Context) {
 // @Failure      400  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Router       /Account/SignIn [post]
-func (h *Handler) signIn(c *gin.Context) {
+func (h *Handler) SignIn(c *gin.Context) {
 	var input *models.SignInInput
 
 	if err := c.BindJSON(&input); err != nil {
@@ -96,4 +96,42 @@ func (h *Handler) signIn(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, token)
+}
+
+// @Summary      Account information
+// @Description  Returns the full data of the request author.
+// @Tags         account
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.Account
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Account/Me [get]
+func (h *Handler) GetAccount(c *gin.Context) {
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	isExist, err := h.services.Account.IsExist(username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, accountIsNotExist)
+		return
+	}
+
+	account, err := h.services.Account.GetByUsername(username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	h.sendOKWithBody(c, account)
 }
