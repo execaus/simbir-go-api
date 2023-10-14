@@ -34,6 +34,10 @@ type Role struct {
 	Name string
 }
 
+type TokenBlackList struct {
+	Token string
+}
+
 type Transport struct {
 	ID          string
 	Owner       string

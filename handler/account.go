@@ -13,6 +13,7 @@ import (
 // @Produce      json
 // @Success      200
 // @Param        input body models.SignUpInput true "-"
+// @Success      200  {string}  ""
 // @Failure      400  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Router       /Account/SignUp [post]
@@ -58,6 +59,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 // @Produce      json
 // @Success      200
 // @Param        input body models.SignInInput true "-"
+// @Success      200  {string}  ""
 // @Failure      400  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Router       /Account/SignIn [post]
@@ -143,4 +145,30 @@ func (h *Handler) GetAccount(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, output)
+}
+
+// SignOut
+// @Summary      Account logout
+// @Description  Blocks the authorization token.
+// @Tags         account
+// @Accept       json
+// @Produce      json
+// @Success      204
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Account/SignOut [post]
+func (h *Handler) SignOut(c *gin.Context) {
+	token, err := getAccountToken(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	if err = h.services.Account.BlockToken(token); err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	h.sendOK(c)
 }

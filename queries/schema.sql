@@ -51,6 +51,15 @@ CREATE TABLE "Rent" (
 
 
 
+CREATE TABLE "TokenBlackList" (
+	"token" character varying NOT NULL,
+	CONSTRAINT "TokenBlackList_pk" PRIMARY KEY ("token")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
 CREATE TABLE "Role" (
 	"name" character varying NOT NULL,
 	CONSTRAINT "Role_pk" PRIMARY KEY ("name")

@@ -14,6 +14,8 @@ type Account interface {
 	IsExist(username string) (bool, error)
 	Authorize(username, password string) (*models.Account, error)
 	GetByUsername(username string) (*models.Account, error)
+	IsValidToken(token string) (bool, error)
+	BlockToken(token string) error
 }
 
 type Service struct {

@@ -92,6 +92,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            type: string
         "400":
           description: Bad Request
           schema:
@@ -101,6 +103,29 @@ paths:
           schema:
             $ref: '#/definitions/handler.Error'
       summary: Authorization
+      tags:
+      - account
+  /Account/SignOut:
+    post:
+      consumes:
+      - application/json
+      description: Blocks the authorization token.
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Account logout
       tags:
       - account
   /Account/SignUp:
@@ -120,6 +145,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            type: string
         "400":
           description: Bad Request
           schema:

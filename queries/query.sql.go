@@ -27,6 +27,16 @@ func (q *Queries) AppendRoleAccount(ctx context.Context, arg AppendRoleAccountPa
 	return i, err
 }
 
+const appendTokenToBlackList = `-- name: AppendTokenToBlackList :exec
+INSERT INTO "TokenBlackList" (token)
+VALUES ($1)
+`
+
+func (q *Queries) AppendTokenToBlackList(ctx context.Context, token string) error {
+	_, err := q.db.ExecContext(ctx, appendTokenToBlackList, token)
+	return err
+}
+
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO "Account" (username, "password", balance)
 VALUES ($1, $2, $3)
@@ -126,6 +136,21 @@ SELECT EXISTS (
 
 func (q *Queries) IsAccountExist(ctx context.Context, username string) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isAccountExist, username)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const isContainBlackListToken = `-- name: IsContainBlackListToken :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "TokenBlackList"
+  WHERE token=$1
+)
+`
+
+func (q *Queries) IsContainBlackListToken(ctx context.Context, token string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isContainBlackListToken, token)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

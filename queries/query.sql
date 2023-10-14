@@ -28,3 +28,14 @@ WHERE account=$1;
 -- name: GetCacheRoles :many
 SELECT *
 FROM "AccountRole";
+
+-- name: AppendTokenToBlackList :exec
+INSERT INTO "TokenBlackList" (token)
+VALUES ($1);
+
+-- name: IsContainBlackListToken :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "TokenBlackList"
+  WHERE token=$1
+);

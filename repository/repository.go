@@ -7,11 +7,13 @@ import (
 )
 
 type Account interface {
+	Role
 	CreateUser(username, password string, balance float64) (*queries.Account, error)
 	CreateAdmin(username, password string, balance float64) (*queries.Account, error)
 	IsExist(username string) (bool, error)
 	Get(username string) (*queries.Account, error)
-	Role
+	IsContainBlackListToken(token string) (bool, error)
+	BlockToken(token string) error
 }
 
 type Role interface {

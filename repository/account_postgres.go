@@ -13,6 +13,25 @@ type AccountPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *AccountPostgres) BlockToken(token string) error {
+	if err := r.queries.AppendTokenToBlackList(context.Background(), token); err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (r *AccountPostgres) IsContainBlackListToken(token string) (bool, error) {
+	isContain, err := r.queries.IsContainBlackListToken(context.Background(), token)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return isContain, err
+}
+
 func (r *AccountPostgres) AppendRole(username string, role string) error {
 	_, err := r.queries.AppendRoleAccount(context.Background(), queries.AppendRoleAccountParams{
 		Account: username,

@@ -23,6 +23,19 @@ const (
 	tokenTTL         = 12 * time.Hour
 )
 
+func (s *AccountService) IsValidToken(token string) (bool, error) {
+	isContain, err := s.repo.IsContainBlackListToken(token)
+	if err != nil {
+		return false, err
+	}
+
+	return !isContain, err
+}
+
+func (s *AccountService) BlockToken(token string) error {
+	return s.repo.BlockToken(token)
+}
+
 func (s *AccountService) GetByUsername(username string) (*models.Account, error) {
 	account, err := s.repo.Get(username)
 	if err != nil {
