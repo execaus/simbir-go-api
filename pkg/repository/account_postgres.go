@@ -13,6 +13,31 @@ type AccountPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *AccountPostgres) ReplaceUsername(username, newUsername string) error {
+	if err := r.queries.ReplaceUsername(context.Background(), queries.ReplaceUsernameParams{
+		Username:   newUsername,
+		Username_2: username,
+	}); err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (r *AccountPostgres) Update(username, newUsername, password string) error {
+	if err := r.queries.UpdateAccount(context.Background(), queries.UpdateAccountParams{
+		Username:   newUsername,
+		Password:   password,
+		Username_2: username,
+	}); err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func (r *AccountPostgres) BlockToken(token string) error {
 	if err := r.queries.AppendTokenToBlackList(context.Background(), token); err != nil {
 		exloggo.Error(err.Error())

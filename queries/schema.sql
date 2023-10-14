@@ -80,16 +80,16 @@ CREATE TABLE "AccountRole" (
 
 
 
-ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk0" FOREIGN KEY ("owner") REFERENCES "Account"("username");
-ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk1" FOREIGN KEY ("transport") REFERENCES "TransportType"("name");
+ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk0" FOREIGN KEY ("owner") REFERENCES "Account"("username") ON UPDATE CASCADE;
+ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk1" FOREIGN KEY ("transport") REFERENCES "TransportType"("name") ON UPDATE CASCADE;
 
 
-ALTER TABLE "Rent" ADD CONSTRAINT "Rent_fk0" FOREIGN KEY ("account") REFERENCES "Account"("username");
-ALTER TABLE "Rent" ADD CONSTRAINT "Rent_fk1" FOREIGN KEY ("transport") REFERENCES "Transport"("id");
+ALTER TABLE "Rent" ADD CONSTRAINT "Rent_fk0" FOREIGN KEY ("account") REFERENCES "Account"("username") ON UPDATE CASCADE;
+ALTER TABLE "Rent" ADD CONSTRAINT "Rent_fk1" FOREIGN KEY ("transport") REFERENCES "Transport"("id") ON UPDATE CASCADE;
 
 
-ALTER TABLE "AccountRole" ADD CONSTRAINT "AccountRole_fk0" FOREIGN KEY ("account") REFERENCES "Account"("username");
-ALTER TABLE "AccountRole" ADD CONSTRAINT "AccountRole_fk1" FOREIGN KEY ("role") REFERENCES "Role"("name");
+ALTER TABLE "AccountRole" ADD CONSTRAINT "AccountRole_fk0" FOREIGN KEY ("account") REFERENCES "Account"("username") ON UPDATE CASCADE;
+ALTER TABLE "AccountRole" ADD CONSTRAINT "AccountRole_fk1" FOREIGN KEY ("role") REFERENCES "Role"("name") ON UPDATE CASCADE;
 
 
 

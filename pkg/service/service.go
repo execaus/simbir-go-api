@@ -1,10 +1,10 @@
 package service
 
 import (
-	"simbir-go-api/cache"
 	"simbir-go-api/models"
+	"simbir-go-api/pkg/cache"
+	"simbir-go-api/pkg/repository"
 	"simbir-go-api/queries"
-	"simbir-go-api/repository"
 )
 
 type Account interface {
@@ -16,6 +16,7 @@ type Account interface {
 	GetByUsername(username string) (*models.Account, error)
 	IsValidToken(token string) (bool, error)
 	BlockToken(token string) error
+	Update(username string, newUsername string, password string) (string, error)
 }
 
 type Service struct {

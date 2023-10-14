@@ -32,6 +32,7 @@ const (
 	accountContextEmpty        = "account context was not found"
 	accountTokenNotFound       = "the user token was not detected in the request header"
 	invalidAuthorizationHeader = "invalid \"Authorization\" header"
+	usernameIsBusy             = "username is busy"
 )
 
 type Error struct {

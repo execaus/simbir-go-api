@@ -7,9 +7,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"simbir-go-api/constants"
 	"simbir-go-api/models"
+	"simbir-go-api/pkg/repository"
 	"simbir-go-api/queries"
-	"simbir-go-api/repository"
 	"time"
+)
+
+const (
+	invalidJwtMethod = "invalid signing method"
+	tokenTTL         = 12 * time.Hour
 )
 
 type AccountService struct {
@@ -18,10 +23,32 @@ type AccountService struct {
 	env   *models.Environment
 }
 
-const (
-	invalidJwtMethod = "invalid signing method"
-	tokenTTL         = 12 * time.Hour
-)
+func (s *AccountService) Update(username string, newUsername string, password string) (string, error) {
+	passwordHash, err := getPasswordHash(password)
+	if err != nil {
+		return "", err
+	}
+
+	if err = s.repo.Update(username, newUsername, passwordHash); err != nil {
+		exloggo.Error(err.Error())
+		return "", err
+	}
+
+	if username != newUsername {
+		if err = s.cache.ReplaceUsername(username, newUsername); err != nil {
+			exloggo.Error(err.Error())
+			return "", err
+		}
+	}
+
+	token, err := s.GenerateToken(newUsername)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return "", err
+	}
+
+	return token, nil
+}
 
 func (s *AccountService) IsValidToken(token string) (bool, error) {
 	isContain, err := s.repo.IsContainBlackListToken(token)

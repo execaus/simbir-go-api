@@ -155,3 +155,36 @@ func (q *Queries) IsContainBlackListToken(ctx context.Context, token string) (bo
 	err := row.Scan(&exists)
 	return exists, err
 }
+
+const replaceUsername = `-- name: ReplaceUsername :exec
+UPDATE "Account"
+SET username=$1
+WHERE username=$2
+`
+
+type ReplaceUsernameParams struct {
+	Username   string
+	Username_2 string
+}
+
+func (q *Queries) ReplaceUsername(ctx context.Context, arg ReplaceUsernameParams) error {
+	_, err := q.db.ExecContext(ctx, replaceUsername, arg.Username, arg.Username_2)
+	return err
+}
+
+const updateAccount = `-- name: UpdateAccount :exec
+UPDATE "Account"
+SET username=$1, "password"=$2
+WHERE username=$3
+`
+
+type UpdateAccountParams struct {
+	Username   string
+	Password   string
+	Username_2 string
+}
+
+func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {
+	_, err := q.db.ExecContext(ctx, updateAccount, arg.Username, arg.Password, arg.Username_2)
+	return err
+}

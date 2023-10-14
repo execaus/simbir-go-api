@@ -1,9 +1,28 @@
 package cache
 
-import "simbir-go-api/types"
+import (
+	"errors"
+	"github.com/execaus/exloggo"
+	"simbir-go-api/types"
+)
+
+const (
+	usernameNotFound = "username not found"
+)
 
 type AccountRoleCache struct {
 	Roles types.AccountRolesDictionary
+}
+
+func (c *AccountRoleCache) ReplaceUsername(username, newUsername string) error {
+	if c.Roles[username] == nil {
+		exloggo.Error(usernameNotFound)
+		return errors.New(usernameNotFound)
+	} else {
+		c.Roles[newUsername] = c.Roles[username]
+		delete(c.Roles, username)
+	}
+	return nil
 }
 
 func (c *AccountRoleCache) AppendRole(username string, newRole string) error {

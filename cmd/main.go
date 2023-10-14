@@ -6,14 +6,14 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"simbir-go-api/cache"
 	"simbir-go-api/configs"
 	_ "simbir-go-api/docs"
-	"simbir-go-api/handler"
 	"simbir-go-api/models"
-	"simbir-go-api/repository"
+	"simbir-go-api/pkg/cache"
+	"simbir-go-api/pkg/handler"
+	"simbir-go-api/pkg/repository"
+	"simbir-go-api/pkg/service"
 	"simbir-go-api/server"
-	"simbir-go-api/service"
 	"syscall"
 )
 

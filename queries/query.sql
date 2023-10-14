@@ -3,6 +3,16 @@ INSERT INTO "Account" (username, "password", balance)
 VALUES ($1, $2, $3)
 RETURNING *;
 
+-- name: UpdateAccount :exec
+UPDATE "Account"
+SET username=$1, "password"=$2
+WHERE username=$3;
+
+-- name: ReplaceUsername :exec
+UPDATE "Account"
+SET username=$1
+WHERE username=$2;
+
 -- name: AppendRoleAccount :one
 INSERT INTO "AccountRole" (account, "role")
 VALUES ($1, $2)

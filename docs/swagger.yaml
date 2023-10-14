@@ -7,16 +7,12 @@ definitions:
       message:
         type: string
     type: object
-  models.Account:
+  models.GetAccountOutput:
     properties:
       balance:
         type: number
-      password:
-        type: string
-      roles:
-        items:
-          type: string
-        type: array
+      isAdmin:
+        type: boolean
       username:
         type: string
     type: object
@@ -30,6 +26,11 @@ definitions:
     - password
     - username
     type: object
+  models.SignInOutput:
+    properties:
+      token:
+        type: string
+    type: object
   models.SignUpInput:
     properties:
       password:
@@ -39,6 +40,26 @@ definitions:
     required:
     - password
     - username
+    type: object
+  models.SignUpOutput:
+    properties:
+      token:
+        type: string
+    type: object
+  models.UpdateAccountInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.UpdateAccountOutput:
+    properties:
+      token:
+        type: string
     type: object
 info:
   contact: {}
@@ -57,7 +78,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Account'
+            $ref: '#/definitions/models.GetAccountOutput'
         "400":
           description: Bad Request
           schema:
@@ -93,7 +114,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/models.SignInOutput'
         "400":
           description: Bad Request
           schema:
@@ -146,7 +167,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/models.SignUpOutput'
         "400":
           description: Bad Request
           schema:
@@ -156,6 +177,42 @@ paths:
           schema:
             $ref: '#/definitions/handler.Error'
       summary: Registration
+      tags:
+      - account
+  /Account/Update:
+    put:
+      consumes:
+      - application/json
+      description: Updates account data and returns a new authorization token.
+      parameters:
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateAccountInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UpdateAccountOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Update account
       tags:
       - account
 securityDefinitions:

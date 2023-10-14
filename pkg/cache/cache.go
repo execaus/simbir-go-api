@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"simbir-go-api/repository"
+	"simbir-go-api/pkg/repository"
 	"simbir-go-api/types"
 )
 

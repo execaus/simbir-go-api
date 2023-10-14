@@ -13,7 +13,7 @@ import (
 // @Produce      json
 // @Success      200
 // @Param        input body models.SignUpInput true "-"
-// @Success      200  {string}  ""
+// @Success      200  {object}  models.SignUpOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Router       /Account/SignUp [post]
@@ -48,7 +48,9 @@ func (h *Handler) SignUp(c *gin.Context) {
 		return
 	}
 
-	h.sendOKWithBody(c, token)
+	h.sendOKWithBody(c, &models.SignUpOutput{
+		Token: token,
+	})
 }
 
 // SignIn
@@ -59,7 +61,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 // @Produce      json
 // @Success      200
 // @Param        input body models.SignInInput true "-"
-// @Success      200  {string}  ""
+// @Success      200  {object}  models.SignInOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Router       /Account/SignIn [post]
@@ -78,7 +80,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 	}
 
 	if !isExist {
-		h.sendInvalidRequest(c, accountIsNotExist)
+		h.sendInvalidRequest(c, invalidAuthData)
 		return
 	}
 
@@ -99,7 +101,9 @@ func (h *Handler) SignIn(c *gin.Context) {
 		return
 	}
 
-	h.sendOKWithBody(c, token)
+	h.sendOKWithBody(c, &models.SignInOutput{
+		Token: token,
+	})
 }
 
 // GetAccount
@@ -108,7 +112,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 // @Tags         account
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  models.Account
+// @Success      200  {object}  models.GetAccountOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
@@ -138,13 +142,73 @@ func (h *Handler) GetAccount(c *gin.Context) {
 		return
 	}
 
-	output := &models.GetAccountOutput{
+	h.sendOKWithBody(c, &models.GetAccountOutput{
 		Username: account.Username,
 		IsAdmin:  account.IsAdmin(),
 		Balance:  account.Balance,
+	})
+}
+
+// UpdateAccount
+// @Summary      Update account
+// @Description  Updates account data and returns a new authorization token.
+// @Tags         account
+// @Accept       json
+// @Produce      json
+// @Param        input body models.UpdateAccountInput true "-"
+// @Success      200  {object}  models.UpdateAccountOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Account/Update [put]
+func (h *Handler) UpdateAccount(c *gin.Context) {
+	var input models.UpdateAccountInput
+
+	if err := c.BindJSON(&input); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
 	}
 
-	h.sendOKWithBody(c, output)
+	token, err := getAccountToken(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	if username != input.Username {
+		isExist, err := h.services.Account.IsExist(input.Username)
+		if err != nil {
+			h.sendGeneralException(c, serverError)
+			return
+		}
+
+		if isExist {
+			h.sendInvalidRequest(c, usernameIsBusy)
+			return
+		}
+	}
+
+	newToken, err := h.services.Account.Update(username, input.Username, input.Password)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if err = h.services.Account.BlockToken(token); err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOKWithBody(c, &models.UpdateAccountOutput{
+		Token: newToken,
+	})
 }
 
 // SignOut
