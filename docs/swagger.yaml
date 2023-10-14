@@ -11,10 +11,12 @@ definitions:
     properties:
       balance:
         type: number
-      isAdmin:
-        type: boolean
       password:
         type: string
+      roles:
+        items:
+          type: string
+        type: array
       username:
         type: string
     type: object

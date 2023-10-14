@@ -5,6 +5,7 @@ import (
 	"github.com/execaus/exloggo"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"simbir-go-api/constants"
 	"simbir-go-api/models"
 	"simbir-go-api/queries"
 	"simbir-go-api/repository"
@@ -12,8 +13,9 @@ import (
 )
 
 type AccountService struct {
-	repo repository.Account
-	env  *models.Environment
+	cache repository.Role
+	repo  repository.Account
+	env   *models.Environment
 }
 
 const (
@@ -27,11 +29,16 @@ func (s *AccountService) GetByUsername(username string) (*models.Account, error)
 		return nil, err
 	}
 
+	roles, err := s.cache.GetRoles(username)
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.Account{
 		Username: account.Username,
 		Password: "",
-		IsAdmin:  account.IsAdmin,
 		Balance:  account.Balance,
+		Roles:    roles,
 	}, nil
 }
 
@@ -66,10 +73,15 @@ func (s *AccountService) Authorize(username, password string) (*models.Account, 
 		return nil, nil
 	}
 
+	roles, err := s.cache.GetRoles(username)
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.Account{
 		Username: account.Username,
 		Password: account.Password,
-		IsAdmin:  account.IsAdmin,
+		Roles:    roles,
 		Balance:  account.Balance,
 	}, nil
 }
@@ -102,16 +114,21 @@ func (s *AccountService) SignUp(username, password string) (*queries.Account, er
 		return nil, err
 	}
 
-	account, err := s.repo.Create(username, passwordHash, false, 0)
+	account, err := s.repo.CreateUser(username, passwordHash, 0)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = s.cache.AppendRole(account.Username, constants.RoleUser); err != nil {
+		exloggo.Error(err.Error())
 		return nil, err
 	}
 
 	return account, nil
 }
 
-func NewAccountService(repo repository.Account, env *models.Environment) *AccountService {
-	return &AccountService{repo: repo, env: env}
+func NewAccountService(repo repository.Account, env *models.Environment, cache repository.Role) *AccountService {
+	return &AccountService{repo: repo, env: env, cache: cache}
 }
 
 func getPasswordHash(password string) (string, error) {

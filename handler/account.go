@@ -5,6 +5,7 @@ import (
 	"simbir-go-api/models"
 )
 
+// SignUp
 // @Summary      Registration
 // @Description  Registers a new user and returns the authorization token jwt.
 // @Tags         account
@@ -49,6 +50,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 	h.sendOKWithBody(c, token)
 }
 
+// SignIn
 // @Summary      Authorization
 // @Description  Generates and returns a new jwt user token.
 // @Tags         account
@@ -98,6 +100,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 	h.sendOKWithBody(c, token)
 }
 
+// GetAccount
 // @Summary      Account information
 // @Description  Returns the full data of the request author.
 // @Tags         account
@@ -133,5 +136,11 @@ func (h *Handler) GetAccount(c *gin.Context) {
 		return
 	}
 
-	h.sendOKWithBody(c, account)
+	output := &models.GetAccountOutput{
+		Username: account.Username,
+		IsAdmin:  account.IsAdmin(),
+		Balance:  account.Balance,
+	}
+
+	h.sendOKWithBody(c, output)
 }

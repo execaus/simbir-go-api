@@ -166,11 +166,14 @@ const docTemplate = `{
                 "balance": {
                     "type": "number"
                 },
-                "isAdmin": {
-                    "type": "boolean"
-                },
                 "password": {
                     "type": "string"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "username": {
                     "type": "string"

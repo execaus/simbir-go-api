@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	accountContextName  = "account-context"
-	authorizationHeader = "Authorization"
+	accountContextName            = "account-context"
+	authorizationHeader           = "Authorization"
+	headerAuthorizationPartsCount = 2
 )
 
 func (h *Handler) accountIdentity(c *gin.Context) {
@@ -21,7 +22,7 @@ func (h *Handler) accountIdentity(c *gin.Context) {
 	}
 
 	headerParts := strings.Split(header, " ")
-	if len(headerParts) != 2 {
+	if len(headerParts) != headerAuthorizationPartsCount {
 		exloggo.Error(header)
 		h.sendUnAuthenticated(c, invalidAuthorizationHeader)
 		return

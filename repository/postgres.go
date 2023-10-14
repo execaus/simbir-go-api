@@ -12,10 +12,12 @@ import (
 
 const dbDriverName = "postgres"
 
-func NewBusinessDatabase(env *models.Environment, config *configs.Config) *queries.Queries {
+type TXQuery = func(tx *queries.Queries) error
+
+func NewBusinessDatabase(env *models.Environment, config *configs.Config) (*sql.DB, *queries.Queries) {
 	conn := getConnectDatabase(env, config)
 	db := queries.New(conn)
-	return db
+	return conn, db
 }
 
 func getConnectDatabase(env *models.Environment, config *configs.Config) *sql.DB {
@@ -34,4 +36,30 @@ func getConnectDatabase(env *models.Environment, config *configs.Config) *sql.DB
 		exloggo.Fatalf(`database open connect: %s`, err.Error())
 	}
 	return db
+}
+
+func (r *AccountPostgres) ExecuteWithTransaction(actions []TXQuery) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+	qtx := r.queries.WithTx(tx)
+
+	for _, action := range actions {
+		if err = action(qtx); err != nil {
+			exloggo.Error(err.Error())
+			if err = tx.Rollback(); err != nil {
+				exloggo.Error(err.Error())
+			}
+			return err
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+
+	return nil
 }

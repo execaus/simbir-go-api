@@ -1,21 +1,36 @@
 package repository
 
 import (
+	"database/sql"
 	"simbir-go-api/queries"
+	"simbir-go-api/types"
 )
 
 type Account interface {
-	Create(username, password string, isAdmin bool, balance float64) (*queries.Account, error)
+	CreateUser(username, password string, balance float64) (*queries.Account, error)
+	CreateAdmin(username, password string, balance float64) (*queries.Account, error)
 	IsExist(username string) (bool, error)
 	Get(username string) (*queries.Account, error)
+	Role
+}
+
+type Role interface {
+	GetRoles(username string) ([]string, error)
+	AppendRole(username string, role string) error
+}
+
+type CacheBuilder interface {
+	CacheRoles() (types.AccountRolesDictionary, error)
 }
 
 type Repository struct {
 	Account
+	CacheBuilder
 }
 
-func NewRepository(db *queries.Queries) *Repository {
+func NewRepository(queries *queries.Queries, db *sql.DB) *Repository {
 	return &Repository{
-		Account: NewAccountPostgres(db),
+		Account:      NewAccountPostgres(queries, db),
+		CacheBuilder: NewCacheBuilderPostgres(queries),
 	}
 }

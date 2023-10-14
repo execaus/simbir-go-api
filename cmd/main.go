@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"github.com/execaus/exloggo"
+	"log"
 	"os"
 	"os/signal"
+	"simbir-go-api/cache"
 	"simbir-go-api/configs"
 	_ "simbir-go-api/docs"
 	"simbir-go-api/handler"
@@ -18,22 +20,26 @@ import (
 // @title           SimbirGoAPI
 // @version         1.0.0
 // @description     API for transportation rental service
-
+// @BasePath  /api/
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-
-// @BasePath  /api/
 func main() {
 	var serverInstance server.Server
+
+	runLogger()
 
 	env := models.LoadEnv()
 	config := configs.LoadConfig()
 
-	database := repository.NewBusinessDatabase(env, config)
+	connection, queries := repository.NewBusinessDatabase(env, config)
 
-	repos := repository.NewRepository(database)
-	services := service.NewService(repos, env)
+	repos := repository.NewRepository(queries, connection)
+	reposCache, err := loadCache(repos)
+	if err != nil {
+		exloggo.Fatal(err.Error())
+	}
+	services := service.NewService(repos, env, reposCache)
 	handlers := handler.NewHandler(services)
 
 	go runServer(&serverInstance, handlers, config.Server)
@@ -53,8 +59,29 @@ func runServer(server *server.Server, handlers *handler.Handler, config *configs
 	}
 }
 
+func runLogger() {
+	if err := exloggo.SetParameters(&exloggo.Parameters{
+		Directory: "logs",
+	}); err != nil {
+		log.Fatal(err.Error())
+	}
+}
+
 func runChannelStopServer() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGABRT)
 	<-quit
+}
+
+func loadCache(r *repository.Repository) (*cache.Cache, error) {
+	c := cache.NewCache()
+
+	dictionary, err := r.CacheBuilder.CacheRoles()
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+	c.Role.Load(dictionary)
+
+	return c, nil
 }

@@ -12,32 +12,39 @@ import (
 type Account struct {
 	Username string
 	Password string
-	IsAdmin  bool
 	Balance  float64
 }
 
+type AccountRole struct {
+	Account string
+	Role    string
+}
+
 type Rent struct {
-	ID          int32
-	UserId      string
-	TransportId string
-	TimeStart   time.Time
-	TimeEnd     sql.NullTime
-	PriceOfUnit float64
-	PriceType   string
-	FinalPrice  sql.NullFloat64
+	ID        int32
+	Account   string
+	Transport string
+	TimeStart time.Time
+	TimeEnd   sql.NullTime
+	PriceUnit float64
+	PriceType string
+}
+
+type Role struct {
+	Name string
 }
 
 type Transport struct {
-	ID            string
-	OwnerId       string
-	TransportType string
-	Model         string
-	Color         string
-	Description   sql.NullString
-	Latitude      float64
-	Longitude     float64
-	MinutePrice   sql.NullFloat64
-	DayPrice      sql.NullFloat64
+	ID          string
+	Owner       string
+	Transport   string
+	Model       string
+	Color       string
+	Description sql.NullString
+	Latitude    float64
+	Longitude   float64
+	MinutePrice sql.NullFloat64
+	DayPrice    sql.NullFloat64
 }
 
 type TransportType struct {
