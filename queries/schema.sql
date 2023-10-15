@@ -2,6 +2,7 @@ CREATE TABLE "Account" (
 	"username" character varying NOT NULL,
 	"password" character varying NOT NULL,
 	"balance" double precision NOT NULL,
+	"deleted" boolean NOT NULL,
 	CONSTRAINT "Account_pk" PRIMARY KEY ("username")
 ) WITH (
   OIDS=FALSE
@@ -20,6 +21,7 @@ CREATE TABLE "Transport" (
 	"longitude" double precision NOT NULL,
 	"minute_price" double precision,
 	"day_price" double precision,
+	"deleted" boolean NOT NULL,
 	CONSTRAINT "Transport_pk" PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
@@ -44,6 +46,7 @@ CREATE TABLE "Rent" (
 	"time_end" TIMESTAMP,
 	"price_unit" double precision NOT NULL,
 	"price_type" character varying NOT NULL,
+	"deleted" boolean NOT NULL,
 	CONSTRAINT "Rent_pk" PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE

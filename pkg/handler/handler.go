@@ -39,6 +39,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			adminAccount.GET("/:username", h.AdminGetAccount)
 			adminAccount.POST("", h.AdminCreateAccount)
 			adminAccount.PUT("/:username", h.AdminUpdateAccount)
+			adminAccount.DELETE("/:username", h.AdminRemoveAccount)
 		}
 	}
 

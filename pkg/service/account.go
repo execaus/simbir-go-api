@@ -24,6 +24,14 @@ type AccountService struct {
 	env   *models.Environment
 }
 
+func (s *AccountService) IsRemoved(username string) (bool, error) {
+	return s.repo.IsRemoved(username)
+}
+
+func (s *AccountService) Remove(username string) error {
+	return s.repo.RemoveAccount(username)
+}
+
 func (s *AccountService) Create(username, password string, role string, balance float64) (*models.Account, error) {
 	passwordHash, err := getPasswordHash(password)
 	if err != nil {

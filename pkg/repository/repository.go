@@ -17,6 +17,8 @@ type Account interface {
 	BlockToken(token string) error
 	Update(username string, updatedAccount *models.Account) error
 	GetList(start int32, count int32) ([]models.Account, error)
+	RemoveAccount(username string) error
+	IsRemoved(username string) (bool, error)
 }
 
 type Role interface {

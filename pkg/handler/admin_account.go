@@ -207,3 +207,39 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 		Balance:  updatedAccount.Balance,
 	}})
 }
+
+func (h *Handler) AdminRemoveAccount(c *gin.Context) {
+	username, err := getStringParam(c, "username")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isExist, err := h.services.Account.IsExist(username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, accountIsNotExist)
+		return
+	}
+
+	isRemoved, err := h.services.Account.IsRemoved(username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if isRemoved {
+		h.sendInvalidRequest(c, accountIsNotExist)
+	}
+
+	if err = h.services.Account.Remove(username); err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	h.sendOK(c)
+}

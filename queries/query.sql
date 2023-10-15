@@ -1,6 +1,6 @@
 -- name: CreateAccount :one
-INSERT INTO "Account" (username, "password", balance)
-VALUES ($1, $2, $3)
+INSERT INTO "Account" (username, "password", balance, deleted)
+VALUES ($1, $2, $3, false)
 RETURNING *;
 
 -- name: GetAccounts :many
@@ -13,6 +13,22 @@ JOIN
     "AccountRole" AS ar ON a.username = ar.account
 JOIN
     "Role" AS r ON ar.role = r.name
+GROUP BY
+    a.username
+OFFSET $1 LIMIT $2;
+
+-- name: GetExistAccounts :many
+SELECT
+    a.*,
+    json_agg(r.name) AS roles
+FROM
+    "Account" AS a
+JOIN
+    "AccountRole" AS ar ON a.username = ar.account
+JOIN
+    "Role" AS r ON ar.role = r.name
+WHERE
+    a.deleted = false
 GROUP BY
     a.username
 OFFSET $1 LIMIT $2;
@@ -37,13 +53,24 @@ DELETE
 FROM "AccountRole"
 WHERE account=$1;
 
-
 -- name: IsAccountExist :one
 SELECT EXISTS (
   SELECT 1
   FROM "Account"
   WHERE username=$1
 );
+
+-- name: IsAccountRemoved :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Account"
+  WHERE username=$1 and deleted=true
+);
+
+-- name: RemoveAccount :exec
+UPDATE "Account"
+SET deleted=true
+WHERE username=$1;
 
 -- name: GetAccount :one
 SELECT *

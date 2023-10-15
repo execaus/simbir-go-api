@@ -84,6 +84,16 @@ func (h *Handler) SignIn(c *gin.Context) {
 		return
 	}
 
+	isRemoved, err := h.services.Account.IsRemoved(input.Username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if isRemoved {
+		h.sendInvalidRequest(c, invalidAuthData)
+	}
+
 	account, err := h.services.Account.Authorize(input.Username, input.Password)
 	if err != nil {
 		h.sendGeneralException(c, serverError)

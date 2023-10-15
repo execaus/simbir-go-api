@@ -20,6 +20,8 @@ type Account interface {
 	GetRoles(username string) ([]string, error)
 	GetList(start, count int32) ([]models.Account, error)
 	Create(username, password string, role string, balance float64) (*models.Account, error)
+	Remove(username string) error
+	IsRemoved(username string) (bool, error)
 }
 
 type Service struct {

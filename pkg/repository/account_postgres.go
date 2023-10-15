@@ -15,6 +15,25 @@ type AccountPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *AccountPostgres) IsRemoved(username string) (bool, error) {
+	isRemoved, err := r.queries.IsAccountRemoved(context.Background(), username)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return isRemoved, nil
+}
+
+func (r *AccountPostgres) RemoveAccount(username string) error {
+	if err := r.queries.RemoveAccount(context.Background(), username); err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func (r *AccountPostgres) ReplaceRoles(username string, roles []string) error {
 	if err := r.queries.DeleteAccountRoles(context.Background(), username); err != nil {
 		exloggo.Error(err.Error())
@@ -38,7 +57,7 @@ func (r *AccountPostgres) ReplaceRoles(username string, roles []string) error {
 func (r *AccountPostgres) GetList(start, count int32) ([]models.Account, error) {
 	var accounts []models.Account
 
-	accountRows, err := r.queries.GetAccounts(context.Background(), queries.GetAccountsParams{
+	accountRows, err := r.queries.GetExistAccounts(context.Background(), queries.GetExistAccountsParams{
 		Offset: start,
 		Limit:  count,
 	})

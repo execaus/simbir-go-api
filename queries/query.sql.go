@@ -39,9 +39,9 @@ func (q *Queries) AppendTokenToBlackList(ctx context.Context, token string) erro
 }
 
 const createAccount = `-- name: CreateAccount :one
-INSERT INTO "Account" (username, "password", balance)
-VALUES ($1, $2, $3)
-RETURNING username, password, balance
+INSERT INTO "Account" (username, "password", balance, deleted)
+VALUES ($1, $2, $3, false)
+RETURNING username, password, balance, deleted
 `
 
 type CreateAccountParams struct {
@@ -53,7 +53,12 @@ type CreateAccountParams struct {
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, createAccount, arg.Username, arg.Password, arg.Balance)
 	var i Account
-	err := row.Scan(&i.Username, &i.Password, &i.Balance)
+	err := row.Scan(
+		&i.Username,
+		&i.Password,
+		&i.Balance,
+		&i.Deleted,
+	)
 	return i, err
 }
 
@@ -69,7 +74,7 @@ func (q *Queries) DeleteAccountRoles(ctx context.Context, account string) error 
 }
 
 const getAccount = `-- name: GetAccount :one
-SELECT username, password, balance
+SELECT username, password, balance, deleted
 FROM "Account"
 WHERE username=$1
 `
@@ -77,7 +82,12 @@ WHERE username=$1
 func (q *Queries) GetAccount(ctx context.Context, username string) (Account, error) {
 	row := q.db.QueryRowContext(ctx, getAccount, username)
 	var i Account
-	err := row.Scan(&i.Username, &i.Password, &i.Balance)
+	err := row.Scan(
+		&i.Username,
+		&i.Password,
+		&i.Balance,
+		&i.Deleted,
+	)
 	return i, err
 }
 
@@ -112,7 +122,7 @@ func (q *Queries) GetAccountRoles(ctx context.Context, account string) ([]string
 
 const getAccounts = `-- name: GetAccounts :many
 SELECT
-    a.username, a.password, a.balance,
+    a.username, a.password, a.balance, a.deleted,
     json_agg(r.name) AS roles
 FROM
     "Account" AS a
@@ -134,6 +144,7 @@ type GetAccountsRow struct {
 	Username string
 	Password string
 	Balance  float64
+	Deleted  bool
 	Roles    json.RawMessage
 }
 
@@ -150,6 +161,7 @@ func (q *Queries) GetAccounts(ctx context.Context, arg GetAccountsParams) ([]Get
 			&i.Username,
 			&i.Password,
 			&i.Balance,
+			&i.Deleted,
 			&i.Roles,
 		); err != nil {
 			return nil, err
@@ -193,6 +205,65 @@ func (q *Queries) GetCacheRoles(ctx context.Context) ([]AccountRole, error) {
 	return items, nil
 }
 
+const getExistAccounts = `-- name: GetExistAccounts :many
+SELECT
+    a.username, a.password, a.balance, a.deleted,
+    json_agg(r.name) AS roles
+FROM
+    "Account" AS a
+JOIN
+    "AccountRole" AS ar ON a.username = ar.account
+JOIN
+    "Role" AS r ON ar.role = r.name
+WHERE
+    a.deleted = false
+GROUP BY
+    a.username
+OFFSET $1 LIMIT $2
+`
+
+type GetExistAccountsParams struct {
+	Offset int32
+	Limit  int32
+}
+
+type GetExistAccountsRow struct {
+	Username string
+	Password string
+	Balance  float64
+	Deleted  bool
+	Roles    json.RawMessage
+}
+
+func (q *Queries) GetExistAccounts(ctx context.Context, arg GetExistAccountsParams) ([]GetExistAccountsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getExistAccounts, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetExistAccountsRow
+	for rows.Next() {
+		var i GetExistAccountsRow
+		if err := rows.Scan(
+			&i.Username,
+			&i.Password,
+			&i.Balance,
+			&i.Deleted,
+			&i.Roles,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const isAccountExist = `-- name: IsAccountExist :one
 SELECT EXISTS (
   SELECT 1
@@ -203,6 +274,21 @@ SELECT EXISTS (
 
 func (q *Queries) IsAccountExist(ctx context.Context, username string) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isAccountExist, username)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const isAccountRemoved = `-- name: IsAccountRemoved :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Account"
+  WHERE username=$1 and deleted=true
+)
+`
+
+func (q *Queries) IsAccountRemoved(ctx context.Context, username string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isAccountRemoved, username)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -221,6 +307,17 @@ func (q *Queries) IsContainBlackListToken(ctx context.Context, token string) (bo
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
+}
+
+const removeAccount = `-- name: RemoveAccount :exec
+UPDATE "Account"
+SET deleted=true
+WHERE username=$1
+`
+
+func (q *Queries) RemoveAccount(ctx context.Context, username string) error {
+	_, err := q.db.ExecContext(ctx, removeAccount, username)
+	return err
 }
 
 const replaceUsername = `-- name: ReplaceUsername :exec

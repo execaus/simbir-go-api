@@ -13,6 +13,7 @@ type Account struct {
 	Username string
 	Password string
 	Balance  float64
+	Deleted  bool
 }
 
 type AccountRole struct {
@@ -28,6 +29,7 @@ type Rent struct {
 	TimeEnd   sql.NullTime
 	PriceUnit float64
 	PriceType string
+	Deleted   bool
 }
 
 type Role struct {
@@ -49,6 +51,7 @@ type Transport struct {
 	Longitude   float64
 	MinutePrice sql.NullFloat64
 	DayPrice    sql.NullFloat64
+	Deleted     bool
 }
 
 type TransportType struct {
