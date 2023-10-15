@@ -78,3 +78,14 @@ type AdminCreateAccountInput struct {
 type AdminCreateAccountOutput struct {
 	Account GetAccountOutput `json:"account"`
 }
+
+type AdminUpdateAccountInput struct {
+	Username string   `json:"username" binding:"required,excludesall= ,printascii"`
+	Password string   `json:"password" binding:"required,excludesall= ,printascii"`
+	IsAdmin  bool     `json:"isAdmin" binding:"required"`
+	Balance  *float64 `json:"balance" binding:"required,min=0"`
+}
+
+type AdminUpdateAccountOutput struct {
+	Account GetAccountOutput `json:"account"`
+}

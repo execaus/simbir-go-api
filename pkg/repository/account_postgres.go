@@ -15,6 +15,26 @@ type AccountPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *AccountPostgres) ReplaceRoles(username string, roles []string) error {
+	if err := r.queries.DeleteAccountRoles(context.Background(), username); err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+
+	for _, role := range roles {
+		_, err := r.queries.AppendRoleAccount(context.Background(), queries.AppendRoleAccountParams{
+			Account: username,
+			Role:    role,
+		})
+		if err != nil {
+			exloggo.Error(err.Error())
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *AccountPostgres) GetList(start, count int32) ([]models.Account, error) {
 	var accounts []models.Account
 
@@ -58,10 +78,11 @@ func (r *AccountPostgres) ReplaceUsername(username, newUsername string) error {
 	return nil
 }
 
-func (r *AccountPostgres) Update(username, newUsername, password string) error {
+func (r *AccountPostgres) Update(username string, updatedAccount *models.Account) error {
 	if err := r.queries.UpdateAccount(context.Background(), queries.UpdateAccountParams{
-		Username:   newUsername,
-		Password:   password,
+		Username:   updatedAccount.Username,
+		Password:   updatedAccount.Password,
+		Balance:    updatedAccount.Balance,
 		Username_2: username,
 	}); err != nil {
 		exloggo.Error(err.Error())

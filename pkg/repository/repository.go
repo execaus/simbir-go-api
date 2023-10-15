@@ -15,7 +15,7 @@ type Account interface {
 	Get(username string) (*queries.Account, error)
 	IsContainBlackListToken(token string) (bool, error)
 	BlockToken(token string) error
-	Update(username, newUsername, password string) error
+	Update(username string, updatedAccount *models.Account) error
 	GetList(start int32, count int32) ([]models.Account, error)
 }
 
@@ -23,6 +23,7 @@ type Role interface {
 	GetRoles(username string) ([]string, error)
 	AppendRole(username string, role string) error
 	ReplaceUsername(username, newUsername string) error
+	ReplaceRoles(username string, roles []string) error
 }
 
 type CacheBuilder interface {

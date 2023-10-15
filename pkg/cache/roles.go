@@ -14,6 +14,16 @@ type AccountRoleCache struct {
 	Roles types.AccountRolesDictionary
 }
 
+func (c *AccountRoleCache) ReplaceRoles(username string, roles []string) error {
+	if c.Roles[username] == nil {
+		exloggo.Error(usernameNotFound)
+		return errors.New(usernameNotFound)
+	} else {
+		c.Roles[username] = roles
+	}
+	return nil
+}
+
 func (c *AccountRoleCache) ReplaceUsername(username, newUsername string) error {
 	if c.Roles[username] == nil {
 		exloggo.Error(usernameNotFound)

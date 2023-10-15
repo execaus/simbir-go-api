@@ -17,11 +17,10 @@ GROUP BY
     a.username
 OFFSET $1 LIMIT $2;
 
-
 -- name: UpdateAccount :exec
 UPDATE "Account"
-SET username=$1, "password"=$2
-WHERE username=$3;
+SET username=$1, "password"=$2, balance=$3
+WHERE username=$4;
 
 -- name: ReplaceUsername :exec
 UPDATE "Account"
@@ -32,6 +31,12 @@ WHERE username=$2;
 INSERT INTO "AccountRole" (account, "role")
 VALUES ($1, $2)
 RETURNING *;
+
+-- name: DeleteAccountRoles :exec
+DELETE
+FROM "AccountRole"
+WHERE account=$1;
+
 
 -- name: IsAccountExist :one
 SELECT EXISTS (

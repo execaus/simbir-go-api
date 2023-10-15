@@ -16,7 +16,7 @@ type Account interface {
 	GetByUsername(username string) (*models.Account, error)
 	IsValidToken(token string) (bool, error)
 	BlockToken(token string) error
-	Update(username string, newUsername string, password string) (string, error)
+	Update(username string, updatedAccount *models.Account) (*models.Account, error)
 	GetRoles(username string) ([]string, error)
 	GetList(start, count int32) ([]models.Account, error)
 	Create(username, password string, role string, balance float64) (*models.Account, error)

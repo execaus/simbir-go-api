@@ -41,6 +41,28 @@ definitions:
           $ref: '#/definitions/models.GetAccountOutput'
         type: array
     type: object
+  models.AdminUpdateAccountInput:
+    properties:
+      balance:
+        minimum: 0
+        type: number
+      isAdmin:
+        type: boolean
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - balance
+    - isAdmin
+    - password
+    - username
+    type: object
+  models.AdminUpdateAccountOutput:
+    properties:
+      account:
+        $ref: '#/definitions/models.GetAccountOutput'
+    type: object
   models.GetAccountOutput:
     properties:
       balance:
@@ -358,6 +380,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Account information
+      tags:
+      - admin-account
+    put:
+      consumes:
+      - application/json
+      description: Account administrator changes account by username.
+      parameters:
+      - description: '-'
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.AdminUpdateAccountInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminUpdateAccountOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Update account
       tags:
       - admin-account
 securityDefinitions:

@@ -38,6 +38,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			adminAccount.GET("", h.AdminGetAccounts)
 			adminAccount.GET("/:username", h.AdminGetAccount)
 			adminAccount.POST("", h.AdminCreateAccount)
+			adminAccount.PUT("/:username", h.AdminUpdateAccount)
 		}
 	}
 

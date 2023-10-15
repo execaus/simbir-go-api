@@ -86,31 +86,32 @@ func (s *AccountService) GetRoles(username string) ([]string, error) {
 	return s.cache.GetRoles(username)
 }
 
-func (s *AccountService) Update(username string, newUsername string, password string) (string, error) {
-	passwordHash, err := getPasswordHash(password)
+func (s *AccountService) Update(username string, updatedAccount *models.Account) (*models.Account, error) {
+	passwordHash, err := getPasswordHash(updatedAccount.Username)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if err = s.repo.Update(username, newUsername, passwordHash); err != nil {
+	updatedAccount.Password = passwordHash
+
+	if err = s.repo.Update(username, updatedAccount); err != nil {
 		exloggo.Error(err.Error())
-		return "", err
+		return nil, err
 	}
 
-	if username != newUsername {
-		if err = s.cache.ReplaceUsername(username, newUsername); err != nil {
+	if username != updatedAccount.Username {
+		if err = s.cache.ReplaceUsername(username, updatedAccount.Username); err != nil {
 			exloggo.Error(err.Error())
-			return "", err
+			return nil, err
 		}
 	}
 
-	token, err := s.GenerateToken(newUsername)
-	if err != nil {
+	if err = s.cache.ReplaceRoles(updatedAccount.Username, updatedAccount.Roles); err != nil {
 		exloggo.Error(err.Error())
-		return "", err
+		return nil, err
 	}
 
-	return token, nil
+	return s.GetByUsername(updatedAccount.Username)
 }
 
 func (s *AccountService) IsValidToken(token string) (bool, error) {

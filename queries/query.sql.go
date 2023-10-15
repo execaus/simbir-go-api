@@ -57,6 +57,17 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 	return i, err
 }
 
+const deleteAccountRoles = `-- name: DeleteAccountRoles :exec
+DELETE
+FROM "AccountRole"
+WHERE account=$1
+`
+
+func (q *Queries) DeleteAccountRoles(ctx context.Context, account string) error {
+	_, err := q.db.ExecContext(ctx, deleteAccountRoles, account)
+	return err
+}
+
 const getAccount = `-- name: GetAccount :one
 SELECT username, password, balance
 FROM "Account"
@@ -230,17 +241,23 @@ func (q *Queries) ReplaceUsername(ctx context.Context, arg ReplaceUsernameParams
 
 const updateAccount = `-- name: UpdateAccount :exec
 UPDATE "Account"
-SET username=$1, "password"=$2
-WHERE username=$3
+SET username=$1, "password"=$2, balance=$3
+WHERE username=$4
 `
 
 type UpdateAccountParams struct {
 	Username   string
 	Password   string
+	Balance    float64
 	Username_2 string
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {
-	_, err := q.db.ExecContext(ctx, updateAccount, arg.Username, arg.Password, arg.Username_2)
+	_, err := q.db.ExecContext(ctx, updateAccount,
+		arg.Username,
+		arg.Password,
+		arg.Balance,
+		arg.Username_2,
+	)
 	return err
 }

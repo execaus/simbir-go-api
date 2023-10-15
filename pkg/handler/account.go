@@ -195,7 +195,18 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 		}
 	}
 
-	newToken, err := h.services.Account.Update(username, input.Username, input.Password)
+	currentAccount, err := h.services.Account.GetByUsername(input.Username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	updatedAccount, err := h.services.Account.Update(username, &models.Account{
+		Username: input.Username,
+		Password: input.Password,
+		Balance:  currentAccount.Balance,
+		Roles:    currentAccount.Roles,
+	})
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -203,6 +214,12 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 
 	if err = h.services.Account.BlockToken(token); err != nil {
 		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	newToken, err := h.services.Account.GenerateToken(updatedAccount.Username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
 		return
 	}
 

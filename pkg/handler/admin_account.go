@@ -98,7 +98,6 @@ func (h *Handler) AdminGetAccount(c *gin.Context) {
 // @Tags         admin-account
 // @Accept       json
 // @Produce      json
-// @Success      200
 // @Param        input body models.AdminCreateAccountInput true "-"
 // @Success      200  {object}  models.AdminCreateAccountOutput
 // @Failure      400  {object}  handler.Error
@@ -142,5 +141,69 @@ func (h *Handler) AdminCreateAccount(c *gin.Context) {
 		Username: account.Username,
 		IsAdmin:  account.IsAdmin(),
 		Balance:  account.Balance,
+	}})
+}
+
+// AdminUpdateAccount
+// @Summary      Update account
+// @Description  Account administrator changes account by username.
+// @Tags         admin-account
+// @Accept       json
+// @Produce      json
+// @Param        username path string true "-"
+// @Param        input body models.AdminUpdateAccountInput true "-"
+// @Success      200  {object}  models.AdminUpdateAccountOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Admin/Account/{username} [put]
+func (h *Handler) AdminUpdateAccount(c *gin.Context) {
+	var input models.AdminUpdateAccountInput
+
+	if err := c.BindJSON(&input); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	if username != input.Username {
+		isExist, err := h.services.Account.IsExist(input.Username)
+		if err != nil {
+			h.sendGeneralException(c, serverError)
+			return
+		}
+
+		if isExist {
+			h.sendInvalidRequest(c, accountIsExist)
+			return
+		}
+	}
+
+	roles := []string{constants.RoleUser}
+	if input.IsAdmin {
+		roles = append(roles, constants.RoleAdmin)
+	}
+
+	updatedAccount, err := h.services.Account.Update(username, &models.Account{
+		Username: input.Username,
+		Password: input.Password,
+		Balance:  *input.Balance,
+		Roles:    roles,
+	})
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	h.sendOKWithBody(c, &models.AdminUpdateAccountOutput{Account: models.GetAccountOutput{
+		Username: updatedAccount.Username,
+		IsAdmin:  updatedAccount.IsAdmin(),
+		Balance:  updatedAccount.Balance,
 	}})
 }
