@@ -7,6 +7,11 @@ definitions:
       message:
         type: string
     type: object
+  models.AdminGetAccountOutput:
+    properties:
+      account:
+        $ref: '#/definitions/models.GetAccountOutput'
+    type: object
   models.AdminGetAccountsOutput:
     properties:
       accounts:
@@ -260,6 +265,41 @@ paths:
       security:
       - BearerAuth: []
       summary: Accounts information
+      tags:
+      - admin-account
+  /Admin/Account/{username}:
+    get:
+      consumes:
+      - application/json
+      description: Returns account information.
+      parameters:
+      - description: '-'
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminGetAccountOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Account information
       tags:
       - admin-account
 securityDefinitions:

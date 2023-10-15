@@ -31,11 +31,12 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		account.POST("/SignOut", h.accountIdentity, h.SignOut)
 	}
 
-	admin := api.Group("/Admin")
+	admin := api.Group("/Admin", h.onlyAdmin)
 	{
 		adminAccount := admin.Group("/Account")
 		{
-			adminAccount.GET("", h.onlyAdmin, h.AdminGetAccounts)
+			adminAccount.GET("", h.AdminGetAccounts)
+			adminAccount.GET("/:username", h.AdminGetAccount)
 		}
 	}
 

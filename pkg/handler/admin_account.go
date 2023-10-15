@@ -44,3 +44,49 @@ func (h *Handler) AdminGetAccounts(c *gin.Context) {
 
 	h.sendOKWithBody(c, output)
 }
+
+// AdminGetAccount
+// @Summary      Account information
+// @Description  Returns account information.
+// @Tags         admin-account
+// @Accept       json
+// @Produce      json
+// @Param        username path string true "-"
+// @Success      200  {object}  models.AdminGetAccountOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Admin/Account/{username} [get]
+func (h *Handler) AdminGetAccount(c *gin.Context) {
+	username, err := getStringParam(c, "username")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isExist, err := h.services.Account.IsExist(username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, accountIsNotExist)
+		return
+	}
+
+	account, err := h.services.Account.GetByUsername(username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	h.sendOKWithBody(c, &models.AdminGetAccountOutput{
+		Account: models.GetAccountOutput{
+			Username: account.Username,
+			IsAdmin:  account.IsAdmin(),
+			Balance:  account.Balance,
+		},
+	})
+}

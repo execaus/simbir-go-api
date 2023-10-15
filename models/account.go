@@ -59,3 +59,11 @@ type AdminGetAccountsInput struct {
 type AdminGetAccountsOutput struct {
 	Accounts []*GetAccountOutput `json:"accounts"`
 }
+
+type AdminGetAccountInput struct {
+	Username string `json:"username" binding:"required,excludesall= ,printascii"`
+}
+
+type AdminGetAccountOutput struct {
+	Account GetAccountOutput `json:"account"`
+}
