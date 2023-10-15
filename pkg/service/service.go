@@ -19,6 +19,7 @@ type Account interface {
 	Update(username string, newUsername string, password string) (string, error)
 	GetRoles(username string) ([]string, error)
 	GetList(start, count int32) ([]models.Account, error)
+	Create(username, password string, role string, balance float64) (*models.Account, error)
 }
 
 type Service struct {

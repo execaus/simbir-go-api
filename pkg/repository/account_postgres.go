@@ -169,6 +169,20 @@ func (r *AccountPostgres) create(username, password, role string, balance float6
 			}
 			return err
 		},
+		func(tx *queries.Queries) error {
+			if role == constants.RoleUser {
+				return nil
+			}
+
+			_, err := tx.AppendRoleAccount(context.Background(), queries.AppendRoleAccountParams{
+				Account: username,
+				Role:    constants.RoleUser,
+			})
+			if err != nil {
+				exloggo.Error(err.Error())
+			}
+			return err
+		},
 	}); err != nil {
 		exloggo.Error(err.Error())
 		return nil, err

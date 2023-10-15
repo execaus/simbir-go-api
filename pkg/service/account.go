@@ -14,6 +14,7 @@ import (
 
 const (
 	invalidJwtMethod = "invalid signing method"
+	roleNotExist     = "role is not exist"
 	tokenTTL         = 12 * time.Hour
 )
 
@@ -21,6 +22,55 @@ type AccountService struct {
 	cache repository.Role
 	repo  repository.Account
 	env   *models.Environment
+}
+
+func (s *AccountService) Create(username, password string, role string, balance float64) (*models.Account, error) {
+	passwordHash, err := getPasswordHash(password)
+	if err != nil {
+		return nil, err
+	}
+
+	switch {
+	case role == constants.RoleAdmin:
+		_, err = s.repo.CreateAdmin(username, passwordHash, balance)
+		if err != nil {
+			return nil, err
+		}
+	case role == constants.RoleUser:
+		_, err = s.repo.CreateUser(username, passwordHash, balance)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		exloggo.Error(roleNotExist)
+		return nil, errors.New(roleNotExist)
+	}
+
+	account, err := s.repo.Get(username)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	roles, err := s.repo.GetRoles(username)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	for _, accountRole := range roles {
+		if err = s.cache.AppendRole(account.Username, accountRole); err != nil {
+			exloggo.Error(err.Error())
+			return nil, err
+		}
+	}
+
+	return &models.Account{
+		Username: account.Username,
+		Password: account.Password,
+		Balance:  account.Balance,
+		Roles:    roles,
+	}, nil
 }
 
 func (s *AccountService) GetList(start, count int32) ([]models.Account, error) {
