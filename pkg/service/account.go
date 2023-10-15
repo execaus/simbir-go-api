@@ -23,6 +23,19 @@ type AccountService struct {
 	env   *models.Environment
 }
 
+func (s *AccountService) GetList(start, count int32) ([]models.Account, error) {
+	accounts, err := s.repo.GetList(start, count)
+	if err != nil {
+		return nil, err
+	}
+
+	return accounts, nil
+}
+
+func (s *AccountService) GetRoles(username string) ([]string, error) {
+	return s.cache.GetRoles(username)
+}
+
 func (s *AccountService) Update(username string, newUsername string, password string) (string, error) {
 	passwordHash, err := getPasswordHash(password)
 	if err != nil {

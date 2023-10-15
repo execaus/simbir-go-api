@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"encoding/json"
 )
 
 const appendRoleAccount = `-- name: AppendRoleAccount :one
@@ -88,6 +89,61 @@ func (q *Queries) GetAccountRoles(ctx context.Context, account string) ([]string
 			return nil, err
 		}
 		items = append(items, role)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAccounts = `-- name: GetAccounts :many
+SELECT
+    a.username, a.password, a.balance,
+    json_agg(r.name) AS roles
+FROM
+    "Account" AS a
+JOIN
+    "AccountRole" AS ar ON a.username = ar.account
+JOIN
+    "Role" AS r ON ar.role = r.name
+GROUP BY
+    a.username
+OFFSET $1 LIMIT $2
+`
+
+type GetAccountsParams struct {
+	Offset int32
+	Limit  int32
+}
+
+type GetAccountsRow struct {
+	Username string
+	Password string
+	Balance  float64
+	Roles    json.RawMessage
+}
+
+func (q *Queries) GetAccounts(ctx context.Context, arg GetAccountsParams) ([]GetAccountsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAccounts, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAccountsRow
+	for rows.Next() {
+		var i GetAccountsRow
+		if err := rows.Scan(
+			&i.Username,
+			&i.Password,
+			&i.Balance,
+			&i.Roles,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

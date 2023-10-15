@@ -3,14 +3,47 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"github.com/execaus/exloggo"
 	"simbir-go-api/constants"
+	"simbir-go-api/models"
 	"simbir-go-api/queries"
 )
 
 type AccountPostgres struct {
 	db      *sql.DB
 	queries *queries.Queries
+}
+
+func (r *AccountPostgres) GetList(start, count int32) ([]models.Account, error) {
+	var accounts []models.Account
+
+	accountRows, err := r.queries.GetAccounts(context.Background(), queries.GetAccountsParams{
+		Offset: start,
+		Limit:  count,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	for _, account := range accountRows {
+		var roles []string
+
+		if err = json.Unmarshal(account.Roles, &roles); err != nil {
+			exloggo.Error(err.Error())
+			return nil, err
+		}
+
+		accounts = append(accounts, models.Account{
+			Username: account.Username,
+			Password: account.Password,
+			Balance:  account.Balance,
+			Roles:    roles,
+		})
+	}
+
+	return accounts, nil
 }
 
 func (r *AccountPostgres) ReplaceUsername(username, newUsername string) error {
@@ -107,7 +140,7 @@ func (r *AccountPostgres) CreateAdmin(username, password string, balance float64
 	return r.create(username, password, constants.RoleAdmin, balance)
 }
 
-func (r *AccountPostgres) create(username, password string, role string, balance float64) (*queries.Account, error) {
+func (r *AccountPostgres) create(username, password, role string, balance float64) (*queries.Account, error) {
 	var account *queries.Account
 
 	if err := r.ExecuteWithTransaction([]TXQuery{

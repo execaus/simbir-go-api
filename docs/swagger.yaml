@@ -7,6 +7,13 @@ definitions:
       message:
         type: string
     type: object
+  models.AdminGetAccountsOutput:
+    properties:
+      accounts:
+        items:
+          $ref: '#/definitions/models.GetAccountOutput'
+        type: array
+    type: object
   models.GetAccountOutput:
     properties:
       balance:
@@ -215,6 +222,46 @@ paths:
       summary: Update account
       tags:
       - account
+  /Admin/Account:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of accounts by sampling condition.
+      parameters:
+      - description: '-'
+        in: query
+        name: count
+        required: true
+        type: number
+      - description: '-'
+        in: query
+        name: start
+        required: true
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminGetAccountsOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Accounts information
+      tags:
+      - admin-account
 securityDefinitions:
   BearerAuth:
     in: header

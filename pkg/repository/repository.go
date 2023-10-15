@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"simbir-go-api/models"
 	"simbir-go-api/queries"
 	"simbir-go-api/types"
 )
@@ -15,6 +16,7 @@ type Account interface {
 	IsContainBlackListToken(token string) (bool, error)
 	BlockToken(token string) error
 	Update(username, newUsername, password string) error
+	GetList(start int32, count int32) ([]models.Account, error)
 }
 
 type Role interface {

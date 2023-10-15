@@ -31,5 +31,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		account.POST("/SignOut", h.accountIdentity, h.SignOut)
 	}
 
+	admin := api.Group("/Admin")
+	{
+		adminAccount := admin.Group("/Account")
+		{
+			adminAccount.GET("", h.onlyAdmin, h.AdminGetAccounts)
+		}
+	}
+
 	return router
 }

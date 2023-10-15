@@ -17,6 +17,8 @@ type Account interface {
 	IsValidToken(token string) (bool, error)
 	BlockToken(token string) error
 	Update(username string, newUsername string, password string) (string, error)
+	GetRoles(username string) ([]string, error)
+	GetList(start, count int32) ([]models.Account, error)
 }
 
 type Service struct {

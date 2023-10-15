@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/execaus/exloggo"
 	"github.com/gin-gonic/gin"
+	"simbir-go-api/constants"
 	"strings"
 )
 
@@ -49,6 +50,37 @@ func (h *Handler) accountIdentity(c *gin.Context) {
 
 	c.Set(accountContextName, username)
 	c.Set(accountTokenName, headerParts[1])
+}
+
+func (h *Handler) onlyAdmin(c *gin.Context) {
+	h.accountIdentity(c)
+
+	if c.IsAborted() {
+		return
+	}
+
+	username, err := getAccountContext(c)
+	if err != nil {
+		exloggo.Error(err.Error())
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	roles, err := h.services.Account.GetRoles(username)
+	if err != nil {
+		exloggo.Error(err.Error())
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	for _, role := range roles {
+		if role == constants.RoleAdmin {
+			c.Next()
+			return
+		}
+	}
+
+	h.sendAccessDenied(c, accessDeniedOnlyAdmin)
 }
 
 func getAccountContext(c *gin.Context) (string, error) {

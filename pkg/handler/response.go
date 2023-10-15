@@ -33,6 +33,7 @@ const (
 	accountTokenNotFound       = "the user token was not detected in the request header"
 	invalidAuthorizationHeader = "invalid \"Authorization\" header"
 	usernameIsBusy             = "username is busy"
+	accessDeniedOnlyAdmin      = "access denied, available only to administrator"
 )
 
 type Error struct {

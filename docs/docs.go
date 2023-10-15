@@ -246,6 +246,68 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/Admin/Account": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a list of accounts by sampling condition.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-account"
+                ],
+                "summary": "Accounts information",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "start",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AdminGetAccountsOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -257,6 +319,17 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "models.AdminGetAccountsOutput": {
+            "type": "object",
+            "properties": {
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.GetAccountOutput"
+                    }
                 }
             }
         },

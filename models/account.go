@@ -50,3 +50,12 @@ type UpdateAccountInput struct {
 type UpdateAccountOutput struct {
 	Token string `json:"token"`
 }
+
+type AdminGetAccountsInput struct {
+	Start int32 `form:"start" binding:"min=0"`
+	Count int32 `form:"count" binding:"min=1"`
+}
+
+type AdminGetAccountsOutput struct {
+	Accounts []*GetAccountOutput `json:"accounts"`
+}

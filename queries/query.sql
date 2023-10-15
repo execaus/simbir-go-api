@@ -3,6 +3,21 @@ INSERT INTO "Account" (username, "password", balance)
 VALUES ($1, $2, $3)
 RETURNING *;
 
+-- name: GetAccounts :many
+SELECT
+    a.*,
+    json_agg(r.name) AS roles
+FROM
+    "Account" AS a
+JOIN
+    "AccountRole" AS ar ON a.username = ar.account
+JOIN
+    "Role" AS r ON ar.role = r.name
+GROUP BY
+    a.username
+OFFSET $1 LIMIT $2;
+
+
 -- name: UpdateAccount :exec
 UPDATE "Account"
 SET username=$1, "password"=$2
