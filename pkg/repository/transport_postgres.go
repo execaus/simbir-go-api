@@ -12,6 +12,52 @@ type TransportPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *TransportPostgres) Update(identifier string, transport *models.Transport) (*models.Transport, error) {
+	reposTransport, err := r.queries.UpdateTransport(context.Background(), queries.UpdateTransportParams{
+		ID:          transport.Identifier,
+		CanRanted:   transport.CanBeRented,
+		Model:       transport.Model,
+		Color:       transport.Color,
+		Description: sqlnt.ToStringNull(transport.Description),
+		Latitude:    transport.Latitude,
+		Longitude:   transport.Longitude,
+		MinutePrice: sqlnt.ToF64Null(transport.MinutePrice),
+		DayPrice:    sqlnt.ToF64Null(transport.DayPrice),
+		ID_2:        identifier,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &models.Transport{
+		OwnerID:       reposTransport.Owner,
+		CanBeRented:   reposTransport.CanRanted,
+		TransportType: reposTransport.Type,
+		Model:         reposTransport.Model,
+		Color:         reposTransport.Color,
+		Identifier:    reposTransport.ID,
+		Description:   sqlnt.ToString(&reposTransport.Description),
+		Latitude:      reposTransport.Latitude,
+		Longitude:     reposTransport.Longitude,
+		MinutePrice:   sqlnt.ToF64(&reposTransport.MinutePrice),
+		DayPrice:      sqlnt.ToF64(&reposTransport.MinutePrice),
+	}, nil
+}
+
+func (r *TransportPostgres) IsOwner(identifier, username string) (bool, error) {
+	isOwner, err := r.queries.IsTransportOwner(context.Background(), queries.IsTransportOwnerParams{
+		ID:    identifier,
+		Owner: username,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return isOwner, nil
+}
+
 func (r *TransportPostgres) Get(identifier string) (*models.Transport, error) {
 	result, err := r.queries.GetTransport(context.Background(), identifier)
 	if err != nil {

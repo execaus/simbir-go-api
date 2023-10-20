@@ -35,6 +35,7 @@ const (
 	usernameIsBusy             = "username is busy"
 	accessDeniedOnlyAdmin      = "access denied, available only to administrator"
 	transportIsNotExist        = "transport is not exist"
+	accountNotTransportOwner   = "account is not transport owner"
 )
 
 type Error struct {

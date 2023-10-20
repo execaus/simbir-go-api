@@ -35,6 +35,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		transport.GET("/:id", h.GetTransport)
 		transport.POST("", h.accountIdentity, h.CreateTransport)
+		transport.PUT("/:id", h.accountIdentity, h.UpdateTransport)
 	}
 
 	admin := api.Group("/Admin", h.onlyAdmin)

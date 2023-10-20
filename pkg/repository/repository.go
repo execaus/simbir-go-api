@@ -36,6 +36,8 @@ type TransportRepository interface {
 	Create(transport *models.Transport) (*models.Transport, error)
 	IsExist(identifier string) (bool, error)
 	Get(identifier string) (*models.Transport, error)
+	IsOwner(identifier, username string) (bool, error)
+	Update(identifier string, transport *models.Transport) (*models.Transport, error)
 }
 
 type Repository struct {

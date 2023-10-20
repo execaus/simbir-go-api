@@ -53,3 +53,19 @@ type GetTransportOutput struct {
 	MinutePrice   *float64 `json:"minutePrice"`
 	DayPrice      *float64 `json:"dayPrice"`
 }
+
+type UpdateTransportInput struct {
+	CanBeRented bool     `json:"canBeRented" binding:"required"`
+	Model       string   `json:"model" binding:"required"`
+	Color       string   `json:"color" binding:"required"`
+	Identifier  string   `json:"identifier" binding:"required"`
+	Description *string  `json:"description"`
+	Latitude    *float64 `json:"latitude" binding:"required,min=-180,max=180"`
+	Longitude   *float64 `json:"longitude" binding:"required,min=-180,max=180"`
+	MinutePrice *float64 `json:"minutePrice" binding:"min=1"`
+	DayPrice    *float64 `json:"dayPrice" binding:"min=1"`
+}
+
+type UpdateTransportOutput struct {
+	Transport *GetTransportOutput `json:"transport"`
+}

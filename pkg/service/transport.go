@@ -9,6 +9,14 @@ type TransportService struct {
 	repo repository.TransportRepository
 }
 
+func (s *TransportService) Update(identifier string, transport *models.Transport) (*models.Transport, error) {
+	return s.repo.Update(identifier, transport)
+}
+
+func (s *TransportService) IsOwner(identifier, username string) (bool, error) {
+	return s.repo.IsOwner(identifier, username)
+}
+
 func (s *TransportService) Get(identifier string) (*models.Transport, error) {
 	return s.repo.Get(identifier)
 }

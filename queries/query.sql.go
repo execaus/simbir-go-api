@@ -405,6 +405,26 @@ func (q *Queries) IsExistTransport(ctx context.Context, id string) (bool, error)
 	return exists, err
 }
 
+const isTransportOwner = `-- name: IsTransportOwner :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Transport"
+  WHERE id=$1 and "owner"=$2
+)
+`
+
+type IsTransportOwnerParams struct {
+	ID    string
+	Owner string
+}
+
+func (q *Queries) IsTransportOwner(ctx context.Context, arg IsTransportOwnerParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isTransportOwner, arg.ID, arg.Owner)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const removeAccount = `-- name: RemoveAccount :exec
 UPDATE "Account"
 SET deleted=true
@@ -453,4 +473,55 @@ func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) er
 		arg.Username_2,
 	)
 	return err
+}
+
+const updateTransport = `-- name: UpdateTransport :one
+UPDATE "Transport"
+SET id=$1, can_ranted=$2, model=$3, color=$4, "description"=$5, latitude=$6, longitude=$7, minute_price=$8, day_price=$9
+WHERE id=$10
+RETURNING id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+`
+
+type UpdateTransportParams struct {
+	ID          string
+	CanRanted   bool
+	Model       string
+	Color       string
+	Description sql.NullString
+	Latitude    float64
+	Longitude   float64
+	MinutePrice sql.NullFloat64
+	DayPrice    sql.NullFloat64
+	ID_2        string
+}
+
+func (q *Queries) UpdateTransport(ctx context.Context, arg UpdateTransportParams) (Transport, error) {
+	row := q.db.QueryRowContext(ctx, updateTransport,
+		arg.ID,
+		arg.CanRanted,
+		arg.Model,
+		arg.Color,
+		arg.Description,
+		arg.Latitude,
+		arg.Longitude,
+		arg.MinutePrice,
+		arg.DayPrice,
+		arg.ID_2,
+	)
+	var i Transport
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Type,
+		&i.CanRanted,
+		&i.Model,
+		&i.Color,
+		&i.Description,
+		&i.Latitude,
+		&i.Longitude,
+		&i.MinutePrice,
+		&i.DayPrice,
+		&i.Deleted,
+	)
+	return i, err
 }

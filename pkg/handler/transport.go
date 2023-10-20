@@ -119,3 +119,97 @@ func (h *Handler) GetTransport(c *gin.Context) {
 		DayPrice:      transport.DayPrice,
 	})
 }
+
+// UpdateTransport
+// @Summary      Update transport
+// @Description  Update transport by id.
+// @Tags         transport
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "-"
+// @Param        input body models.UpdateTransportInput true "-"
+// @Success      200  {object}  models.UpdateTransportOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Transport/{id} [put]
+func (h *Handler) UpdateTransport(c *gin.Context) {
+	var input models.UpdateTransportInput
+
+	if err := c.BindJSON(&input); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	transportID, err := getStringParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isExist, err := h.services.Transport.IsExist(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, transportIsNotExist)
+		return
+	}
+
+	isOwner, err := h.services.Transport.IsOwner(transportID, username)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isOwner {
+		h.sendInvalidRequest(c, accountNotTransportOwner)
+		return
+	}
+
+	currentTransport, err := h.services.Transport.Get(transportID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	transport, err := h.services.Transport.Update(transportID, &models.Transport{
+		OwnerID:       username,
+		CanBeRented:   input.CanBeRented,
+		TransportType: currentTransport.TransportType,
+		Model:         input.Model,
+		Color:         input.Color,
+		Identifier:    input.Identifier,
+		Description:   input.Description,
+		Latitude:      *input.Latitude,
+		Longitude:     *input.Longitude,
+		MinutePrice:   input.MinutePrice,
+		DayPrice:      input.DayPrice,
+	})
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOKWithBody(c, &models.UpdateTransportOutput{Transport: &models.GetTransportOutput{
+		CanBeRented:   transport.CanBeRented,
+		TransportType: transport.TransportType,
+		Model:         transport.Model,
+		Color:         transport.Color,
+		Identifier:    transport.Identifier,
+		Description:   transport.Description,
+		Latitude:      transport.Latitude,
+		Longitude:     transport.Longitude,
+		MinutePrice:   transport.MinutePrice,
+		DayPrice:      transport.DayPrice,
+	}})
+}
