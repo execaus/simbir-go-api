@@ -35,6 +35,7 @@ type CacheBuilder interface {
 type TransportRepository interface {
 	Create(transport *models.Transport) (*models.Transport, error)
 	IsExist(identifier string) (bool, error)
+	Get(identifier string) (*models.Transport, error)
 }
 
 type Repository struct {

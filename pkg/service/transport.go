@@ -9,6 +9,10 @@ type TransportService struct {
 	repo repository.TransportRepository
 }
 
+func (s *TransportService) Get(identifier string) (*models.Transport, error) {
+	return s.repo.Get(identifier)
+}
+
 func (s *TransportService) IsExist(identifier string) (bool, error) {
 	return s.repo.IsExist(identifier)
 }

@@ -40,3 +40,16 @@ func (t *CreateTransportInput) Validate() error {
 type CreateTransportOutput struct {
 	Transport *Transport `json:"transport"`
 }
+
+type GetTransportOutput struct {
+	CanBeRented   bool     `json:"canBeRented"`
+	TransportType string   `json:"transportType"`
+	Model         string   `json:"model"`
+	Color         string   `json:"color"`
+	Identifier    string   `json:"identifier"`
+	Description   *string  `json:"description"`
+	Latitude      float64  `json:"latitude"`
+	Longitude     float64  `json:"longitude"`
+	MinutePrice   *float64 `json:"minutePrice"`
+	DayPrice      *float64 `json:"dayPrice"`
+}

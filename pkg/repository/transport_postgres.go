@@ -12,6 +12,28 @@ type TransportPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *TransportPostgres) Get(identifier string) (*models.Transport, error) {
+	result, err := r.queries.GetTransport(context.Background(), identifier)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &models.Transport{
+		OwnerID:       result.Owner,
+		CanBeRented:   result.CanRanted,
+		TransportType: result.Type,
+		Model:         result.Model,
+		Color:         result.Color,
+		Identifier:    result.ID,
+		Description:   sqlnt.ToString(&result.Description),
+		Latitude:      result.Latitude,
+		Longitude:     result.Longitude,
+		MinutePrice:   sqlnt.ToF64(&result.MinutePrice),
+		DayPrice:      sqlnt.ToF64(&result.DayPrice),
+	}, nil
+}
+
 func (r *TransportPostgres) IsExist(identifier string) (bool, error) {
 	isExist, err := r.queries.IsExistTransport(context.Background(), identifier)
 	if err != nil {

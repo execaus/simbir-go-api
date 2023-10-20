@@ -77,8 +77,12 @@ definitions:
       identifier:
         type: string
       latitude:
+        maximum: 180
+        minimum: -180
         type: number
       longitude:
+        maximum: 180
+        minimum: -180
         type: number
       minutePrice:
         minimum: 1
@@ -109,6 +113,11 @@ definitions:
         type: boolean
       username:
         type: string
+    type: object
+  models.GetTransportOutput:
+    properties:
+      transport:
+        $ref: '#/definitions/models.Transport'
     type: object
   models.SignInInput:
     properties:
@@ -160,7 +169,7 @@ definitions:
         type: number
       model:
         type: string
-      ownerId:
+      ownerID:
         type: string
       transportType:
         type: string
@@ -519,6 +528,35 @@ paths:
       security:
       - BearerAuth: []
       summary: Create transport
+      tags:
+      - transport
+  /Transport/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Getting information about transport by id.
+      parameters:
+      - description: '-'
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetTransportOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Get transport
       tags:
       - transport
 securityDefinitions:

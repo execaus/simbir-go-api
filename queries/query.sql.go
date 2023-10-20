@@ -319,6 +319,32 @@ func (q *Queries) GetExistAccounts(ctx context.Context, arg GetExistAccountsPara
 	return items, nil
 }
 
+const getTransport = `-- name: GetTransport :one
+SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+FROM "Transport"
+WHERE id=$1
+`
+
+func (q *Queries) GetTransport(ctx context.Context, id string) (Transport, error) {
+	row := q.db.QueryRowContext(ctx, getTransport, id)
+	var i Transport
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Type,
+		&i.CanRanted,
+		&i.Model,
+		&i.Color,
+		&i.Description,
+		&i.Latitude,
+		&i.Longitude,
+		&i.MinutePrice,
+		&i.DayPrice,
+		&i.Deleted,
+	)
+	return i, err
+}
+
 const isAccountExist = `-- name: IsAccountExist :one
 SELECT EXISTS (
   SELECT 1

@@ -33,6 +33,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	transport := api.Group("/Transport")
 	{
+		transport.GET("/:id", h.GetTransport)
 		transport.POST("", h.accountIdentity, h.CreateTransport)
 	}
 

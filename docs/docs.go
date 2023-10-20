@@ -539,6 +539,50 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/Transport/{id}": {
+            "get": {
+                "description": "Getting information about transport by id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transport"
+                ],
+                "summary": "Get transport",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetTransportOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -665,10 +709,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "latitude": {
-                    "type": "number"
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
                 },
                 "longitude": {
-                    "type": "number"
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
                 },
                 "minutePrice": {
                     "type": "number",
@@ -701,6 +749,14 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "models.GetTransportOutput": {
+            "type": "object",
+            "properties": {
+                "transport": {
+                    "$ref": "#/definitions/models.Transport"
                 }
             }
         },
@@ -780,7 +836,7 @@ const docTemplate = `{
                 "model": {
                     "type": "string"
                 },
-                "ownerId": {
+                "ownerID": {
                     "type": "string"
                 },
                 "transportType": {

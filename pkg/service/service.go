@@ -27,6 +27,7 @@ type Account interface {
 type Transport interface {
 	Create(transport *models.Transport) (*models.Transport, error)
 	IsExist(identifier string) (bool, error)
+	Get(identifier string) (*models.Transport, error)
 }
 
 type Service struct {

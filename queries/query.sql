@@ -111,4 +111,7 @@ SELECT EXISTS (
   WHERE id=$1
 );
 
-
+-- name: GetTransport :one
+SELECT *
+FROM "Transport"
+WHERE id=$1;

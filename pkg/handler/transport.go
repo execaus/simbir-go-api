@@ -45,7 +45,7 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 	}
 
 	if isExist {
-		h.sendInvalidRequest(c, transportIsExist)
+		h.sendInvalidRequest(c, transportIsNotExist)
 		return
 	}
 
@@ -68,4 +68,54 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, &models.CreateTransportOutput{Transport: transport})
+}
+
+// GetTransport
+// @Summary      Get transport
+// @Description  Getting information about transport by id.
+// @Tags         transport
+// @Accept       json
+// @Produce      json
+// @Success      200
+// @Param        id path string true "-"
+// @Success      200  {object}  models.GetTransportOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Router       /Transport/{id} [get]
+func (h *Handler) GetTransport(c *gin.Context) {
+	transportID, err := getStringParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isExist, err := h.services.Transport.IsExist(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, transportIsNotExist)
+		return
+	}
+
+	transport, err := h.services.Transport.Get(transportID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOKWithBody(c, &models.GetTransportOutput{
+		CanBeRented:   transport.CanBeRented,
+		TransportType: transport.TransportType,
+		Model:         transport.Model,
+		Color:         transport.Color,
+		Identifier:    transport.Identifier,
+		Description:   transport.Description,
+		Latitude:      transport.Latitude,
+		Longitude:     transport.Longitude,
+		MinutePrice:   transport.MinutePrice,
+		DayPrice:      transport.DayPrice,
+	})
 }
