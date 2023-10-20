@@ -63,6 +63,44 @@ definitions:
       account:
         $ref: '#/definitions/models.GetAccountOutput'
     type: object
+  models.CreateTransportInput:
+    properties:
+      canBeRented:
+        type: boolean
+      color:
+        type: string
+      dayPrice:
+        minimum: 1
+        type: number
+      description:
+        type: string
+      identifier:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      minutePrice:
+        minimum: 1
+        type: number
+      model:
+        type: string
+      transportType:
+        type: string
+    required:
+    - canBeRented
+    - color
+    - identifier
+    - latitude
+    - longitude
+    - model
+    - transportType
+    type: object
+  models.CreateTransportOutput:
+    properties:
+      transport:
+        $ref: '#/definitions/models.Transport'
+    type: object
   models.GetAccountOutput:
     properties:
       balance:
@@ -100,6 +138,31 @@ definitions:
   models.SignUpOutput:
     properties:
       token:
+        type: string
+    type: object
+  models.Transport:
+    properties:
+      canBeRented:
+        type: boolean
+      color:
+        type: string
+      dayPrice:
+        type: number
+      description:
+        type: string
+      identifier:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      minutePrice:
+        type: number
+      model:
+        type: string
+      ownerId:
+        type: string
+      transportType:
         type: string
     type: object
   models.UpdateAccountInput:
@@ -422,6 +485,42 @@ paths:
       summary: Update account
       tags:
       - admin-account
+  /Transport:
+    post:
+      consumes:
+      - application/json
+      description: Adding new transportation.
+      parameters:
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTransportInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CreateTransportOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Create transport
+      tags:
+      - transport
 securityDefinitions:
   BearerAuth:
     in: header

@@ -32,14 +32,21 @@ type CacheBuilder interface {
 	CacheRoles() (types.AccountRolesDictionary, error)
 }
 
+type TransportRepository interface {
+	Create(transport *models.Transport) (*models.Transport, error)
+	IsExist(identifier string) (bool, error)
+}
+
 type Repository struct {
 	Account
 	CacheBuilder
+	Transport TransportRepository
 }
 
 func NewRepository(queries *queries.Queries, db *sql.DB) *Repository {
 	return &Repository{
 		Account:      NewAccountPostgres(queries, db),
 		CacheBuilder: NewCacheBuilderPostgres(queries),
+		Transport:    NewTransportPostgres(queries),
 	}
 }

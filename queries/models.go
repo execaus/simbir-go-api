@@ -43,7 +43,8 @@ type TokenBlackList struct {
 type Transport struct {
 	ID          string
 	Owner       string
-	Transport   string
+	Type        string
+	CanRanted   bool
 	Model       string
 	Color       string
 	Description sql.NullString

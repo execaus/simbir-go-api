@@ -31,6 +31,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		account.POST("/SignOut", h.accountIdentity, h.SignOut)
 	}
 
+	transport := api.Group("/Transport")
+	{
+		transport.POST("", h.accountIdentity, h.CreateTransport)
+	}
+
 	admin := api.Group("/Admin", h.onlyAdmin)
 	{
 		adminAccount := admin.Group("/Account")

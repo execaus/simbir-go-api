@@ -8,6 +8,7 @@ import (
 
 const (
 	usernameNotFound = "username not found"
+	rolesNotFound    = "roles not found"
 )
 
 type AccountRoleCache struct {
@@ -15,37 +16,44 @@ type AccountRoleCache struct {
 }
 
 func (c *AccountRoleCache) ReplaceRoles(username string, roles []string) error {
-	if c.Roles[username] == nil {
+	_, ok := c.Roles.Load(username)
+	if !ok {
 		exloggo.Error(usernameNotFound)
 		return errors.New(usernameNotFound)
-	} else {
-		c.Roles[username] = roles
 	}
+
+	c.Roles.Store(username, roles)
+
 	return nil
 }
 
 func (c *AccountRoleCache) ReplaceUsername(username, newUsername string) error {
-	if c.Roles[username] == nil {
+	currentRoles, ok := c.Roles.Load(username)
+	if !ok {
 		exloggo.Error(usernameNotFound)
 		return errors.New(usernameNotFound)
-	} else {
-		c.Roles[newUsername] = c.Roles[username]
-		delete(c.Roles, username)
 	}
+
+	c.Roles.Delete(username)
+	c.Roles.Store(newUsername, currentRoles)
 	return nil
 }
 
 func (c *AccountRoleCache) AppendRole(username string, newRole string) error {
-	if c.Roles[username] == nil {
-		c.Roles[username] = []string{newRole}
-	} else {
-		for _, role := range c.Roles[username] {
-			if role == newRole {
-				return nil
-			}
-		}
-		c.Roles[username] = append(c.Roles[username], newRole)
+	currentRoles, ok := c.Roles.Load(username)
+	if !ok {
+		c.Roles.Store(username, []string{newRole})
+		return nil
 	}
+
+	for _, role := range currentRoles.([]string) {
+		if role == newRole {
+			return nil
+		}
+	}
+
+	c.Roles.Store(username, append(currentRoles.([]string), newRole))
+
 	return nil
 }
 
@@ -54,9 +62,15 @@ func (c *AccountRoleCache) Load(m types.AccountRolesDictionary) {
 }
 
 func (c *AccountRoleCache) GetRoles(username string) ([]string, error) {
-	return c.Roles[username], nil
+	roles, ok := c.Roles.Load(username)
+	if !ok {
+		return nil, errors.New(rolesNotFound)
+	}
+
+	return roles.([]string), nil
 }
 
 func NewAccountRoleCache() *AccountRoleCache {
-	return &AccountRoleCache{Roles: types.AccountRolesDictionary{}}
+	var cache types.AccountRolesDictionary
+	return &AccountRoleCache{Roles: cache}
 }

@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 )
 
@@ -57,6 +58,60 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		&i.Username,
 		&i.Password,
 		&i.Balance,
+		&i.Deleted,
+	)
+	return i, err
+}
+
+const createTransport = `-- name: CreateTransport :one
+INSERT INTO "Transport"
+(id, "owner", "type", can_ranted, model, color, "description", latitude, longitude, minute_price, day_price, deleted)
+VALUES
+($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false)
+RETURNING id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+`
+
+type CreateTransportParams struct {
+	ID          string
+	Owner       string
+	Type        string
+	CanRanted   bool
+	Model       string
+	Color       string
+	Description sql.NullString
+	Latitude    float64
+	Longitude   float64
+	MinutePrice sql.NullFloat64
+	DayPrice    sql.NullFloat64
+}
+
+func (q *Queries) CreateTransport(ctx context.Context, arg CreateTransportParams) (Transport, error) {
+	row := q.db.QueryRowContext(ctx, createTransport,
+		arg.ID,
+		arg.Owner,
+		arg.Type,
+		arg.CanRanted,
+		arg.Model,
+		arg.Color,
+		arg.Description,
+		arg.Latitude,
+		arg.Longitude,
+		arg.MinutePrice,
+		arg.DayPrice,
+	)
+	var i Transport
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Type,
+		&i.CanRanted,
+		&i.Model,
+		&i.Color,
+		&i.Description,
+		&i.Latitude,
+		&i.Longitude,
+		&i.MinutePrice,
+		&i.DayPrice,
 		&i.Deleted,
 	)
 	return i, err
@@ -304,6 +359,21 @@ SELECT EXISTS (
 
 func (q *Queries) IsContainBlackListToken(ctx context.Context, token string) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isContainBlackListToken, token)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const isExistTransport = `-- name: IsExistTransport :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Transport"
+  WHERE id=$1
+)
+`
+
+func (q *Queries) IsExistTransport(ctx context.Context, id string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isExistTransport, id)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

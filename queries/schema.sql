@@ -13,7 +13,8 @@ CREATE TABLE "Account" (
 CREATE TABLE "Transport" (
 	"id" character varying NOT NULL,
 	"owner" character varying NOT NULL,
-	"transport" character varying NOT NULL,
+	"type" character varying NOT NULL,
+	"can_ranted" boolean NOT NULL,
 	"model" character varying NOT NULL,
 	"color" character varying NOT NULL,
 	"description" TEXT,
@@ -84,7 +85,7 @@ CREATE TABLE "AccountRole" (
 
 
 ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk0" FOREIGN KEY ("owner") REFERENCES "Account"("username") ON UPDATE CASCADE;
-ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk1" FOREIGN KEY ("transport") REFERENCES "TransportType"("name") ON UPDATE CASCADE;
+ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk1" FOREIGN KEY ("type") REFERENCES "TransportType"("name") ON UPDATE CASCADE;
 
 
 ALTER TABLE "Rent" ADD CONSTRAINT "Rent_fk0" FOREIGN KEY ("account") REFERENCES "Account"("username") ON UPDATE CASCADE;

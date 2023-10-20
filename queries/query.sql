@@ -96,3 +96,19 @@ SELECT EXISTS (
   FROM "TokenBlackList"
   WHERE token=$1
 );
+
+-- name: CreateTransport :one
+INSERT INTO "Transport"
+(id, "owner", "type", can_ranted, model, color, "description", latitude, longitude, minute_price, day_price, deleted)
+VALUES
+($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false)
+RETURNING *;
+
+-- name: IsExistTransport :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Transport"
+  WHERE id=$1
+);
+
+

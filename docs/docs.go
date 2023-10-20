@@ -482,6 +482,63 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/Transport": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adding new transportation.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transport"
+                ],
+                "summary": "Create transport",
+                "parameters": [
+                    {
+                        "description": "-",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateTransportInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateTransportOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -579,6 +636,60 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CreateTransportInput": {
+            "type": "object",
+            "required": [
+                "canBeRented",
+                "color",
+                "identifier",
+                "latitude",
+                "longitude",
+                "model",
+                "transportType"
+            ],
+            "properties": {
+                "canBeRented": {
+                    "type": "boolean"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "dayPrice": {
+                    "type": "number",
+                    "minimum": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "minutePrice": {
+                    "type": "number",
+                    "minimum": 1
+                },
+                "model": {
+                    "type": "string"
+                },
+                "transportType": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateTransportOutput": {
+            "type": "object",
+            "properties": {
+                "transport": {
+                    "$ref": "#/definitions/models.Transport"
+                }
+            }
+        },
         "models.GetAccountOutput": {
             "type": "object",
             "properties": {
@@ -635,6 +746,44 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Transport": {
+            "type": "object",
+            "properties": {
+                "canBeRented": {
+                    "type": "boolean"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "dayPrice": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "minutePrice": {
+                    "type": "number"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "transportType": {
                     "type": "string"
                 }
             }

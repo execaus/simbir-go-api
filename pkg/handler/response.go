@@ -34,6 +34,7 @@ const (
 	invalidAuthorizationHeader = "invalid \"Authorization\" header"
 	usernameIsBusy             = "username is busy"
 	accessDeniedOnlyAdmin      = "access denied, available only to administrator"
+	transportIsExist           = "transport is exist"
 )
 
 type Error struct {

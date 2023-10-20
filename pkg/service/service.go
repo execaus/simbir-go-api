@@ -24,12 +24,19 @@ type Account interface {
 	IsRemoved(username string) (bool, error)
 }
 
+type Transport interface {
+	Create(transport *models.Transport) (*models.Transport, error)
+	IsExist(identifier string) (bool, error)
+}
+
 type Service struct {
 	Account
+	Transport
 }
 
 func NewService(repos *repository.Repository, env *models.Environment, cache *cache.Cache) *Service {
 	return &Service{
-		Account: NewAccountService(repos.Account, env, cache.Role),
+		Account:   NewAccountService(repos.Account, env, cache.Role),
+		Transport: NewTransportService(repos.Transport),
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/execaus/exloggo"
 	"simbir-go-api/queries"
 	"simbir-go-api/types"
+	"sync"
 )
 
 type CacheBuilderPostgres struct {
@@ -12,23 +13,24 @@ type CacheBuilderPostgres struct {
 }
 
 func (c *CacheBuilderPostgres) CacheRoles() (types.AccountRolesDictionary, error) {
-	cacheRoles := make(types.AccountRolesDictionary)
+	var cacheRoles sync.Map
 
 	result, err := c.queries.GetCacheRoles(context.Background())
 	if err != nil {
 		exloggo.Error(err.Error())
-		return nil, err
+		return &cacheRoles, err
 	}
 
 	for _, accountRole := range result {
-		if cacheRoles[accountRole.Account] == nil {
-			cacheRoles[accountRole.Account] = []string{accountRole.Role}
+		currentRoles, ok := cacheRoles.Load(accountRole.Account)
+		if !ok {
+			cacheRoles.Store(accountRole.Account, []string{accountRole.Role})
 		} else {
-			cacheRoles[accountRole.Account] = append(cacheRoles[accountRole.Account], accountRole.Role)
+			cacheRoles.Store(accountRole.Account, append(currentRoles.([]string), accountRole.Role))
 		}
 	}
 
-	return cacheRoles, nil
+	return &cacheRoles, nil
 }
 
 func NewCacheBuilderPostgres(queries *queries.Queries) *CacheBuilderPostgres {

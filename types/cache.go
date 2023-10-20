@@ -1,3 +1,6 @@
 package types
 
-type AccountRolesDictionary = map[string][]string
+import "sync"
+
+// AccountRolesDictionary map[string][]string
+type AccountRolesDictionary = *sync.Map
