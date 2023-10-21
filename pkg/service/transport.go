@@ -9,6 +9,14 @@ type TransportService struct {
 	repo repository.TransportRepository
 }
 
+func (s *TransportService) IsRemoved(identifier string) (bool, error) {
+	return s.repo.IsRemoved(identifier)
+}
+
+func (s *TransportService) Remove(identifier string) error {
+	return s.repo.Remove(identifier)
+}
+
 func (s *TransportService) Update(identifier string, transport *models.Transport) (*models.Transport, error) {
 	return s.repo.Update(identifier, transport)
 }

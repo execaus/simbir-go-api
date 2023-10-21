@@ -12,6 +12,25 @@ type TransportPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *TransportPostgres) IsRemoved(identifier string) (bool, error) {
+	isRemoved, err := r.queries.IsTransportRemoved(context.Background(), identifier)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return isRemoved, nil
+}
+
+func (r *TransportPostgres) Remove(identifier string) error {
+	if err := r.queries.RemoveTransport(context.Background(), identifier); err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func (r *TransportPostgres) Update(identifier string, transport *models.Transport) (*models.Transport, error) {
 	reposTransport, err := r.queries.UpdateTransport(context.Background(), queries.UpdateTransportParams{
 		ID:          transport.Identifier,

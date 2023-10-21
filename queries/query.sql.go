@@ -425,6 +425,21 @@ func (q *Queries) IsTransportOwner(ctx context.Context, arg IsTransportOwnerPara
 	return exists, err
 }
 
+const isTransportRemoved = `-- name: IsTransportRemoved :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Transport"
+  WHERE id=$1 and deleted=true
+)
+`
+
+func (q *Queries) IsTransportRemoved(ctx context.Context, id string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isTransportRemoved, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const removeAccount = `-- name: RemoveAccount :exec
 UPDATE "Account"
 SET deleted=true
@@ -433,6 +448,17 @@ WHERE username=$1
 
 func (q *Queries) RemoveAccount(ctx context.Context, username string) error {
 	_, err := q.db.ExecContext(ctx, removeAccount, username)
+	return err
+}
+
+const removeTransport = `-- name: RemoveTransport :exec
+UPDATE "Transport"
+SET deleted=true
+WHERE id=$1
+`
+
+func (q *Queries) RemoveTransport(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, removeTransport, id)
 	return err
 }
 

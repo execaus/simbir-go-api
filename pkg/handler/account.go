@@ -92,6 +92,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 
 	if isRemoved {
 		h.sendInvalidRequest(c, invalidAuthData)
+		return
 	}
 
 	account, err := h.services.Account.Authorize(input.Username, input.Password)

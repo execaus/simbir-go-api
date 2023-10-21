@@ -38,6 +38,8 @@ type TransportRepository interface {
 	Get(identifier string) (*models.Transport, error)
 	IsOwner(identifier, username string) (bool, error)
 	Update(identifier string, transport *models.Transport) (*models.Transport, error)
+	Remove(identifier string) error
+	IsRemoved(identifier string) (bool, error)
 }
 
 type Repository struct {

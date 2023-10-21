@@ -58,9 +58,9 @@ func (h *Handler) AdminGetAccounts(c *gin.Context) {
 // @Failure      401  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Security     BearerAuth
-// @Router       /Admin/Account/{username} [get]
+// @Router       /Admin/Account/{id} [get]
 func (h *Handler) AdminGetAccount(c *gin.Context) {
-	username, err := getStringParam(c, "username")
+	username, err := getStringParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
@@ -155,9 +155,10 @@ func (h *Handler) AdminCreateAccount(c *gin.Context) {
 // @Success      200  {object}  models.AdminUpdateAccountOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
+// @Failure      410  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Security     BearerAuth
-// @Router       /Admin/Account/{username} [put]
+// @Router       /Admin/Account/{id} [put]
 func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 	var input models.AdminUpdateAccountInput
 
@@ -166,9 +167,20 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 		return
 	}
 
-	username, err := getAccountContext(c)
+	username, err := getStringParam(c, "id")
 	if err != nil {
-		h.sendUnAuthenticated(c, serverError)
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isRemoved, err := h.services.Account.IsRemoved(username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if isRemoved {
+		h.sendResourceDeleted(c, accountIsDeleted)
 		return
 	}
 
@@ -208,8 +220,22 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 	}})
 }
 
+// AdminRemoveAccount
+// @Summary      Delete account
+// @Description  Deleting account by id.
+// @Tags         admin-account
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "-"
+// @Success      204
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      410  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Admin/Account/{id} [delete]
 func (h *Handler) AdminRemoveAccount(c *gin.Context) {
-	username, err := getStringParam(c, "username")
+	username, err := getStringParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
@@ -233,7 +259,8 @@ func (h *Handler) AdminRemoveAccount(c *gin.Context) {
 	}
 
 	if isRemoved {
-		h.sendInvalidRequest(c, accountIsNotExist)
+		h.sendResourceDeleted(c, accountIsDeleted)
+		return
 	}
 
 	if err = h.services.Account.Remove(username); err != nil {

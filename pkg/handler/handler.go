@@ -36,6 +36,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		transport.GET("/:id", h.GetTransport)
 		transport.POST("", h.accountIdentity, h.CreateTransport)
 		transport.PUT("/:id", h.accountIdentity, h.UpdateTransport)
+		transport.DELETE("/:id", h.accountIdentity, h.DeleteTransport)
 	}
 
 	admin := api.Group("/Admin", h.onlyAdmin)
@@ -43,10 +44,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		adminAccount := admin.Group("/Account")
 		{
 			adminAccount.GET("", h.AdminGetAccounts)
-			adminAccount.GET("/:username", h.AdminGetAccount)
+			adminAccount.GET("/:id", h.AdminGetAccount)
 			adminAccount.POST("", h.AdminCreateAccount)
-			adminAccount.PUT("/:username", h.AdminUpdateAccount)
-			adminAccount.DELETE("/:username", h.AdminRemoveAccount)
+			adminAccount.PUT("/:id", h.AdminUpdateAccount)
+			adminAccount.DELETE("/:id", h.AdminRemoveAccount)
 		}
 	}
 

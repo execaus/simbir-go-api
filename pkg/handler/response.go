@@ -28,6 +28,7 @@ const (
 	serverError                = "internal server error"
 	accountIsExist             = "user with this name already exists"
 	accountIsNotExist          = "user with this name does not exist"
+	accountIsDeleted           = "account is deleted"
 	invalidAuthData            = "invalid user data"
 	accountContextEmpty        = "account context was not found"
 	accountTokenNotFound       = "the user token was not detected in the request header"
@@ -36,6 +37,7 @@ const (
 	accessDeniedOnlyAdmin      = "access denied, available only to administrator"
 	transportIsNotExist        = "transport is not exist"
 	accountNotTransportOwner   = "account is not transport owner"
+	transportIsDeleted         = "transport is deleted"
 )
 
 type Error struct {

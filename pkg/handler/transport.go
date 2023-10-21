@@ -100,6 +100,17 @@ func (h *Handler) GetTransport(c *gin.Context) {
 		return
 	}
 
+	isRemoved, err := h.services.Transport.IsRemoved(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if isRemoved {
+		h.sendResourceDeleted(c, transportIsDeleted)
+		return
+	}
+
 	transport, err := h.services.Transport.Get(transportID)
 	if err != nil {
 		h.sendGeneralException(c, err.Error())
@@ -165,6 +176,17 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 		return
 	}
 
+	isRemoved, err := h.services.Transport.IsRemoved(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if isRemoved {
+		h.sendResourceDeleted(c, transportIsDeleted)
+		return
+	}
+
 	isOwner, err := h.services.Transport.IsOwner(transportID, username)
 	if err != nil {
 		h.sendGeneralException(c, err.Error())
@@ -212,4 +234,72 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 		MinutePrice:   transport.MinutePrice,
 		DayPrice:      transport.DayPrice,
 	}})
+}
+
+// DeleteTransport
+// @Summary      Delete transport
+// @Description  Deleting vehicles by id.
+// @Tags         transport
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "-"
+// @Success      204
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      410  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Transport/{id} [delete]
+func (h *Handler) DeleteTransport(c *gin.Context) {
+	transportID, err := getStringParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	isExist, err := h.services.Transport.IsExist(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, transportIsNotExist)
+		return
+	}
+
+	isRemoved, err := h.services.Transport.IsRemoved(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if isRemoved {
+		h.sendResourceDeleted(c, transportIsDeleted)
+		return
+	}
+
+	isOwner, err := h.services.Transport.IsOwner(transportID, username)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isOwner {
+		h.sendInvalidRequest(c, accountNotTransportOwner)
+		return
+	}
+
+	if err = h.services.Transport.Remove(transportID); err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	h.sendOK(c)
 }

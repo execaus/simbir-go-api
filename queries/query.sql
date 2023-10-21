@@ -128,3 +128,15 @@ UPDATE "Transport"
 SET id=$1, can_ranted=$2, model=$3, color=$4, "description"=$5, latitude=$6, longitude=$7, minute_price=$8, day_price=$9
 WHERE id=$10
 RETURNING *;
+
+-- name: RemoveTransport :exec
+UPDATE "Transport"
+SET deleted=true
+WHERE id=$1;
+
+-- name: IsTransportRemoved :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Transport"
+  WHERE id=$1 and deleted=true
+);
