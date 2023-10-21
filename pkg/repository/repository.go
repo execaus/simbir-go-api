@@ -40,6 +40,8 @@ type TransportRepository interface {
 	Update(identifier string, transport *models.Transport) (*models.Transport, error)
 	Remove(identifier string) error
 	IsRemoved(identifier string) (bool, error)
+	GetList(start, count int32) ([]queries.Transport, error)
+	GetListOnlyType(start, count int32, transportType string) ([]queries.Transport, error)
 }
 
 type Repository struct {

@@ -545,6 +545,81 @@ const docTemplate = `{
                 }
             }
         },
+        "/Admin/Transport": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Getting list information about transport.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-transport"
+                ],
+                "summary": "Get transport list",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "-",
+                        "name": "transportType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AdminGetTransportsOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Admin/Transport/{id}": {
             "get": {
                 "security": [
@@ -900,6 +975,17 @@ const docTemplate = `{
                 },
                 "transport": {
                     "$ref": "#/definitions/models.GetTransportOutput"
+                }
+            }
+        },
+        "models.AdminGetTransportsOutput": {
+            "type": "object",
+            "properties": {
+                "transports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AdminGetTransportOutput"
+                    }
                 }
             }
         },

@@ -60,3 +60,61 @@ func (h *Handler) AdminGetTransport(c *gin.Context) {
 		IsDeleted: transport.IsDeleted,
 	})
 }
+
+// AdminGetTransports
+// @Summary      Get transport list
+// @Description  Getting list information about transport.
+// @Tags         admin-transport
+// @Accept       json
+// @Produce      json
+// @Param        count query number true "-"
+// @Param        start query number true "-"
+// @Param        transportType query string true "-"
+// @Success      200  {object}  models.AdminGetTransportsOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      403  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Admin/Transport [get]
+func (h *Handler) AdminGetTransports(c *gin.Context) {
+	var input models.AdminGetTransportsInput
+
+	if err := c.ShouldBindQuery(&input); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	if err := input.Validate(); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	transports, err := h.services.Transport.GetList(input.Start, input.Count, input.TransportType)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	output := models.AdminGetTransportsOutput{Transports: make([]*models.AdminGetTransportOutput, len(transports))}
+	for i, transport := range transports {
+		output.Transports[i] = &models.AdminGetTransportOutput{
+			Transport: &models.GetTransportOutput{
+				OwnerID:       transport.OwnerID,
+				CanBeRented:   transport.CanBeRented,
+				TransportType: transport.TransportType,
+				Model:         transport.Model,
+				Color:         transport.Color,
+				Identifier:    transport.Identifier,
+				Description:   transport.Description,
+				Latitude:      transport.Latitude,
+				Longitude:     transport.Longitude,
+				MinutePrice:   transport.MinutePrice,
+				DayPrice:      transport.DayPrice,
+			},
+			IsDeleted: transport.IsDeleted,
+		}
+	}
+
+	h.sendOKWithBody(c, output)
+}

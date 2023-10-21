@@ -345,6 +345,104 @@ func (q *Queries) GetTransport(ctx context.Context, id string) (Transport, error
 	return i, err
 }
 
+const getTransports = `-- name: GetTransports :many
+SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+FROM "Transport"
+ORDER BY id
+OFFSET $1 LIMIT $2
+`
+
+type GetTransportsParams struct {
+	Offset int32
+	Limit  int32
+}
+
+func (q *Queries) GetTransports(ctx context.Context, arg GetTransportsParams) ([]Transport, error) {
+	rows, err := q.db.QueryContext(ctx, getTransports, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transport
+	for rows.Next() {
+		var i Transport
+		if err := rows.Scan(
+			&i.ID,
+			&i.Owner,
+			&i.Type,
+			&i.CanRanted,
+			&i.Model,
+			&i.Color,
+			&i.Description,
+			&i.Latitude,
+			&i.Longitude,
+			&i.MinutePrice,
+			&i.DayPrice,
+			&i.Deleted,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTransportsOnlyType = `-- name: GetTransportsOnlyType :many
+SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+FROM "Transport"
+WHERE "type"=$1
+ORDER BY id
+OFFSET $2 LIMIT $3
+`
+
+type GetTransportsOnlyTypeParams struct {
+	Type   string
+	Offset int32
+	Limit  int32
+}
+
+func (q *Queries) GetTransportsOnlyType(ctx context.Context, arg GetTransportsOnlyTypeParams) ([]Transport, error) {
+	rows, err := q.db.QueryContext(ctx, getTransportsOnlyType, arg.Type, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transport
+	for rows.Next() {
+		var i Transport
+		if err := rows.Scan(
+			&i.ID,
+			&i.Owner,
+			&i.Type,
+			&i.CanRanted,
+			&i.Model,
+			&i.Color,
+			&i.Description,
+			&i.Latitude,
+			&i.Longitude,
+			&i.MinutePrice,
+			&i.DayPrice,
+			&i.Deleted,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const isAccountExist = `-- name: IsAccountExist :one
 SELECT EXISTS (
   SELECT 1

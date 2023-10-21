@@ -12,6 +12,33 @@ type TransportPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *TransportPostgres) GetList(start, count int32) ([]queries.Transport, error) {
+	transports, err := r.queries.GetTransports(context.Background(), queries.GetTransportsParams{
+		Offset: start,
+		Limit:  count,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return transports, nil
+}
+
+func (r *TransportPostgres) GetListOnlyType(start, count int32, transportType string) ([]queries.Transport, error) {
+	transports, err := r.queries.GetTransportsOnlyType(context.Background(), queries.GetTransportsOnlyTypeParams{
+		Offset: start,
+		Limit:  count,
+		Type:   transportType,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return transports, nil
+}
+
 func (r *TransportPostgres) IsRemoved(identifier string) (bool, error) {
 	isRemoved, err := r.queries.IsTransportRemoved(context.Background(), identifier)
 	if err != nil {

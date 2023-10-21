@@ -52,6 +52,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 		adminTransport := admin.Group("/Transport")
 		{
+			adminTransport.GET("/", h.AdminGetTransports)
 			adminTransport.GET("/:id", h.AdminGetTransport)
 		}
 	}

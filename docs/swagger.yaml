@@ -50,6 +50,13 @@ definitions:
       transport:
         $ref: '#/definitions/models.GetTransportOutput'
     type: object
+  models.AdminGetTransportsOutput:
+    properties:
+      transports:
+        items:
+          $ref: '#/definitions/models.AdminGetTransportOutput'
+        type: array
+    type: object
   models.AdminUpdateAccountInput:
     properties:
       balance:
@@ -577,6 +584,55 @@ paths:
       summary: Update account
       tags:
       - admin-account
+  /Admin/Transport:
+    get:
+      consumes:
+      - application/json
+      description: Getting list information about transport.
+      parameters:
+      - description: '-'
+        in: query
+        name: count
+        required: true
+        type: number
+      - description: '-'
+        in: query
+        name: start
+        required: true
+        type: number
+      - description: '-'
+        in: query
+        name: transportType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminGetTransportsOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Get transport list
+      tags:
+      - admin-transport
   /Admin/Transport/{id}:
     get:
       consumes:

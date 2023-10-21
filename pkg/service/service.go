@@ -32,6 +32,7 @@ type Transport interface {
 	Update(identifier string, transport *models.Transport) (*models.Transport, error)
 	Remove(identifier string) error
 	IsRemoved(identifier string) (bool, error)
+	GetList(start, count int32, transportType string) ([]models.Transport, error)
 }
 
 type Service struct {

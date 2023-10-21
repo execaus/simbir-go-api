@@ -140,3 +140,17 @@ SELECT EXISTS (
   FROM "Transport"
   WHERE id=$1 and deleted=true
 );
+
+-- name: GetTransports :many
+SELECT *
+FROM "Transport"
+ORDER BY id
+OFFSET $1 LIMIT $2;
+
+-- name: GetTransportsOnlyType :many
+SELECT *
+FROM "Transport"
+WHERE "type"=$1
+ORDER BY id
+OFFSET $2 LIMIT $3;
+

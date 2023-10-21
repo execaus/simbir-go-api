@@ -76,3 +76,22 @@ type AdminGetTransportOutput struct {
 	Transport *GetTransportOutput `json:"transport"`
 	IsDeleted bool                `json:"isDeleted"`
 }
+
+type AdminGetTransportsInput struct {
+	Start         int32  `form:"start" binding:"min=0"`
+	Count         int32  `form:"count" binding:"min=1"`
+	TransportType string `form:"transportType" binding:"required"`
+}
+
+func (i *AdminGetTransportsInput) Validate() error {
+	if err := constants.CheckTransportTypeWithAll(i.TransportType); err != nil {
+		return err
+	}
+
+	i.TransportType = strings.ToUpper(i.TransportType)
+	return nil
+}
+
+type AdminGetTransportsOutput struct {
+	Transports []*AdminGetTransportOutput `json:"transports"`
+}
