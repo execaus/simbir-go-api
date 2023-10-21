@@ -49,6 +49,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			adminAccount.PUT("/:id", h.AdminUpdateAccount)
 			adminAccount.DELETE("/:id", h.AdminRemoveAccount)
 		}
+
+		adminTransport := admin.Group("/Transport")
+		{
+			adminTransport.GET("/:id", h.AdminGetTransport)
+		}
 	}
 
 	return router

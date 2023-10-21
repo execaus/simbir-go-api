@@ -75,10 +75,11 @@ func (r *AccountPostgres) GetList(start, count int32) ([]models.Account, error) 
 		}
 
 		accounts = append(accounts, models.Account{
-			Username: account.Username,
-			Password: account.Password,
-			Balance:  account.Balance,
-			Roles:    roles,
+			Username:  account.Username,
+			Password:  account.Password,
+			Balance:   account.Balance,
+			Roles:     roles,
+			IsDeleted: account.Deleted,
 		})
 	}
 

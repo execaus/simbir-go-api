@@ -74,10 +74,11 @@ func (s *AccountService) Create(username, password string, role string, balance 
 	}
 
 	return &models.Account{
-		Username: account.Username,
-		Password: account.Password,
-		Balance:  account.Balance,
-		Roles:    roles,
+		Username:  account.Username,
+		Password:  account.Password,
+		Balance:   account.Balance,
+		Roles:     roles,
+		IsDeleted: account.Deleted,
 	}, nil
 }
 
@@ -147,10 +148,11 @@ func (s *AccountService) GetByUsername(username string) (*models.Account, error)
 	}
 
 	return &models.Account{
-		Username: account.Username,
-		Password: "",
-		Balance:  account.Balance,
-		Roles:    roles,
+		Username:  account.Username,
+		Password:  "",
+		Balance:   account.Balance,
+		Roles:     roles,
+		IsDeleted: account.Deleted,
 	}, nil
 }
 
@@ -191,10 +193,11 @@ func (s *AccountService) Authorize(username, password string) (*models.Account, 
 	}
 
 	return &models.Account{
-		Username: account.Username,
-		Password: account.Password,
-		Roles:    roles,
-		Balance:  account.Balance,
+		Username:  account.Username,
+		Password:  account.Password,
+		Roles:     roles,
+		Balance:   account.Balance,
+		IsDeleted: account.Deleted,
 	}, nil
 }
 

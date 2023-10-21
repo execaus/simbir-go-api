@@ -33,6 +33,8 @@ definitions:
     properties:
       account:
         $ref: '#/definitions/models.GetAccountOutput'
+      isDeleted:
+        type: boolean
     type: object
   models.AdminGetAccountsOutput:
     properties:
@@ -40,6 +42,13 @@ definitions:
         items:
           $ref: '#/definitions/models.GetAccountOutput'
         type: array
+    type: object
+  models.AdminGetTransportOutput:
+    properties:
+      isDeleted:
+        type: boolean
+      transport:
+        $ref: '#/definitions/models.GetTransportOutput'
     type: object
   models.AdminUpdateAccountInput:
     properties:
@@ -103,7 +112,7 @@ definitions:
   models.CreateTransportOutput:
     properties:
       transport:
-        $ref: '#/definitions/models.Transport'
+        $ref: '#/definitions/models.GetTransportOutput'
     type: object
   models.GetAccountOutput:
     properties:
@@ -133,6 +142,8 @@ definitions:
       minutePrice:
         type: number
       model:
+        type: string
+      ownerId:
         type: string
       transportType:
         type: string
@@ -165,31 +176,6 @@ definitions:
   models.SignUpOutput:
     properties:
       token:
-        type: string
-    type: object
-  models.Transport:
-    properties:
-      canBeRented:
-        type: boolean
-      color:
-        type: string
-      dayPrice:
-        type: number
-      description:
-        type: string
-      identifier:
-        type: string
-      latitude:
-        type: number
-      longitude:
-        type: number
-      minutePrice:
-        type: number
-      model:
-        type: string
-      ownerID:
-        type: string
-      transportType:
         type: string
     type: object
   models.UpdateAccountInput:
@@ -591,6 +577,45 @@ paths:
       summary: Update account
       tags:
       - admin-account
+  /Admin/Transport/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Getting information about transport by id.
+      parameters:
+      - description: '-'
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminGetTransportOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Get transport
+      tags:
+      - admin-transport
   /Transport:
     post:
       consumes:

@@ -67,7 +67,19 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 		return
 	}
 
-	h.sendOKWithBody(c, &models.CreateTransportOutput{Transport: transport})
+	h.sendOKWithBody(c, &models.CreateTransportOutput{Transport: &models.GetTransportOutput{
+		CanBeRented:   transport.CanBeRented,
+		TransportType: transport.TransportType,
+		Model:         transport.Model,
+		Color:         transport.Color,
+		Identifier:    transport.Identifier,
+		Description:   transport.Description,
+		Latitude:      transport.Latitude,
+		Longitude:     transport.Longitude,
+		MinutePrice:   transport.MinutePrice,
+		DayPrice:      transport.DayPrice,
+		OwnerID:       transport.OwnerID,
+	}})
 }
 
 // GetTransport
@@ -76,7 +88,6 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 // @Tags         transport
 // @Accept       json
 // @Produce      json
-// @Success      200
 // @Param        id path string true "-"
 // @Success      200  {object}  models.GetTransportOutput
 // @Failure      400  {object}  handler.Error
@@ -128,6 +139,7 @@ func (h *Handler) GetTransport(c *gin.Context) {
 		Longitude:     transport.Longitude,
 		MinutePrice:   transport.MinutePrice,
 		DayPrice:      transport.DayPrice,
+		OwnerID:       transport.OwnerID,
 	})
 }
 
@@ -233,6 +245,7 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 		Longitude:     transport.Longitude,
 		MinutePrice:   transport.MinutePrice,
 		DayPrice:      transport.DayPrice,
+		OwnerID:       transport.OwnerID,
 	}})
 }
 

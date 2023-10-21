@@ -3,10 +3,11 @@ package models
 import "simbir-go-api/constants"
 
 type Account struct {
-	Username string
-	Password string
-	Balance  float64
-	Roles    []string
+	Username  string
+	Password  string
+	Balance   float64
+	Roles     []string
+	IsDeleted bool
 }
 
 func (a *Account) IsAdmin() bool {
@@ -65,7 +66,8 @@ type AdminGetAccountInput struct {
 }
 
 type AdminGetAccountOutput struct {
-	Account GetAccountOutput `json:"account"`
+	Account   GetAccountOutput `json:"account"`
+	IsDeleted bool             `json:"isDeleted"`
 }
 
 type AdminCreateAccountInput struct {

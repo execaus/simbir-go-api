@@ -17,6 +17,7 @@ type Transport struct {
 	Longitude     float64
 	MinutePrice   *float64
 	DayPrice      *float64
+	IsDeleted     bool
 }
 
 type CreateTransportInput struct {
@@ -38,10 +39,11 @@ func (t *CreateTransportInput) Validate() error {
 }
 
 type CreateTransportOutput struct {
-	Transport *Transport `json:"transport"`
+	Transport *GetTransportOutput `json:"transport"`
 }
 
 type GetTransportOutput struct {
+	OwnerID       string   `json:"ownerId"`
 	CanBeRented   bool     `json:"canBeRented"`
 	TransportType string   `json:"transportType"`
 	Model         string   `json:"model"`
@@ -68,4 +70,9 @@ type UpdateTransportInput struct {
 
 type UpdateTransportOutput struct {
 	Transport *GetTransportOutput `json:"transport"`
+}
+
+type AdminGetTransportOutput struct {
+	Transport *GetTransportOutput `json:"transport"`
+	IsDeleted bool                `json:"isDeleted"`
 }

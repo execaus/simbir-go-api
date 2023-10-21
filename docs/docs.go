@@ -545,6 +545,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/Admin/Transport/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Getting information about transport by id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-transport"
+                ],
+                "summary": "Get transport",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AdminGetTransportOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Transport": {
             "post": {
                 "security": [
@@ -814,6 +875,9 @@ const docTemplate = `{
             "properties": {
                 "account": {
                     "$ref": "#/definitions/models.GetAccountOutput"
+                },
+                "isDeleted": {
+                    "type": "boolean"
                 }
             }
         },
@@ -825,6 +889,17 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.GetAccountOutput"
                     }
+                }
+            }
+        },
+        "models.AdminGetTransportOutput": {
+            "type": "object",
+            "properties": {
+                "isDeleted": {
+                    "type": "boolean"
+                },
+                "transport": {
+                    "$ref": "#/definitions/models.GetTransportOutput"
                 }
             }
         },
@@ -914,7 +989,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "transport": {
-                    "$ref": "#/definitions/models.Transport"
+                    "$ref": "#/definitions/models.GetTransportOutput"
                 }
             }
         },
@@ -960,6 +1035,9 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "model": {
+                    "type": "string"
+                },
+                "ownerId": {
                     "type": "string"
                 },
                 "transportType": {
@@ -1009,44 +1087,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Transport": {
-            "type": "object",
-            "properties": {
-                "canBeRented": {
-                    "type": "boolean"
-                },
-                "color": {
-                    "type": "string"
-                },
-                "dayPrice": {
-                    "type": "number"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "identifier": {
-                    "type": "string"
-                },
-                "latitude": {
-                    "type": "number"
-                },
-                "longitude": {
-                    "type": "number"
-                },
-                "minutePrice": {
-                    "type": "number"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "ownerID": {
-                    "type": "string"
-                },
-                "transportType": {
                     "type": "string"
                 }
             }

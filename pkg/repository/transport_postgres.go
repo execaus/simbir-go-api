@@ -61,6 +61,7 @@ func (r *TransportPostgres) Update(identifier string, transport *models.Transpor
 		Longitude:     reposTransport.Longitude,
 		MinutePrice:   sqlnt.ToF64(&reposTransport.MinutePrice),
 		DayPrice:      sqlnt.ToF64(&reposTransport.MinutePrice),
+		IsDeleted:     reposTransport.Deleted,
 	}, nil
 }
 
@@ -96,6 +97,7 @@ func (r *TransportPostgres) Get(identifier string) (*models.Transport, error) {
 		Longitude:     result.Longitude,
 		MinutePrice:   sqlnt.ToF64(&result.MinutePrice),
 		DayPrice:      sqlnt.ToF64(&result.DayPrice),
+		IsDeleted:     result.Deleted,
 	}, nil
 }
 
@@ -139,6 +141,7 @@ func (r *TransportPostgres) Create(transport *models.Transport) (*models.Transpo
 		Longitude:     result.Longitude,
 		MinutePrice:   sqlnt.ToF64(&result.MinutePrice),
 		DayPrice:      sqlnt.ToF64(&result.DayPrice),
+		IsDeleted:     result.Deleted,
 	}, nil
 }
 
