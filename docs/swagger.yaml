@@ -763,6 +763,42 @@ paths:
       tags:
       - admin-transport
   /Admin/Transport/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deleting vehicles by id.
+      parameters:
+      - description: '-'
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Delete transport
+      tags:
+      - admin-transport
     get:
       consumes:
       - application/json

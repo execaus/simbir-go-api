@@ -274,3 +274,54 @@ func (h *Handler) AdminUpdateTransport(c *gin.Context) {
 		},
 	})
 }
+
+// AdminDeleteTransport
+// @Summary      Delete transport
+// @Description  Deleting vehicles by id.
+// @Tags         admin-transport
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "-"
+// @Success      204
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      403  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Admin/Transport/{id} [delete]
+func (h *Handler) AdminDeleteTransport(c *gin.Context) {
+	transportID, err := getStringParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isExist, err := h.services.Transport.IsExist(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, transportIsNotExist)
+		return
+	}
+
+	isRemoved, err := h.services.Transport.IsRemoved(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if isRemoved {
+		h.sendResourceDeleted(c, transportIsDeleted)
+		return
+	}
+
+	if err = h.services.Transport.Remove(transportID); err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	h.sendOK(c)
+}
