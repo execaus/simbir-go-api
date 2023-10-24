@@ -55,6 +55,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			adminTransport.GET("/", h.AdminGetTransports)
 			adminTransport.GET("/:id", h.AdminGetTransport)
 			adminTransport.POST("", h.AdminCreateTransport)
+			adminTransport.PUT("/:id", h.AdminUpdateTransport)
 		}
 	}
 

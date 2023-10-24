@@ -36,6 +36,7 @@ const (
 	usernameIsBusy             = "username is busy"
 	accessDeniedOnlyAdmin      = "access denied, available only to administrator"
 	transportIsNotExist        = "transport is not exist"
+	transportIsExist           = "transport is exist"
 	accountNotTransportOwner   = "account is not transport owner"
 	transportIsDeleted         = "transport is deleted"
 )
