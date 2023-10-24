@@ -220,6 +220,13 @@ definitions:
       username:
         type: string
     type: object
+  models.GetRentTransportOutput:
+    properties:
+      transports:
+        items:
+          $ref: '#/definitions/models.GetTransportOutput'
+        type: array
+    type: object
   models.GetTransportOutput:
     properties:
       canBeRented:
@@ -881,6 +888,52 @@ paths:
       summary: Update transport
       tags:
       - admin-transport
+  /Rent/Transport:
+    get:
+      consumes:
+      - application/json
+      description: Getting transport available for rent by parameters.
+      parameters:
+      - description: '-'
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: '-'
+        in: query
+        name: long
+        required: true
+        type: number
+      - description: '-'
+        in: query
+        name: radius
+        required: true
+        type: number
+      - description: '-'
+        in: query
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetRentTransportOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Get transport list
+      tags:
+      - rent
   /Transport:
     post:
       consumes:

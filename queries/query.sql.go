@@ -393,6 +393,113 @@ func (q *Queries) GetTransports(ctx context.Context, arg GetTransportsParams) ([
 	return items, nil
 }
 
+const getTransportsFromRadiusAll = `-- name: GetTransportsFromRadiusAll :many
+SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+FROM "Transport"
+WHERE
+    "can_ranted" = true and
+    (6371000 * ACOS(SIN(RADIANS($1)) * SIN(RADIANS("latitude")) + COS(RADIANS($1)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $2)))) <= $3
+`
+
+type GetTransportsFromRadiusAllParams struct {
+	Radians   float64
+	Longitude float64
+	Latitude  float64
+}
+
+func (q *Queries) GetTransportsFromRadiusAll(ctx context.Context, arg GetTransportsFromRadiusAllParams) ([]Transport, error) {
+	rows, err := q.db.QueryContext(ctx, getTransportsFromRadiusAll, arg.Radians, arg.Longitude, arg.Latitude)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transport
+	for rows.Next() {
+		var i Transport
+		if err := rows.Scan(
+			&i.ID,
+			&i.Owner,
+			&i.Type,
+			&i.CanRanted,
+			&i.Model,
+			&i.Color,
+			&i.Description,
+			&i.Latitude,
+			&i.Longitude,
+			&i.MinutePrice,
+			&i.DayPrice,
+			&i.Deleted,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTransportsFromRadiusOnlyType = `-- name: GetTransportsFromRadiusOnlyType :many
+SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+FROM "Transport"
+WHERE
+    "can_ranted" = true and
+    "type"=$1 and
+    (6371000 * ACOS(SIN(RADIANS($2)) * SIN(RADIANS("latitude")) + COS(RADIANS($2)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $3)))) <= $4
+`
+
+type GetTransportsFromRadiusOnlyTypeParams struct {
+	Type      string
+	Radians   float64
+	Longitude float64
+	Latitude  float64
+}
+
+func (q *Queries) GetTransportsFromRadiusOnlyType(ctx context.Context, arg GetTransportsFromRadiusOnlyTypeParams) ([]Transport, error) {
+	rows, err := q.db.QueryContext(ctx, getTransportsFromRadiusOnlyType,
+		arg.Type,
+		arg.Radians,
+		arg.Longitude,
+		arg.Latitude,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transport
+	for rows.Next() {
+		var i Transport
+		if err := rows.Scan(
+			&i.ID,
+			&i.Owner,
+			&i.Type,
+			&i.CanRanted,
+			&i.Model,
+			&i.Color,
+			&i.Description,
+			&i.Latitude,
+			&i.Longitude,
+			&i.MinutePrice,
+			&i.DayPrice,
+			&i.Deleted,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTransportsOnlyType = `-- name: GetTransportsOnlyType :many
 SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
 FROM "Transport"
@@ -498,6 +605,36 @@ SELECT EXISTS (
 
 func (q *Queries) IsExistTransport(ctx context.Context, id string) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isExistTransport, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const isRentExist = `-- name: IsRentExist :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Rent"
+  WHERE id=$1
+)
+`
+
+func (q *Queries) IsRentExist(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isRentExist, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const isRentRemoved = `-- name: IsRentRemoved :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Rent"
+  WHERE id=$1 and deleted=true
+)
+`
+
+func (q *Queries) IsRentRemoved(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isRentRemoved, id)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

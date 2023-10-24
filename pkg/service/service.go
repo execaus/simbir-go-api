@@ -33,16 +33,24 @@ type Transport interface {
 	Remove(identifier string) error
 	IsRemoved(identifier string) (bool, error)
 	GetList(start, count int32, transportType string) ([]models.Transport, error)
+	GetFromRadius(point *models.Point, radius float64, transportType string) ([]models.Transport, error)
+}
+
+type Rent interface {
+	IsRemoved(id int32) (bool, error)
+	IsExist(id int32) (bool, error)
 }
 
 type Service struct {
 	Account
 	Transport
+	Rent
 }
 
 func NewService(repos *repository.Repository, env *models.Environment, cache *cache.Cache) *Service {
 	return &Service{
 		Account:   NewAccountService(repos.Account, env, cache.Role),
 		Transport: NewTransportService(repos.Transport),
+		Rent:      NewRentService(repos.Rent),
 	}
 }

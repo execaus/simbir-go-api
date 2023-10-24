@@ -154,3 +154,32 @@ WHERE "type"=$1
 ORDER BY id
 OFFSET $2 LIMIT $3;
 
+-- name: GetTransportsFromRadiusAll :many
+SELECT *
+FROM "Transport"
+WHERE
+    "can_ranted" = true and
+    (6371000 * ACOS(SIN(RADIANS($1)) * SIN(RADIANS("latitude")) + COS(RADIANS($1)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $2)))) <= $3;
+
+-- name: GetTransportsFromRadiusOnlyType :many
+SELECT *
+FROM "Transport"
+WHERE
+    "can_ranted" = true and
+    "type"=$1 and
+    (6371000 * ACOS(SIN(RADIANS($2)) * SIN(RADIANS("latitude")) + COS(RADIANS($2)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $3)))) <= $4;
+
+-- name: IsRentRemoved :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Rent"
+  WHERE id=$1 and deleted=true
+);
+
+-- name: IsRentExist :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Rent"
+  WHERE id=$1
+);
+

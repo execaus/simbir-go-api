@@ -12,6 +12,35 @@ type TransportPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *TransportPostgres) GetFromRadiusAll(point *models.Point, radius float64, transportType string) ([]queries.Transport, error) {
+	transports, err := r.queries.GetTransportsFromRadiusAll(context.Background(), queries.GetTransportsFromRadiusAllParams{
+		Radians:   point.Latitude,
+		Longitude: point.Longitude,
+		Latitude:  radius,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return transports, nil
+}
+
+func (r *TransportPostgres) GetFromRadiusOnlyType(point *models.Point, radius float64, transportType string) ([]queries.Transport, error) {
+	transports, err := r.queries.GetTransportsFromRadiusOnlyType(context.Background(), queries.GetTransportsFromRadiusOnlyTypeParams{
+		Type:      transportType,
+		Radians:   point.Latitude,
+		Longitude: point.Longitude,
+		Latitude:  radius,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return transports, nil
+}
+
 func (r *TransportPostgres) GetList(start, count int32) ([]queries.Transport, error) {
 	transports, err := r.queries.GetTransports(context.Background(), queries.GetTransportsParams{
 		Offset: start,

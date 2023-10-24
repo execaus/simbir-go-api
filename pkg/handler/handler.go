@@ -39,6 +39,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		transport.DELETE("/:id", h.accountIdentity, h.DeleteTransport)
 	}
 
+	rent := api.Group("/Rent")
+	{
+		rent.GET("/Transport", h.GetRentTransport)
+	}
+
 	admin := api.Group("/Admin", h.onlyAdmin)
 	{
 		adminAccount := admin.Group("/Account")

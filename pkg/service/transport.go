@@ -13,6 +13,45 @@ type TransportService struct {
 	repo repository.TransportRepository
 }
 
+func (s *TransportService) GetFromRadius(point *models.Point, radius float64, transportType string) ([]models.Transport, error) {
+	var err error
+	var transports []models.Transport
+	var reposTransports []queries.Transport
+
+	if transportType == constants.TransportTypeAll {
+		reposTransports, err = s.repo.GetFromRadiusAll(point, radius, transportType)
+		if err != nil {
+			exloggo.Error(err.Error())
+			return nil, err
+		}
+	} else {
+		reposTransports, err = s.repo.GetFromRadiusOnlyType(point, radius, transportType)
+		if err != nil {
+			exloggo.Error(err.Error())
+			return nil, err
+		}
+	}
+
+	for _, reposTransport := range reposTransports {
+		transports = append(transports, models.Transport{
+			OwnerID:       reposTransport.Owner,
+			CanBeRented:   reposTransport.CanRanted,
+			TransportType: reposTransport.Type,
+			Model:         reposTransport.Model,
+			Color:         reposTransport.Color,
+			Identifier:    reposTransport.ID,
+			Description:   sqlnt.ToString(&reposTransport.Description),
+			Latitude:      reposTransport.Latitude,
+			Longitude:     reposTransport.Longitude,
+			MinutePrice:   sqlnt.ToF64(&reposTransport.MinutePrice),
+			DayPrice:      sqlnt.ToF64(&reposTransport.DayPrice),
+			IsDeleted:     reposTransport.Deleted,
+		})
+	}
+
+	return transports, nil
+}
+
 func (s *TransportService) GetList(start, count int32, transportType string) ([]models.Transport, error) {
 	var err error
 	var reposTransports []queries.Transport

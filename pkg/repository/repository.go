@@ -42,12 +42,20 @@ type TransportRepository interface {
 	IsRemoved(identifier string) (bool, error)
 	GetList(start, count int32) ([]queries.Transport, error)
 	GetListOnlyType(start, count int32, transportType string) ([]queries.Transport, error)
+	GetFromRadiusAll(point *models.Point, radius float64, transportType string) ([]queries.Transport, error)
+	GetFromRadiusOnlyType(point *models.Point, radius float64, transportType string) ([]queries.Transport, error)
+}
+
+type Rent interface {
+	IsRemoved(id int32) (bool, error)
+	IsExist(id int32) (bool, error)
 }
 
 type Repository struct {
 	Account
 	CacheBuilder
 	Transport TransportRepository
+	Rent
 }
 
 func NewRepository(queries *queries.Queries, db *sql.DB) *Repository {
@@ -55,5 +63,6 @@ func NewRepository(queries *queries.Queries, db *sql.DB) *Repository {
 		Account:      NewAccountPostgres(queries, db),
 		CacheBuilder: NewCacheBuilderPostgres(queries),
 		Transport:    NewTransportPostgres(queries),
+		Rent:         NewRentPostgres(queries),
 	}
 }
