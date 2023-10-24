@@ -9,6 +9,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"time"
 )
 
 const appendRoleAccount = `-- name: AppendRoleAccount :one
@@ -317,6 +318,73 @@ func (q *Queries) GetExistAccounts(ctx context.Context, arg GetExistAccountsPara
 		return nil, err
 	}
 	return items, nil
+}
+
+const getRent = `-- name: GetRent :one
+SELECT "Rent".id, account, transport, time_start, time_end, price_unit, price_type, "Rent".deleted, username, password, balance, "Account".deleted, "Transport".id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, "Transport".deleted
+FROM "Rent"
+JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Transport" ON "Rent".transport = "Transport".id
+WHERE "Rent".id=$1
+`
+
+type GetRentRow struct {
+	ID          int32
+	Account     string
+	Transport   string
+	TimeStart   time.Time
+	TimeEnd     sql.NullTime
+	PriceUnit   float64
+	PriceType   string
+	Deleted     bool
+	Username    string
+	Password    string
+	Balance     float64
+	Deleted_2   bool
+	ID_2        string
+	Owner       string
+	Type        string
+	CanRanted   bool
+	Model       string
+	Color       string
+	Description sql.NullString
+	Latitude    float64
+	Longitude   float64
+	MinutePrice sql.NullFloat64
+	DayPrice    sql.NullFloat64
+	Deleted_3   bool
+}
+
+func (q *Queries) GetRent(ctx context.Context, id int32) (GetRentRow, error) {
+	row := q.db.QueryRowContext(ctx, getRent, id)
+	var i GetRentRow
+	err := row.Scan(
+		&i.ID,
+		&i.Account,
+		&i.Transport,
+		&i.TimeStart,
+		&i.TimeEnd,
+		&i.PriceUnit,
+		&i.PriceType,
+		&i.Deleted,
+		&i.Username,
+		&i.Password,
+		&i.Balance,
+		&i.Deleted_2,
+		&i.ID_2,
+		&i.Owner,
+		&i.Type,
+		&i.CanRanted,
+		&i.Model,
+		&i.Color,
+		&i.Description,
+		&i.Latitude,
+		&i.Longitude,
+		&i.MinutePrice,
+		&i.DayPrice,
+		&i.Deleted_3,
+	)
+	return i, err
 }
 
 const getTransport = `-- name: GetTransport :one
@@ -635,6 +703,26 @@ SELECT EXISTS (
 
 func (q *Queries) IsRentRemoved(ctx context.Context, id int32) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isRentRemoved, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const isRenter = `-- name: IsRenter :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Rent"
+  WHERE id=$1 and account=$2
+)
+`
+
+type IsRenterParams struct {
+	ID      int32
+	Account string
+}
+
+func (q *Queries) IsRenter(ctx context.Context, arg IsRenterParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isRenter, arg.ID, arg.Account)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

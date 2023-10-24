@@ -206,7 +206,7 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 	}
 
 	if !isOwner {
-		h.sendInvalidRequest(c, accountNotTransportOwner)
+		h.sendInvalidRequest(c, accountIsNotTransportOwner)
 		return
 	}
 
@@ -305,7 +305,7 @@ func (h *Handler) DeleteTransport(c *gin.Context) {
 	}
 
 	if !isOwner {
-		h.sendInvalidRequest(c, accountNotTransportOwner)
+		h.sendInvalidRequest(c, accountIsNotTransportOwner)
 		return
 	}
 

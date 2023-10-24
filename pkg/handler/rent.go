@@ -61,3 +61,73 @@ func (h *Handler) GetRentTransport(c *gin.Context) {
 
 	h.sendOKWithBody(c, &models.GetRentTransportOutput{Transports: outputTransports})
 }
+
+// GetRent
+// @Summary      Rent information
+// @Description  Return rent by id.
+// @Tags         rent
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.GetRentOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      403  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Rent/{id} [get]
+func (h *Handler) GetRent(c *gin.Context) {
+	rentID, err := getNumberParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	isRenter, err := h.services.Rent.IsRenter(int32(rentID), username)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isRenter {
+		h.sendAccessDenied(c, accountIsNotRenter)
+		return
+	}
+
+	isExist, err := h.services.Rent.IsExist(int32(rentID))
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, rentIsNotExist)
+		return
+	}
+
+	rent, err := h.services.Rent.Get(int32(rentID))
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if rent.Account.Username != username {
+		h.sendInvalidRequest(c, accountIsNotTransportOwner)
+		return
+	}
+
+	h.sendOKWithBody(c, &models.GetRentOutput{
+		ID:        rent.ID,
+		Account:   rent.Account.Username,
+		Transport: rent.Transport.Identifier,
+		TimeStart: rent.TimeStart,
+		TimeEnd:   rent.TimeEnd,
+		PriceUnit: rent.PriceUnit,
+		PriceType: rent.PriceType,
+	})
+}

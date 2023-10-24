@@ -10,6 +10,29 @@ type RentPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *RentPostgres) Get(id int32) (*queries.GetRentRow, error) {
+	row, err := r.queries.GetRent(context.Background(), id)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &row, err
+}
+
+func (r *RentPostgres) IsRenter(id int32, username string) (bool, error) {
+	isRenter, err := r.queries.IsRenter(context.Background(), queries.IsRenterParams{
+		ID:      id,
+		Account: username,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return isRenter, err
+}
+
 func (r *RentPostgres) IsExist(id int32) (bool, error) {
 	isExist, err := r.queries.IsRentExist(context.Background(), id)
 	if err != nil {

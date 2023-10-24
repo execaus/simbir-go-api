@@ -183,3 +183,16 @@ SELECT EXISTS (
   WHERE id=$1
 );
 
+-- name: IsRenter :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Rent"
+  WHERE id=$1 and account=$2
+);
+
+-- name: GetRent :one
+SELECT *
+FROM "Rent"
+JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Transport" ON "Rent".transport = "Transport".id
+WHERE "Rent".id=$1;

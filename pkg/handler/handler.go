@@ -42,6 +42,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	rent := api.Group("/Rent")
 	{
 		rent.GET("/Transport", h.GetRentTransport)
+		rent.GET("/:id", h.accountIdentity, h.GetRent)
 	}
 
 	admin := api.Group("/Admin", h.onlyAdmin)

@@ -220,6 +220,23 @@ definitions:
       username:
         type: string
     type: object
+  models.GetRentOutput:
+    properties:
+      ID:
+        type: integer
+      account:
+        type: string
+      priceType:
+        type: string
+      priceUnit:
+        type: number
+      timeEnd:
+        type: string
+      timeStart:
+        type: string
+      transport:
+        type: string
+    type: object
   models.GetRentTransportOutput:
     properties:
       transports:
@@ -888,6 +905,39 @@ paths:
       summary: Update transport
       tags:
       - admin-transport
+  /Rent/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Return rent by id.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetRentOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Rent information
+      tags:
+      - rent
   /Rent/Transport:
     get:
       consumes:

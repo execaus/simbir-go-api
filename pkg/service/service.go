@@ -39,6 +39,8 @@ type Transport interface {
 type Rent interface {
 	IsRemoved(id int32) (bool, error)
 	IsExist(id int32) (bool, error)
+	IsRenter(id int32, username string) (bool, error)
+	Get(id int32) (*models.Rent, error)
 }
 
 type Service struct {

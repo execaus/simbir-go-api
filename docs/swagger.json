@@ -929,6 +929,58 @@
                 }
             }
         },
+        "/Rent/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Return rent by id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rent"
+                ],
+                "summary": "Rent information",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetRentOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Transport": {
             "post": {
                 "security": [
@@ -1461,6 +1513,32 @@
                     "type": "boolean"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetRentOutput": {
+            "type": "object",
+            "properties": {
+                "ID": {
+                    "type": "integer"
+                },
+                "account": {
+                    "type": "string"
+                },
+                "priceType": {
+                    "type": "string"
+                },
+                "priceUnit": {
+                    "type": "number"
+                },
+                "timeEnd": {
+                    "type": "string"
+                },
+                "timeStart": {
+                    "type": "string"
+                },
+                "transport": {
                     "type": "string"
                 }
             }
