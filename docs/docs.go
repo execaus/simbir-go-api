@@ -618,6 +618,67 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adding new transportation.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-transport"
+                ],
+                "summary": "Create transport",
+                "parameters": [
+                    {
+                        "description": "-",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AdminCreateTransportInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AdminCreateTransportOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
             }
         },
         "/Admin/Transport/{id}": {
@@ -942,6 +1003,68 @@ const docTemplate = `{
             "properties": {
                 "account": {
                     "$ref": "#/definitions/models.GetAccountOutput"
+                }
+            }
+        },
+        "models.AdminCreateTransportInput": {
+            "type": "object",
+            "required": [
+                "canBeRented",
+                "color",
+                "identifier",
+                "latitude",
+                "longitude",
+                "model",
+                "ownerId",
+                "transportType"
+            ],
+            "properties": {
+                "canBeRented": {
+                    "type": "boolean"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "dayPrice": {
+                    "type": "number",
+                    "minimum": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "longitude": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "minutePrice": {
+                    "type": "number",
+                    "minimum": 1
+                },
+                "model": {
+                    "type": "string"
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "transportType": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AdminCreateTransportOutput": {
+            "type": "object",
+            "properties": {
+                "transport": {
+                    "$ref": "#/definitions/models.GetTransportOutput"
                 }
             }
         },
