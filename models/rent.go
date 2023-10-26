@@ -46,3 +46,7 @@ type GetRentOutput struct {
 	PriceUnit float64    `json:"priceUnit"`
 	PriceType string     `json:"priceType"`
 }
+
+type GetRentsOutput struct {
+	Rents []GetRentOutput `json:"rents"`
+}

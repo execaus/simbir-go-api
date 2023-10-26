@@ -196,3 +196,10 @@ FROM "Rent"
 JOIN "Account" ON "Rent".account = "Account".username
 JOIN "Transport" ON "Rent".transport = "Transport".id
 WHERE "Rent".id=$1;
+
+-- name: GetRents :many
+SELECT *
+FROM "Rent"
+JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Transport" ON "Rent".transport = "Transport".id
+WHERE "Account".username=$1;

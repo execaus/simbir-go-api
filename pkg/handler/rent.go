@@ -131,3 +131,43 @@ func (h *Handler) GetRent(c *gin.Context) {
 		PriceType: rent.PriceType,
 	})
 }
+
+// GetRentMyHistory
+// @Summary      Account rent history
+// @Description  Returns the rental history of the current account.
+// @Tags         rent
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.GetRentsOutput
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Rent/MyHistory [get]
+func (h *Handler) GetRentMyHistory(c *gin.Context) {
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	rents, err := h.services.Rent.GetList(username)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	var output models.GetRentsOutput
+	for _, rent := range rents {
+		output.Rents = append(output.Rents, models.GetRentOutput{
+			ID:        rent.ID,
+			Account:   rent.Account.Username,
+			Transport: rent.Transport.Identifier,
+			TimeStart: rent.TimeStart,
+			TimeEnd:   rent.TimeEnd,
+			PriceUnit: rent.PriceUnit,
+			PriceType: rent.PriceType,
+		})
+	}
+
+	h.sendOKWithBody(c, output)
+}

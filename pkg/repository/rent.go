@@ -10,6 +10,16 @@ type RentPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *RentPostgres) GetList(username string) ([]queries.GetRentsRow, error) {
+	rows, err := r.queries.GetRents(context.Background(), username)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return rows, nil
+}
+
 func (r *RentPostgres) Get(id int32) (*queries.GetRentRow, error) {
 	row, err := r.queries.GetRent(context.Background(), id)
 	if err != nil {
