@@ -10,11 +10,11 @@ SELECT
 FROM
     "Account" AS a
 JOIN
-    "AccountRole" AS ar ON a.username = ar.account
+    "AccountRole" AS ar ON a.id = ar.account
 JOIN
     "Role" AS r ON ar.role = r.name
 GROUP BY
-    a.username
+    a.id
 OFFSET $1 LIMIT $2;
 
 -- name: GetExistAccounts :many
@@ -24,24 +24,24 @@ SELECT
 FROM
     "Account" AS a
 JOIN
-    "AccountRole" AS ar ON a.username = ar.account
+    "AccountRole" AS ar ON a.id = ar.account
 JOIN
     "Role" AS r ON ar.role = r.name
 WHERE
     a.deleted = false
 GROUP BY
-    a.username
+    a.id
 OFFSET $1 LIMIT $2;
 
 -- name: UpdateAccount :exec
 UPDATE "Account"
 SET username=$1, "password"=$2, balance=$3
-WHERE username=$4;
+WHERE id=$4;
 
 -- name: ReplaceUsername :exec
 UPDATE "Account"
 SET username=$1
-WHERE username=$2;
+WHERE id=$2;
 
 -- name: AppendRoleAccount :one
 INSERT INTO "AccountRole" (account, "role")
@@ -57,25 +57,25 @@ WHERE account=$1;
 SELECT EXISTS (
   SELECT 1
   FROM "Account"
-  WHERE username=$1
+  WHERE id=$1
 );
 
 -- name: IsAccountRemoved :one
 SELECT EXISTS (
   SELECT 1
   FROM "Account"
-  WHERE username=$1 and deleted=true
+  WHERE id=$1 and deleted=true
 );
 
 -- name: RemoveAccount :exec
 UPDATE "Account"
 SET deleted=true
-WHERE username=$1;
+WHERE id=$1;
 
 -- name: GetAccount :one
 SELECT *
 FROM "Account"
-WHERE username=$1;
+WHERE id=$1;
 
 -- name: GetAccountRoles :many
 SELECT "role"
@@ -99,9 +99,8 @@ SELECT EXISTS (
 
 -- name: CreateTransport :one
 INSERT INTO "Transport"
-(id, "owner", "type", can_ranted, model, color, "description", latitude, longitude, minute_price, day_price, deleted)
-VALUES
-($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false)
+(id, "owner", "type", can_rented, model, color, "description", identifier, latitude, longitude, minute_price, day_price, deleted)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false)
 RETURNING *;
 
 -- name: IsExistTransport :one
@@ -125,8 +124,8 @@ SELECT EXISTS (
 
 -- name: UpdateTransport :one
 UPDATE "Transport"
-SET id=$1, can_ranted=$2, model=$3, color=$4, "description"=$5, latitude=$6, longitude=$7, minute_price=$8, day_price=$9
-WHERE id=$10
+SET id=$1, can_rented=$2, model=$3, color=$4, "description"=$5, latitude=$6, longitude=$7, minute_price=$8, day_price=$9, identifier=$10
+WHERE id=$11
 RETURNING *;
 
 -- name: RemoveTransport :exec
@@ -158,14 +157,14 @@ OFFSET $2 LIMIT $3;
 SELECT *
 FROM "Transport"
 WHERE
-    "can_ranted" = true and
+    "can_ranted"=true and
     (6371000 * ACOS(SIN(RADIANS($1)) * SIN(RADIANS("latitude")) + COS(RADIANS($1)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $2)))) <= $3;
 
 -- name: GetTransportsFromRadiusOnlyType :many
 SELECT *
 FROM "Transport"
 WHERE
-    "can_ranted" = true and
+    "can_ranted"=true and
     "type"=$1 and
     (6371000 * ACOS(SIN(RADIANS($2)) * SIN(RADIANS("latitude")) + COS(RADIANS($2)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $3)))) <= $4;
 
@@ -193,21 +192,21 @@ SELECT EXISTS (
 -- name: GetRent :one
 SELECT *
 FROM "Rent"
-JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Account" ON "Rent".account = "Account".id
 JOIN "Transport" ON "Rent".transport = "Transport".id
 WHERE "Rent".id=$1;
 
 -- name: GetRentsFromUsername :many
 SELECT *
 FROM "Rent"
-JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Account" ON "Rent".account = "Account".id
 JOIN "Transport" ON "Rent".transport = "Transport".id
 WHERE "Account".username=$1;
 
 -- name: GetRentsFromTransportID :many
 SELECT *
 FROM "Rent"
-JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Account" ON "Rent".account = "Account".id
 JOIN "Transport" ON "Rent".transport = "Transport".id
 WHERE "Transport".id=$1;
 

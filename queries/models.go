@@ -10,6 +10,7 @@ import (
 )
 
 type Account struct {
+	ID       int32
 	Username string
 	Password string
 	Balance  float64
@@ -17,19 +18,23 @@ type Account struct {
 }
 
 type AccountRole struct {
-	Account string
+	Account int32
 	Role    string
 }
 
 type Rent struct {
 	ID        int32
-	Account   string
-	Transport string
+	Account   int32
+	Transport int32
 	TimeStart time.Time
 	TimeEnd   sql.NullTime
 	PriceUnit float64
 	PriceType string
 	Deleted   bool
+}
+
+type RentType struct {
+	Name string
 }
 
 type Role struct {
@@ -41,12 +46,13 @@ type TokenBlackList struct {
 }
 
 type Transport struct {
-	ID          string
-	Owner       string
+	ID          int32
+	Owner       int32
 	Type        string
-	CanRanted   bool
+	CanRented   bool
 	Model       string
 	Color       string
+	Identifier  string
 	Description sql.NullString
 	Latitude    float64
 	Longitude   float64

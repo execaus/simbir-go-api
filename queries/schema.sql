@@ -1,9 +1,10 @@
 CREATE TABLE "Account" (
-	"username" character varying NOT NULL,
-	"password" character varying NOT NULL,
-	"balance" double precision NOT NULL,
-	"deleted" boolean NOT NULL,
-	CONSTRAINT "Account_pk" PRIMARY KEY ("username")
+	"id" serial NOT NULL,
+	"username" CHARACTER VARYING NOT NULL UNIQUE,
+	"password" CHARACTER VARYING NOT NULL,
+	"balance" DOUBLE PRECISION NOT NULL,
+	"deleted" bool NOT NULL,
+	CONSTRAINT "Account_pk" PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
 );
@@ -11,18 +12,19 @@ CREATE TABLE "Account" (
 
 
 CREATE TABLE "Transport" (
-	"id" character varying NOT NULL,
-	"owner" character varying NOT NULL,
-	"type" character varying NOT NULL,
-	"can_ranted" boolean NOT NULL,
-	"model" character varying NOT NULL,
-	"color" character varying NOT NULL,
+	"id" serial NOT NULL,
+	"owner" int NOT NULL,
+	"type" CHARACTER VARYING NOT NULL,
+	"can_rented" BOOLEAN NOT NULL,
+	"model" CHARACTER VARYING NOT NULL,
+	"color" CHARACTER VARYING NOT NULL,
+	"identifier" CHARACTER VARYING NOT NULL UNIQUE,
 	"description" TEXT,
-	"latitude" double precision NOT NULL,
-	"longitude" double precision NOT NULL,
-	"minute_price" double precision,
-	"day_price" double precision,
-	"deleted" boolean NOT NULL,
+	"latitude" DOUBLE PRECISION NOT NULL,
+	"longitude" DOUBLE PRECISION NOT NULL,
+	"minute_price" DOUBLE PRECISION,
+	"day_price" DOUBLE PRECISION,
+	"deleted" bool NOT NULL,
 	CONSTRAINT "Transport_pk" PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
@@ -31,7 +33,7 @@ CREATE TABLE "Transport" (
 
 
 CREATE TABLE "TransportType" (
-	"name" character varying NOT NULL,
+	"name" CHARACTER VARYING NOT NULL,
 	CONSTRAINT "TransportType_pk" PRIMARY KEY ("name")
 ) WITH (
   OIDS=FALSE
@@ -41,13 +43,13 @@ CREATE TABLE "TransportType" (
 
 CREATE TABLE "Rent" (
 	"id" serial NOT NULL,
-	"account" character varying NOT NULL,
-	"transport" character varying NOT NULL,
+	"account" int NOT NULL,
+	"transport" int NOT NULL,
 	"time_start" TIMESTAMP NOT NULL,
 	"time_end" TIMESTAMP,
-	"price_unit" double precision NOT NULL,
-	"price_type" character varying NOT NULL,
-	"deleted" boolean NOT NULL,
+	"price_unit" DOUBLE PRECISION NOT NULL,
+	"price_type" CHARACTER VARYING NOT NULL,
+	"deleted" bool NOT NULL,
 	CONSTRAINT "Rent_pk" PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
@@ -55,27 +57,9 @@ CREATE TABLE "Rent" (
 
 
 
-CREATE TABLE "TokenBlackList" (
-	"token" character varying NOT NULL,
-	CONSTRAINT "TokenBlackList_pk" PRIMARY KEY ("token")
-) WITH (
-  OIDS=FALSE
-);
-
-
-
-CREATE TABLE "Role" (
-	"name" character varying NOT NULL,
-	CONSTRAINT "Role_pk" PRIMARY KEY ("name")
-) WITH (
-  OIDS=FALSE
-);
-
-
-
 CREATE TABLE "AccountRole" (
-	"account" character varying NOT NULL,
-	"role" character varying NOT NULL,
+	"account" int NOT NULL,
+	"role" CHARACTER VARYING NOT NULL,
 	CONSTRAINT "AccountRole_pk" PRIMARY KEY ("account","role")
 ) WITH (
   OIDS=FALSE
@@ -83,21 +67,42 @@ CREATE TABLE "AccountRole" (
 
 
 
+CREATE TABLE "TokenBlackList" (
+	"token" CHARACTER VARYING NOT NULL,
+	CONSTRAINT "TokenBlackList_pk" PRIMARY KEY ("token")
+) WITH (
+  OIDS=FALSE
+);
 
-ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk0" FOREIGN KEY ("owner") REFERENCES "Account"("username") ON UPDATE CASCADE;
+
+
+CREATE TABLE "RentType" (
+	"name" CHARACTER VARYING NOT NULL,
+	CONSTRAINT "RentType_pk" PRIMARY KEY ("name")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
+CREATE TABLE "Role" (
+	"name" CHARACTER VARYING NOT NULL,
+	CONSTRAINT "Role_pk" PRIMARY KEY ("name")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
+
+ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk0" FOREIGN KEY ("owner") REFERENCES "Account"("id") ON UPDATE CASCADE;
 ALTER TABLE "Transport" ADD CONSTRAINT "Transport_fk1" FOREIGN KEY ("type") REFERENCES "TransportType"("name") ON UPDATE CASCADE;
 
 
-ALTER TABLE "Rent" ADD CONSTRAINT "Rent_fk0" FOREIGN KEY ("account") REFERENCES "Account"("username") ON UPDATE CASCADE;
+ALTER TABLE "Rent" ADD CONSTRAINT "Rent_fk0" FOREIGN KEY ("account") REFERENCES "Account"("id") ON UPDATE CASCADE;
 ALTER TABLE "Rent" ADD CONSTRAINT "Rent_fk1" FOREIGN KEY ("transport") REFERENCES "Transport"("id") ON UPDATE CASCADE;
+ALTER TABLE "Rent" ADD CONSTRAINT "Rent_fk2" FOREIGN KEY ("price_type") REFERENCES "RentType"("name") ON UPDATE CASCADE;
 
-
-ALTER TABLE "AccountRole" ADD CONSTRAINT "AccountRole_fk0" FOREIGN KEY ("account") REFERENCES "Account"("username") ON UPDATE CASCADE;
+ALTER TABLE "AccountRole" ADD CONSTRAINT "AccountRole_fk0" FOREIGN KEY ("account") REFERENCES "Account"("id") ON UPDATE CASCADE;
 ALTER TABLE "AccountRole" ADD CONSTRAINT "AccountRole_fk1" FOREIGN KEY ("role") REFERENCES "Role"("name") ON UPDATE CASCADE;
-
-
-
-
-
-
 

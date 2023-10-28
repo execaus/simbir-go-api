@@ -19,7 +19,7 @@ RETURNING account, role
 `
 
 type AppendRoleAccountParams struct {
-	Account string
+	Account int32
 	Role    string
 }
 
@@ -43,7 +43,7 @@ func (q *Queries) AppendTokenToBlackList(ctx context.Context, token string) erro
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO "Account" (username, "password", balance, deleted)
 VALUES ($1, $2, $3, false)
-RETURNING username, password, balance, deleted
+RETURNING id, username, password, balance, deleted
 `
 
 type CreateAccountParams struct {
@@ -56,6 +56,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 	row := q.db.QueryRowContext(ctx, createAccount, arg.Username, arg.Password, arg.Balance)
 	var i Account
 	err := row.Scan(
+		&i.ID,
 		&i.Username,
 		&i.Password,
 		&i.Balance,
@@ -71,8 +72,8 @@ RETURNING id, account, transport, time_start, time_end, price_unit, price_type, 
 `
 
 type CreateRentParams struct {
-	Account   string
-	Transport string
+	Account   int32
+	Transport int32
 	TimeStart time.Time
 	TimeEnd   sql.NullTime
 	PriceUnit float64
@@ -104,20 +105,20 @@ func (q *Queries) CreateRent(ctx context.Context, arg CreateRentParams) (Rent, e
 
 const createTransport = `-- name: CreateTransport :one
 INSERT INTO "Transport"
-(id, "owner", "type", can_ranted, model, color, "description", latitude, longitude, minute_price, day_price, deleted)
-VALUES
-($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false)
-RETURNING id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+(id, "owner", "type", can_rented, model, color, "description", identifier, latitude, longitude, minute_price, day_price, deleted)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false)
+RETURNING id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, deleted
 `
 
 type CreateTransportParams struct {
-	ID          string
-	Owner       string
+	ID          int32
+	Owner       int32
 	Type        string
-	CanRanted   bool
+	CanRented   bool
 	Model       string
 	Color       string
 	Description sql.NullString
+	Identifier  string
 	Latitude    float64
 	Longitude   float64
 	MinutePrice sql.NullFloat64
@@ -129,10 +130,11 @@ func (q *Queries) CreateTransport(ctx context.Context, arg CreateTransportParams
 		arg.ID,
 		arg.Owner,
 		arg.Type,
-		arg.CanRanted,
+		arg.CanRented,
 		arg.Model,
 		arg.Color,
 		arg.Description,
+		arg.Identifier,
 		arg.Latitude,
 		arg.Longitude,
 		arg.MinutePrice,
@@ -143,9 +145,10 @@ func (q *Queries) CreateTransport(ctx context.Context, arg CreateTransportParams
 		&i.ID,
 		&i.Owner,
 		&i.Type,
-		&i.CanRanted,
+		&i.CanRented,
 		&i.Model,
 		&i.Color,
+		&i.Identifier,
 		&i.Description,
 		&i.Latitude,
 		&i.Longitude,
@@ -162,7 +165,7 @@ FROM "AccountRole"
 WHERE account=$1
 `
 
-func (q *Queries) DeleteAccountRoles(ctx context.Context, account string) error {
+func (q *Queries) DeleteAccountRoles(ctx context.Context, account int32) error {
 	_, err := q.db.ExecContext(ctx, deleteAccountRoles, account)
 	return err
 }
@@ -184,15 +187,16 @@ func (q *Queries) EndRent(ctx context.Context, arg EndRentParams) error {
 }
 
 const getAccount = `-- name: GetAccount :one
-SELECT username, password, balance, deleted
+SELECT id, username, password, balance, deleted
 FROM "Account"
-WHERE username=$1
+WHERE id=$1
 `
 
-func (q *Queries) GetAccount(ctx context.Context, username string) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAccount, username)
+func (q *Queries) GetAccount(ctx context.Context, id int32) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccount, id)
 	var i Account
 	err := row.Scan(
+		&i.ID,
 		&i.Username,
 		&i.Password,
 		&i.Balance,
@@ -207,7 +211,7 @@ FROM "AccountRole"
 WHERE account=$1
 `
 
-func (q *Queries) GetAccountRoles(ctx context.Context, account string) ([]string, error) {
+func (q *Queries) GetAccountRoles(ctx context.Context, account int32) ([]string, error) {
 	rows, err := q.db.QueryContext(ctx, getAccountRoles, account)
 	if err != nil {
 		return nil, err
@@ -232,16 +236,16 @@ func (q *Queries) GetAccountRoles(ctx context.Context, account string) ([]string
 
 const getAccounts = `-- name: GetAccounts :many
 SELECT
-    a.username, a.password, a.balance, a.deleted,
+    a.id, a.username, a.password, a.balance, a.deleted,
     json_agg(r.name) AS roles
 FROM
     "Account" AS a
 JOIN
-    "AccountRole" AS ar ON a.username = ar.account
+    "AccountRole" AS ar ON a.id = ar.account
 JOIN
     "Role" AS r ON ar.role = r.name
 GROUP BY
-    a.username
+    a.id
 OFFSET $1 LIMIT $2
 `
 
@@ -251,6 +255,7 @@ type GetAccountsParams struct {
 }
 
 type GetAccountsRow struct {
+	ID       int32
 	Username string
 	Password string
 	Balance  float64
@@ -268,6 +273,7 @@ func (q *Queries) GetAccounts(ctx context.Context, arg GetAccountsParams) ([]Get
 	for rows.Next() {
 		var i GetAccountsRow
 		if err := rows.Scan(
+			&i.ID,
 			&i.Username,
 			&i.Password,
 			&i.Balance,
@@ -317,18 +323,18 @@ func (q *Queries) GetCacheRoles(ctx context.Context) ([]AccountRole, error) {
 
 const getExistAccounts = `-- name: GetExistAccounts :many
 SELECT
-    a.username, a.password, a.balance, a.deleted,
+    a.id, a.username, a.password, a.balance, a.deleted,
     json_agg(r.name) AS roles
 FROM
     "Account" AS a
 JOIN
-    "AccountRole" AS ar ON a.username = ar.account
+    "AccountRole" AS ar ON a.id = ar.account
 JOIN
     "Role" AS r ON ar.role = r.name
 WHERE
     a.deleted = false
 GROUP BY
-    a.username
+    a.id
 OFFSET $1 LIMIT $2
 `
 
@@ -338,6 +344,7 @@ type GetExistAccountsParams struct {
 }
 
 type GetExistAccountsRow struct {
+	ID       int32
 	Username string
 	Password string
 	Balance  float64
@@ -355,6 +362,7 @@ func (q *Queries) GetExistAccounts(ctx context.Context, arg GetExistAccountsPara
 	for rows.Next() {
 		var i GetExistAccountsRow
 		if err := rows.Scan(
+			&i.ID,
 			&i.Username,
 			&i.Password,
 			&i.Balance,
@@ -375,32 +383,34 @@ func (q *Queries) GetExistAccounts(ctx context.Context, arg GetExistAccountsPara
 }
 
 const getRent = `-- name: GetRent :one
-SELECT "Rent".id, account, transport, time_start, time_end, price_unit, price_type, "Rent".deleted, username, password, balance, "Account".deleted, "Transport".id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, "Transport".deleted
+SELECT "Rent".id, account, transport, time_start, time_end, price_unit, price_type, "Rent".deleted, "Account".id, username, password, balance, "Account".deleted, "Transport".id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, "Transport".deleted
 FROM "Rent"
-JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Account" ON "Rent".account = "Account".id
 JOIN "Transport" ON "Rent".transport = "Transport".id
 WHERE "Rent".id=$1
 `
 
 type GetRentRow struct {
 	ID          int32
-	Account     string
-	Transport   string
+	Account     int32
+	Transport   int32
 	TimeStart   time.Time
 	TimeEnd     sql.NullTime
 	PriceUnit   float64
 	PriceType   string
 	Deleted     bool
+	ID_2        int32
 	Username    string
 	Password    string
 	Balance     float64
 	Deleted_2   bool
-	ID_2        string
-	Owner       string
+	ID_3        int32
+	Owner       int32
 	Type        string
-	CanRanted   bool
+	CanRented   bool
 	Model       string
 	Color       string
+	Identifier  string
 	Description sql.NullString
 	Latitude    float64
 	Longitude   float64
@@ -421,16 +431,18 @@ func (q *Queries) GetRent(ctx context.Context, id int32) (GetRentRow, error) {
 		&i.PriceUnit,
 		&i.PriceType,
 		&i.Deleted,
+		&i.ID_2,
 		&i.Username,
 		&i.Password,
 		&i.Balance,
 		&i.Deleted_2,
-		&i.ID_2,
+		&i.ID_3,
 		&i.Owner,
 		&i.Type,
-		&i.CanRanted,
+		&i.CanRented,
 		&i.Model,
 		&i.Color,
+		&i.Identifier,
 		&i.Description,
 		&i.Latitude,
 		&i.Longitude,
@@ -442,32 +454,34 @@ func (q *Queries) GetRent(ctx context.Context, id int32) (GetRentRow, error) {
 }
 
 const getRentsFromTransportID = `-- name: GetRentsFromTransportID :many
-SELECT "Rent".id, account, transport, time_start, time_end, price_unit, price_type, "Rent".deleted, username, password, balance, "Account".deleted, "Transport".id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, "Transport".deleted
+SELECT "Rent".id, account, transport, time_start, time_end, price_unit, price_type, "Rent".deleted, "Account".id, username, password, balance, "Account".deleted, "Transport".id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, "Transport".deleted
 FROM "Rent"
-JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Account" ON "Rent".account = "Account".id
 JOIN "Transport" ON "Rent".transport = "Transport".id
 WHERE "Transport".id=$1
 `
 
 type GetRentsFromTransportIDRow struct {
 	ID          int32
-	Account     string
-	Transport   string
+	Account     int32
+	Transport   int32
 	TimeStart   time.Time
 	TimeEnd     sql.NullTime
 	PriceUnit   float64
 	PriceType   string
 	Deleted     bool
+	ID_2        int32
 	Username    string
 	Password    string
 	Balance     float64
 	Deleted_2   bool
-	ID_2        string
-	Owner       string
+	ID_3        int32
+	Owner       int32
 	Type        string
-	CanRanted   bool
+	CanRented   bool
 	Model       string
 	Color       string
+	Identifier  string
 	Description sql.NullString
 	Latitude    float64
 	Longitude   float64
@@ -476,7 +490,7 @@ type GetRentsFromTransportIDRow struct {
 	Deleted_3   bool
 }
 
-func (q *Queries) GetRentsFromTransportID(ctx context.Context, id string) ([]GetRentsFromTransportIDRow, error) {
+func (q *Queries) GetRentsFromTransportID(ctx context.Context, id int32) ([]GetRentsFromTransportIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getRentsFromTransportID, id)
 	if err != nil {
 		return nil, err
@@ -494,16 +508,18 @@ func (q *Queries) GetRentsFromTransportID(ctx context.Context, id string) ([]Get
 			&i.PriceUnit,
 			&i.PriceType,
 			&i.Deleted,
+			&i.ID_2,
 			&i.Username,
 			&i.Password,
 			&i.Balance,
 			&i.Deleted_2,
-			&i.ID_2,
+			&i.ID_3,
 			&i.Owner,
 			&i.Type,
-			&i.CanRanted,
+			&i.CanRented,
 			&i.Model,
 			&i.Color,
+			&i.Identifier,
 			&i.Description,
 			&i.Latitude,
 			&i.Longitude,
@@ -525,32 +541,34 @@ func (q *Queries) GetRentsFromTransportID(ctx context.Context, id string) ([]Get
 }
 
 const getRentsFromUsername = `-- name: GetRentsFromUsername :many
-SELECT "Rent".id, account, transport, time_start, time_end, price_unit, price_type, "Rent".deleted, username, password, balance, "Account".deleted, "Transport".id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, "Transport".deleted
+SELECT "Rent".id, account, transport, time_start, time_end, price_unit, price_type, "Rent".deleted, "Account".id, username, password, balance, "Account".deleted, "Transport".id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, "Transport".deleted
 FROM "Rent"
-JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Account" ON "Rent".account = "Account".id
 JOIN "Transport" ON "Rent".transport = "Transport".id
 WHERE "Account".username=$1
 `
 
 type GetRentsFromUsernameRow struct {
 	ID          int32
-	Account     string
-	Transport   string
+	Account     int32
+	Transport   int32
 	TimeStart   time.Time
 	TimeEnd     sql.NullTime
 	PriceUnit   float64
 	PriceType   string
 	Deleted     bool
+	ID_2        int32
 	Username    string
 	Password    string
 	Balance     float64
 	Deleted_2   bool
-	ID_2        string
-	Owner       string
+	ID_3        int32
+	Owner       int32
 	Type        string
-	CanRanted   bool
+	CanRented   bool
 	Model       string
 	Color       string
+	Identifier  string
 	Description sql.NullString
 	Latitude    float64
 	Longitude   float64
@@ -577,16 +595,18 @@ func (q *Queries) GetRentsFromUsername(ctx context.Context, username string) ([]
 			&i.PriceUnit,
 			&i.PriceType,
 			&i.Deleted,
+			&i.ID_2,
 			&i.Username,
 			&i.Password,
 			&i.Balance,
 			&i.Deleted_2,
-			&i.ID_2,
+			&i.ID_3,
 			&i.Owner,
 			&i.Type,
-			&i.CanRanted,
+			&i.CanRented,
 			&i.Model,
 			&i.Color,
+			&i.Identifier,
 			&i.Description,
 			&i.Latitude,
 			&i.Longitude,
@@ -608,21 +628,22 @@ func (q *Queries) GetRentsFromUsername(ctx context.Context, username string) ([]
 }
 
 const getTransport = `-- name: GetTransport :one
-SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+SELECT id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, deleted
 FROM "Transport"
 WHERE id=$1
 `
 
-func (q *Queries) GetTransport(ctx context.Context, id string) (Transport, error) {
+func (q *Queries) GetTransport(ctx context.Context, id int32) (Transport, error) {
 	row := q.db.QueryRowContext(ctx, getTransport, id)
 	var i Transport
 	err := row.Scan(
 		&i.ID,
 		&i.Owner,
 		&i.Type,
-		&i.CanRanted,
+		&i.CanRented,
 		&i.Model,
 		&i.Color,
+		&i.Identifier,
 		&i.Description,
 		&i.Latitude,
 		&i.Longitude,
@@ -634,7 +655,7 @@ func (q *Queries) GetTransport(ctx context.Context, id string) (Transport, error
 }
 
 const getTransports = `-- name: GetTransports :many
-SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+SELECT id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, deleted
 FROM "Transport"
 ORDER BY id
 OFFSET $1 LIMIT $2
@@ -658,9 +679,10 @@ func (q *Queries) GetTransports(ctx context.Context, arg GetTransportsParams) ([
 			&i.ID,
 			&i.Owner,
 			&i.Type,
-			&i.CanRanted,
+			&i.CanRented,
 			&i.Model,
 			&i.Color,
+			&i.Identifier,
 			&i.Description,
 			&i.Latitude,
 			&i.Longitude,
@@ -682,10 +704,10 @@ func (q *Queries) GetTransports(ctx context.Context, arg GetTransportsParams) ([
 }
 
 const getTransportsFromRadiusAll = `-- name: GetTransportsFromRadiusAll :many
-SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+SELECT id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, deleted
 FROM "Transport"
 WHERE
-    "can_ranted" = true and
+    "can_ranted"=true and
     (6371000 * ACOS(SIN(RADIANS($1)) * SIN(RADIANS("latitude")) + COS(RADIANS($1)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $2)))) <= $3
 `
 
@@ -708,9 +730,10 @@ func (q *Queries) GetTransportsFromRadiusAll(ctx context.Context, arg GetTranspo
 			&i.ID,
 			&i.Owner,
 			&i.Type,
-			&i.CanRanted,
+			&i.CanRented,
 			&i.Model,
 			&i.Color,
+			&i.Identifier,
 			&i.Description,
 			&i.Latitude,
 			&i.Longitude,
@@ -732,10 +755,10 @@ func (q *Queries) GetTransportsFromRadiusAll(ctx context.Context, arg GetTranspo
 }
 
 const getTransportsFromRadiusOnlyType = `-- name: GetTransportsFromRadiusOnlyType :many
-SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+SELECT id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, deleted
 FROM "Transport"
 WHERE
-    "can_ranted" = true and
+    "can_ranted"=true and
     "type"=$1 and
     (6371000 * ACOS(SIN(RADIANS($2)) * SIN(RADIANS("latitude")) + COS(RADIANS($2)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $3)))) <= $4
 `
@@ -765,9 +788,10 @@ func (q *Queries) GetTransportsFromRadiusOnlyType(ctx context.Context, arg GetTr
 			&i.ID,
 			&i.Owner,
 			&i.Type,
-			&i.CanRanted,
+			&i.CanRented,
 			&i.Model,
 			&i.Color,
+			&i.Identifier,
 			&i.Description,
 			&i.Latitude,
 			&i.Longitude,
@@ -789,7 +813,7 @@ func (q *Queries) GetTransportsFromRadiusOnlyType(ctx context.Context, arg GetTr
 }
 
 const getTransportsOnlyType = `-- name: GetTransportsOnlyType :many
-SELECT id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+SELECT id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, deleted
 FROM "Transport"
 WHERE "type"=$1
 ORDER BY id
@@ -815,9 +839,10 @@ func (q *Queries) GetTransportsOnlyType(ctx context.Context, arg GetTransportsOn
 			&i.ID,
 			&i.Owner,
 			&i.Type,
-			&i.CanRanted,
+			&i.CanRented,
 			&i.Model,
 			&i.Color,
+			&i.Identifier,
 			&i.Description,
 			&i.Latitude,
 			&i.Longitude,
@@ -842,12 +867,12 @@ const isAccountExist = `-- name: IsAccountExist :one
 SELECT EXISTS (
   SELECT 1
   FROM "Account"
-  WHERE username=$1
+  WHERE id=$1
 )
 `
 
-func (q *Queries) IsAccountExist(ctx context.Context, username string) (bool, error) {
-	row := q.db.QueryRowContext(ctx, isAccountExist, username)
+func (q *Queries) IsAccountExist(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isAccountExist, id)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -857,12 +882,12 @@ const isAccountRemoved = `-- name: IsAccountRemoved :one
 SELECT EXISTS (
   SELECT 1
   FROM "Account"
-  WHERE username=$1 and deleted=true
+  WHERE id=$1 and deleted=true
 )
 `
 
-func (q *Queries) IsAccountRemoved(ctx context.Context, username string) (bool, error) {
-	row := q.db.QueryRowContext(ctx, isAccountRemoved, username)
+func (q *Queries) IsAccountRemoved(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isAccountRemoved, id)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -891,7 +916,7 @@ SELECT EXISTS (
 )
 `
 
-func (q *Queries) IsExistCurrentRent(ctx context.Context, transport string) (bool, error) {
+func (q *Queries) IsExistCurrentRent(ctx context.Context, transport int32) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isExistCurrentRent, transport)
 	var exists bool
 	err := row.Scan(&exists)
@@ -906,7 +931,7 @@ SELECT EXISTS (
 )
 `
 
-func (q *Queries) IsExistTransport(ctx context.Context, id string) (bool, error) {
+func (q *Queries) IsExistTransport(ctx context.Context, id int32) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isExistTransport, id)
 	var exists bool
 	err := row.Scan(&exists)
@@ -953,7 +978,7 @@ SELECT EXISTS (
 
 type IsRenterParams struct {
 	ID      int32
-	Account string
+	Account int32
 }
 
 func (q *Queries) IsRenter(ctx context.Context, arg IsRenterParams) (bool, error) {
@@ -972,8 +997,8 @@ SELECT EXISTS (
 `
 
 type IsTransportOwnerParams struct {
-	ID    string
-	Owner string
+	ID    int32
+	Owner int32
 }
 
 func (q *Queries) IsTransportOwner(ctx context.Context, arg IsTransportOwnerParams) (bool, error) {
@@ -991,7 +1016,7 @@ SELECT EXISTS (
 )
 `
 
-func (q *Queries) IsTransportRemoved(ctx context.Context, id string) (bool, error) {
+func (q *Queries) IsTransportRemoved(ctx context.Context, id int32) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isTransportRemoved, id)
 	var exists bool
 	err := row.Scan(&exists)
@@ -1001,11 +1026,11 @@ func (q *Queries) IsTransportRemoved(ctx context.Context, id string) (bool, erro
 const removeAccount = `-- name: RemoveAccount :exec
 UPDATE "Account"
 SET deleted=true
-WHERE username=$1
+WHERE id=$1
 `
 
-func (q *Queries) RemoveAccount(ctx context.Context, username string) error {
-	_, err := q.db.ExecContext(ctx, removeAccount, username)
+func (q *Queries) RemoveAccount(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, removeAccount, id)
 	return err
 }
 
@@ -1015,7 +1040,7 @@ SET deleted=true
 WHERE id=$1
 `
 
-func (q *Queries) RemoveTransport(ctx context.Context, id string) error {
+func (q *Queries) RemoveTransport(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, removeTransport, id)
 	return err
 }
@@ -1023,30 +1048,30 @@ func (q *Queries) RemoveTransport(ctx context.Context, id string) error {
 const replaceUsername = `-- name: ReplaceUsername :exec
 UPDATE "Account"
 SET username=$1
-WHERE username=$2
+WHERE id=$2
 `
 
 type ReplaceUsernameParams struct {
-	Username   string
-	Username_2 string
+	Username string
+	ID       int32
 }
 
 func (q *Queries) ReplaceUsername(ctx context.Context, arg ReplaceUsernameParams) error {
-	_, err := q.db.ExecContext(ctx, replaceUsername, arg.Username, arg.Username_2)
+	_, err := q.db.ExecContext(ctx, replaceUsername, arg.Username, arg.ID)
 	return err
 }
 
 const updateAccount = `-- name: UpdateAccount :exec
 UPDATE "Account"
 SET username=$1, "password"=$2, balance=$3
-WHERE username=$4
+WHERE id=$4
 `
 
 type UpdateAccountParams struct {
-	Username   string
-	Password   string
-	Balance    float64
-	Username_2 string
+	Username string
+	Password string
+	Balance  float64
+	ID       int32
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {
@@ -1054,21 +1079,21 @@ func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) er
 		arg.Username,
 		arg.Password,
 		arg.Balance,
-		arg.Username_2,
+		arg.ID,
 	)
 	return err
 }
 
 const updateTransport = `-- name: UpdateTransport :one
 UPDATE "Transport"
-SET id=$1, can_ranted=$2, model=$3, color=$4, "description"=$5, latitude=$6, longitude=$7, minute_price=$8, day_price=$9
-WHERE id=$10
-RETURNING id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, deleted
+SET id=$1, can_rented=$2, model=$3, color=$4, "description"=$5, latitude=$6, longitude=$7, minute_price=$8, day_price=$9, identifier=$10
+WHERE id=$11
+RETURNING id, owner, type, can_rented, model, color, identifier, description, latitude, longitude, minute_price, day_price, deleted
 `
 
 type UpdateTransportParams struct {
-	ID          string
-	CanRanted   bool
+	ID          int32
+	CanRented   bool
 	Model       string
 	Color       string
 	Description sql.NullString
@@ -1076,13 +1101,14 @@ type UpdateTransportParams struct {
 	Longitude   float64
 	MinutePrice sql.NullFloat64
 	DayPrice    sql.NullFloat64
-	ID_2        string
+	Identifier  string
+	ID_2        int32
 }
 
 func (q *Queries) UpdateTransport(ctx context.Context, arg UpdateTransportParams) (Transport, error) {
 	row := q.db.QueryRowContext(ctx, updateTransport,
 		arg.ID,
-		arg.CanRanted,
+		arg.CanRented,
 		arg.Model,
 		arg.Color,
 		arg.Description,
@@ -1090,6 +1116,7 @@ func (q *Queries) UpdateTransport(ctx context.Context, arg UpdateTransportParams
 		arg.Longitude,
 		arg.MinutePrice,
 		arg.DayPrice,
+		arg.Identifier,
 		arg.ID_2,
 	)
 	var i Transport
@@ -1097,9 +1124,10 @@ func (q *Queries) UpdateTransport(ctx context.Context, arg UpdateTransportParams
 		&i.ID,
 		&i.Owner,
 		&i.Type,
-		&i.CanRanted,
+		&i.CanRented,
 		&i.Model,
 		&i.Color,
+		&i.Identifier,
 		&i.Description,
 		&i.Latitude,
 		&i.Longitude,

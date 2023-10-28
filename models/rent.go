@@ -98,3 +98,6 @@ type GetAdminUserHistoryOutput struct {
 type GetAdminTransportHistoryOutput struct {
 	Rents []GetAdminRentOutput `json:"rents"`
 }
+
+type CreateAdminRentInput struct {
+}

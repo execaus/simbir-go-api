@@ -164,3 +164,12 @@ func (h *Handler) GetAdminTransportRentHistory(c *gin.Context) {
 
 	h.sendOKWithBody(c, output)
 }
+
+func (h *Handler) CreateAdminRent(c *gin.Context) {
+	var input models.CreateAdminRentInput
+
+	if err := c.BindJSON(&input); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+}
