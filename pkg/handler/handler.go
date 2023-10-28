@@ -45,7 +45,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		rent.GET("/:id", h.accountIdentity, h.GetRent)
 		rent.GET("/MyHistory", h.accountIdentity, h.GetRentMyHistory)
 		rent.GET("/TransportHistory/:id", h.accountIdentity, h.GetRentTransportHistory)
-		rent.GET("/New/:id", h.accountIdentity, h.GetRentTransportNew)
+		rent.POST("/New/:id", h.accountIdentity, h.GetRentTransportNew)
 	}
 
 	admin := api.Group("/Admin", h.onlyAdmin)
