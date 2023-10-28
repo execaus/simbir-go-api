@@ -906,6 +906,83 @@ const docTemplate = `{
                 }
             }
         },
+        "/Rent/New/{id}": {
+            "post": {
+                "description": "Renting the transport for personal use.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rent"
+                ],
+                "summary": "Create rent",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "radius",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "-",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.GetRentTransportNewInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetRentTransportNewOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "410": {
+                        "description": "Gone",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "412": {
+                        "description": "Precondition Failed",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Rent/Transport": {
             "get": {
                 "security": [
@@ -1638,6 +1715,22 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.GetRentOutput"
                     }
+                }
+            }
+        },
+        "models.GetRentTransportNewInput": {
+            "type": "object",
+            "properties": {
+                "rentType": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetRentTransportNewOutput": {
+            "type": "object",
+            "properties": {
+                "rent": {
+                    "$ref": "#/definitions/models.GetRentOutput"
                 }
             }
         },

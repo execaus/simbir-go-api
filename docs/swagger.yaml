@@ -244,6 +244,16 @@ definitions:
           $ref: '#/definitions/models.GetRentOutput'
         type: array
     type: object
+  models.GetRentTransportNewInput:
+    properties:
+      rentType:
+        type: string
+    type: object
+  models.GetRentTransportNewOutput:
+    properties:
+      rent:
+        $ref: '#/definitions/models.GetRentOutput'
+    type: object
   models.GetRentTransportOutput:
     properties:
       transports:
@@ -975,6 +985,57 @@ paths:
       security:
       - BearerAuth: []
       summary: Account rent history
+      tags:
+      - rent
+  /Rent/New/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Renting the transport for personal use.
+      parameters:
+      - description: '-'
+        in: query
+        name: radius
+        required: true
+        type: number
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.GetRentTransportNewInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetRentTransportNewOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "410":
+          description: Gone
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "412":
+          description: Precondition Failed
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Create rent
       tags:
       - rent
   /Rent/Transport:

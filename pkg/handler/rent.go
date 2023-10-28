@@ -231,6 +231,23 @@ func (h *Handler) GetRentTransportHistory(c *gin.Context) {
 	h.sendOKWithBody(c, output)
 }
 
+// GetRentTransportNew
+// @Summary      Create rent
+// @Description  Renting the transport for personal use.
+// @Tags         rent
+// @Accept       json
+// @Produce      json
+// @Success      200
+// @Param        radius query number true "-"
+// @Param        input body models.GetRentTransportNewInput true "-"
+// @Success      200  {object}  models.GetRentTransportNewOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      403  {object}  handler.Error
+// @Failure      410  {object}  handler.Error
+// @Failure      412  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Router       /Rent/New/{id} [post]
 func (h *Handler) GetRentTransportNew(c *gin.Context) {
 	var input models.GetRentTransportNewInput
 
