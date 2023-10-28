@@ -387,15 +387,15 @@ func (q *Queries) GetRent(ctx context.Context, id int32) (GetRentRow, error) {
 	return i, err
 }
 
-const getRents = `-- name: GetRents :many
+const getRentsFromTransportID = `-- name: GetRentsFromTransportID :many
 SELECT "Rent".id, account, transport, time_start, time_end, price_unit, price_type, "Rent".deleted, username, password, balance, "Account".deleted, "Transport".id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, "Transport".deleted
 FROM "Rent"
 JOIN "Account" ON "Rent".account = "Account".username
 JOIN "Transport" ON "Rent".transport = "Transport".id
-WHERE "Account".username=$1
+WHERE "Transport".id=$1
 `
 
-type GetRentsRow struct {
+type GetRentsFromTransportIDRow struct {
 	ID          int32
 	Account     string
 	Transport   string
@@ -422,15 +422,98 @@ type GetRentsRow struct {
 	Deleted_3   bool
 }
 
-func (q *Queries) GetRents(ctx context.Context, username string) ([]GetRentsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getRents, username)
+func (q *Queries) GetRentsFromTransportID(ctx context.Context, id string) ([]GetRentsFromTransportIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getRentsFromTransportID, id)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetRentsRow
+	var items []GetRentsFromTransportIDRow
 	for rows.Next() {
-		var i GetRentsRow
+		var i GetRentsFromTransportIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Account,
+			&i.Transport,
+			&i.TimeStart,
+			&i.TimeEnd,
+			&i.PriceUnit,
+			&i.PriceType,
+			&i.Deleted,
+			&i.Username,
+			&i.Password,
+			&i.Balance,
+			&i.Deleted_2,
+			&i.ID_2,
+			&i.Owner,
+			&i.Type,
+			&i.CanRanted,
+			&i.Model,
+			&i.Color,
+			&i.Description,
+			&i.Latitude,
+			&i.Longitude,
+			&i.MinutePrice,
+			&i.DayPrice,
+			&i.Deleted_3,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRentsFromUsername = `-- name: GetRentsFromUsername :many
+SELECT "Rent".id, account, transport, time_start, time_end, price_unit, price_type, "Rent".deleted, username, password, balance, "Account".deleted, "Transport".id, owner, type, can_ranted, model, color, description, latitude, longitude, minute_price, day_price, "Transport".deleted
+FROM "Rent"
+JOIN "Account" ON "Rent".account = "Account".username
+JOIN "Transport" ON "Rent".transport = "Transport".id
+WHERE "Account".username=$1
+`
+
+type GetRentsFromUsernameRow struct {
+	ID          int32
+	Account     string
+	Transport   string
+	TimeStart   time.Time
+	TimeEnd     sql.NullTime
+	PriceUnit   float64
+	PriceType   string
+	Deleted     bool
+	Username    string
+	Password    string
+	Balance     float64
+	Deleted_2   bool
+	ID_2        string
+	Owner       string
+	Type        string
+	CanRanted   bool
+	Model       string
+	Color       string
+	Description sql.NullString
+	Latitude    float64
+	Longitude   float64
+	MinutePrice sql.NullFloat64
+	DayPrice    sql.NullFloat64
+	Deleted_3   bool
+}
+
+func (q *Queries) GetRentsFromUsername(ctx context.Context, username string) ([]GetRentsFromUsernameRow, error) {
+	rows, err := q.db.QueryContext(ctx, getRentsFromUsername, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetRentsFromUsernameRow
+	for rows.Next() {
+		var i GetRentsFromUsernameRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Account,

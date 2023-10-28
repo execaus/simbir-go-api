@@ -10,8 +10,18 @@ type RentPostgres struct {
 	queries *queries.Queries
 }
 
-func (r *RentPostgres) GetList(username string) ([]queries.GetRentsRow, error) {
-	rows, err := r.queries.GetRents(context.Background(), username)
+func (r *RentPostgres) GetListFromUsername(username string) ([]queries.GetRentsFromUsernameRow, error) {
+	rows, err := r.queries.GetRentsFromUsername(context.Background(), username)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return rows, nil
+}
+
+func (r *RentPostgres) GetListFromTransport(transportID string) ([]queries.GetRentsFromTransportIDRow, error) {
+	rows, err := r.queries.GetRentsFromTransportID(context.Background(), transportID)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err

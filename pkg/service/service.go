@@ -41,7 +41,8 @@ type Rent interface {
 	IsExist(id int32) (bool, error)
 	IsRenter(id int32, username string) (bool, error)
 	Get(id int32) (*models.Rent, error)
-	GetList(username string) ([]models.Rent, error)
+	GetListFromUsername(username string) ([]models.Rent, error)
+	GetListFromTransport(transportID string) ([]models.Rent, error)
 }
 
 type Service struct {

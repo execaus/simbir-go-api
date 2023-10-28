@@ -11,10 +11,54 @@ type RentService struct {
 	repo repository.Rent
 }
 
-func (s *RentService) GetList(username string) ([]models.Rent, error) {
+func (s *RentService) GetListFromTransport(transportID string) ([]models.Rent, error) {
 	var rents []models.Rent
 
-	reposRents, err := s.repo.GetList(username)
+	reposRents, err := s.repo.GetListFromTransport(transportID)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	for _, reposResult := range reposRents {
+		rents = append(rents, models.Rent{
+			ID: reposResult.ID,
+			Account: models.Account{
+				Username:  reposResult.Username,
+				Password:  "",
+				Balance:   reposResult.Balance,
+				Roles:     []string{},
+				IsDeleted: reposResult.Deleted_2,
+			},
+			Transport: models.Transport{
+				OwnerID:       reposResult.Owner,
+				CanBeRented:   reposResult.CanRanted,
+				TransportType: reposResult.Type,
+				Model:         reposResult.Model,
+				Color:         reposResult.Color,
+				Identifier:    reposResult.ID_2,
+				Description:   sqlnt.ToString(&reposResult.Description),
+				Latitude:      reposResult.Latitude,
+				Longitude:     reposResult.Longitude,
+				MinutePrice:   sqlnt.ToF64(&reposResult.MinutePrice),
+				DayPrice:      sqlnt.ToF64(&reposResult.DayPrice),
+				IsDeleted:     reposResult.Deleted_3,
+			},
+			TimeStart: reposResult.TimeStart,
+			TimeEnd:   sqlnt.ToTime(&reposResult.TimeEnd),
+			PriceUnit: reposResult.PriceUnit,
+			PriceType: reposResult.PriceType,
+			IsDeleted: reposResult.Deleted,
+		})
+	}
+
+	return rents, nil
+}
+
+func (s *RentService) GetListFromUsername(username string) ([]models.Rent, error) {
+	var rents []models.Rent
+
+	reposRents, err := s.repo.GetListFromUsername(username)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err

@@ -50,3 +50,11 @@ type GetRentOutput struct {
 type GetRentsOutput struct {
 	Rents []GetRentOutput `json:"rents"`
 }
+
+type GetRentsMyHistoryOutput struct {
+	Rents []GetRentOutput `json:"rents"`
+}
+
+type GetRentTransportHistoryOutput struct {
+	Rents []GetRentOutput `json:"rents"`
+}

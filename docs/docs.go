@@ -866,6 +866,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/Rent/MyHistory": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the rental history of the current account.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rent"
+                ],
+                "summary": "Account rent history",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetRentsOutput"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Rent/Transport": {
             "get": {
                 "security": [
@@ -923,6 +963,46 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/Rent/TransportHistory/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the transport rental history.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rent"
+                ],
+                "summary": "Transport rent history",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetRentTransportHistoryOutput"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -1550,6 +1630,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.GetRentTransportHistoryOutput": {
+            "type": "object",
+            "properties": {
+                "rents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.GetRentOutput"
+                    }
+                }
+            }
+        },
         "models.GetRentTransportOutput": {
             "type": "object",
             "properties": {
@@ -1557,6 +1648,17 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.GetTransportOutput"
+                    }
+                }
+            }
+        },
+        "models.GetRentsOutput": {
+            "type": "object",
+            "properties": {
+                "rents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.GetRentOutput"
                     }
                 }
             }

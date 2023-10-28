@@ -150,13 +150,70 @@ func (h *Handler) GetRentMyHistory(c *gin.Context) {
 		return
 	}
 
-	rents, err := h.services.Rent.GetList(username)
+	rents, err := h.services.Rent.GetListFromUsername(username)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
 	}
 
-	var output models.GetRentsOutput
+	var output models.GetRentsMyHistoryOutput
+	for _, rent := range rents {
+		output.Rents = append(output.Rents, models.GetRentOutput{
+			ID:        rent.ID,
+			Account:   rent.Account.Username,
+			Transport: rent.Transport.Identifier,
+			TimeStart: rent.TimeStart,
+			TimeEnd:   rent.TimeEnd,
+			PriceUnit: rent.PriceUnit,
+			PriceType: rent.PriceType,
+		})
+	}
+
+	h.sendOKWithBody(c, output)
+}
+
+// GetRentTransportHistory
+// @Summary      Transport rent history
+// @Description  Returns the transport rental history.
+// @Tags         rent
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.GetRentTransportHistoryOutput
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Rent/TransportHistory/{id} [get]
+func (h *Handler) GetRentTransportHistory(c *gin.Context) {
+	transportID, err := getStringParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	isOwner, err := h.services.Transport.IsOwner(transportID, username)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isOwner {
+		h.sendAccessDenied(c, accountIsNotTransportOwner)
+		return
+	}
+
+	rents, err := h.services.Rent.GetListFromTransport(transportID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	var output models.GetRentTransportHistoryOutput
 	for _, rent := range rents {
 		output.Rents = append(output.Rents, models.GetRentOutput{
 			ID:        rent.ID,

@@ -51,7 +51,8 @@ type Rent interface {
 	IsExist(id int32) (bool, error)
 	IsRenter(id int32, username string) (bool, error)
 	Get(id int32) (*queries.GetRentRow, error)
-	GetList(username string) ([]queries.GetRentsRow, error)
+	GetListFromUsername(username string) ([]queries.GetRentsFromUsernameRow, error)
+	GetListFromTransport(transportID string) ([]queries.GetRentsFromTransportIDRow, error)
 }
 
 type Repository struct {
