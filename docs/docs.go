@@ -912,6 +912,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/Admin/TransportHistory/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Return transport rent history by id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-rent"
+                ],
+                "summary": "Transport rent history",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetAdminTransportHistoryOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Admin/UserHistory/{id}": {
             "get": {
                 "security": [
@@ -1873,6 +1919,17 @@ const docTemplate = `{
                 },
                 "rent": {
                     "$ref": "#/definitions/models.GetRentOutput"
+                }
+            }
+        },
+        "models.GetAdminTransportHistoryOutput": {
+            "type": "object",
+            "properties": {
+                "rents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.GetAdminRentOutput"
+                    }
                 }
             }
         },

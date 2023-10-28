@@ -76,7 +76,7 @@ func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
 
 	isExist, err := h.services.Account.IsExist(username)
 	if err != nil {
-		h.sendGeneralException(c, err.Error())
+		h.sendGeneralException(c, serverError)
 		return
 	}
 
@@ -87,11 +87,66 @@ func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
 
 	rents, err := h.services.Rent.GetListFromUsername(username)
 	if err != nil {
-		h.sendGeneralException(c, err.Error())
+		h.sendGeneralException(c, serverError)
 		return
 	}
 
 	var output models.GetAdminUserHistoryOutput
+	for _, rent := range rents {
+		output.Rents = append(output.Rents, models.GetAdminRentOutput{
+			Rent: models.GetRentOutput{
+				ID:        rent.ID,
+				Account:   rent.Account.Username,
+				Transport: rent.Transport.Identifier,
+				TimeStart: rent.TimeStart,
+				TimeEnd:   rent.TimeEnd,
+				PriceUnit: rent.PriceUnit,
+				PriceType: rent.PriceType,
+			},
+			IsDeleted: rent.IsDeleted,
+		})
+	}
+
+	h.sendOKWithBody(c, output)
+}
+
+// GetAdminTransportRentHistory
+// @Summary      Transport rent history
+// @Description  Return transport rent history by id.
+// @Tags         admin-rent
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.GetAdminTransportHistoryOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Admin/TransportHistory/{id} [get]
+func (h *Handler) GetAdminTransportRentHistory(c *gin.Context) {
+	transportID, err := getStringParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isExist, err := h.services.Transport.IsExist(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, transportIsNotExist)
+		return
+	}
+
+	rents, err := h.services.Rent.GetListFromTransport(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	var output models.GetAdminTransportHistoryOutput
 	for _, rent := range rents {
 		output.Rents = append(output.Rents, models.GetAdminRentOutput{
 			Rent: models.GetRentOutput{

@@ -74,6 +74,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			adminRent.GET("/:id", h.GetAdminRent)
 		}
 		admin.GET("/UserHistory/:id", h.GetAdminUserRentHistory)
+		admin.GET("/TransportHistory/:id", h.GetAdminTransportRentHistory)
 	}
 
 	return router
