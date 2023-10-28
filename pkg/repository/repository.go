@@ -56,6 +56,7 @@ type Rent interface {
 	GetListFromTransport(transportID string) ([]queries.GetRentsFromTransportIDRow, error)
 	IsExistCurrentRented(transportID string) (bool, error)
 	Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*queries.Rent, error)
+	End(id int32, timeEnd *time.Time) error
 }
 
 type Repository struct {

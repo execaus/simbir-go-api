@@ -47,6 +47,7 @@ type Rent interface {
 	GetListFromTransport(transportID string) ([]models.Rent, error)
 	TransportIsRented(transportID string) (bool, error)
 	Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*models.Rent, error)
+	End(id int32) (*models.Rent, error)
 }
 
 type Service struct {

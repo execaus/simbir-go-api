@@ -60,7 +60,7 @@ type GetRentTransportHistoryOutput struct {
 }
 
 type GetRentTransportNewInput struct {
-	RentType string `form:"rentType"`
+	RentType string `json:"rentType"`
 }
 
 func (i *GetRentTransportNewInput) Validate() error {
@@ -74,5 +74,14 @@ func (i *GetRentTransportNewInput) Validate() error {
 }
 
 type GetRentTransportNewOutput struct {
+	Rent GetRentOutput `json:"rent"`
+}
+
+type EndRentInput struct {
+	Latitude  *float64 `json:"lat" binding:"required,min=-180,max=180"`
+	Longitude *float64 `form:"long" binding:"required,min=-180,max=180"`
+}
+
+type EndRentOutput struct {
 	Rent GetRentOutput `json:"rent"`
 }

@@ -231,14 +231,14 @@ func (h *Handler) GetRentTransportHistory(c *gin.Context) {
 	h.sendOKWithBody(c, output)
 }
 
-// GetRentTransportNew
+// CreateRent
 // @Summary      Create rent
 // @Description  Renting the transport for personal use.
 // @Tags         rent
 // @Accept       json
 // @Produce      json
 // @Success      200
-// @Param        radius query number true "-"
+// @Param        id query number true "-"
 // @Param        input body models.GetRentTransportNewInput true "-"
 // @Success      200  {object}  models.GetRentTransportNewOutput
 // @Failure      400  {object}  handler.Error
@@ -248,7 +248,7 @@ func (h *Handler) GetRentTransportHistory(c *gin.Context) {
 // @Failure      412  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Router       /Rent/New/{id} [post]
-func (h *Handler) GetRentTransportNew(c *gin.Context) {
+func (h *Handler) CreateRent(c *gin.Context) {
 	var input models.GetRentTransportNewInput
 
 	transportID, err := getStringParam(c, "id")
@@ -257,7 +257,7 @@ func (h *Handler) GetRentTransportNew(c *gin.Context) {
 		return
 	}
 
-	if err = c.ShouldBindQuery(&input); err != nil {
+	if err = c.BindJSON(&input); err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
@@ -367,4 +367,67 @@ func (h *Handler) GetRentTransportNew(c *gin.Context) {
 			PriceType: rent.PriceType,
 		},
 	})
+}
+
+// EndRent
+// @Summary      End rent
+// @Description  Completion of the rent of transport under the rent id.
+// @Tags         rent
+// @Accept       json
+// @Produce      json
+// @Success      200
+// @Param        id query number true "-"
+// @Param        input body models.EndRentInput true "-"
+// @Success      200  {object}  models.EndRentOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      403  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Router       /Rent/End/{id} [post]
+func (h *Handler) EndRent(c *gin.Context) {
+	var input models.EndRentInput
+
+	rentID, err := getNumberParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	if err = c.BindJSON(&input); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	isOwner, err := h.services.Rent.IsRenter(int32(rentID), username)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isOwner {
+		h.sendAccessDenied(c, notRentOwner)
+		return
+	}
+
+	rent, err := h.services.Rent.End(int32(rentID))
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOKWithBody(c, &models.EndRentOutput{Rent: models.GetRentOutput{
+		ID:        rent.ID,
+		Account:   rent.Account.Username,
+		Transport: rent.Transport.Identifier,
+		TimeStart: rent.TimeStart,
+		TimeEnd:   rent.TimeEnd,
+		PriceUnit: rent.PriceUnit,
+		PriceType: rent.PriceType,
+	}})
 }

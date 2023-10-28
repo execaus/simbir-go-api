@@ -222,3 +222,8 @@ SELECT EXISTS (
 INSERT INTO "Rent" (account, transport, time_start, time_end, price_unit, price_type, deleted)
 VALUES ($1, $2, $3, $4, $5, $6, false)
 RETURNING *;
+
+-- name: EndRent :exec
+UPDATE "Rent"
+SET time_end=$1
+WHERE id=$2;

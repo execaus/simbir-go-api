@@ -46,6 +46,7 @@ const (
 	transportInRent            = "the transport in rent"
 	noMinutesPrice             = "no price per minutes has been set"
 	noDaysPrice                = "no price per days has been set"
+	notRentOwner               = "is not rent owner"
 )
 
 type Error struct {

@@ -211,6 +211,25 @@ definitions:
       transport:
         $ref: '#/definitions/models.GetTransportOutput'
     type: object
+  models.EndRentInput:
+    properties:
+      lat:
+        maximum: 180
+        minimum: -180
+        type: number
+      long:
+        maximum: 180
+        minimum: -180
+        type: number
+    required:
+    - lat
+    - long
+    type: object
+  models.EndRentOutput:
+    properties:
+      rent:
+        $ref: '#/definitions/models.GetRentOutput'
+    type: object
   models.GetAccountOutput:
     properties:
       balance:
@@ -962,6 +981,49 @@ paths:
       summary: Rent information
       tags:
       - rent
+  /Rent/End/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Completion of the rent of transport under the rent id.
+      parameters:
+      - description: '-'
+        in: query
+        name: id
+        required: true
+        type: number
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.EndRentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.EndRentOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: End rent
+      tags:
+      - rent
   /Rent/MyHistory:
     get:
       consumes:
@@ -995,7 +1057,7 @@ paths:
       parameters:
       - description: '-'
         in: query
-        name: radius
+        name: id
         required: true
         type: number
       - description: '-'

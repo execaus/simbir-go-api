@@ -167,6 +167,22 @@ func (q *Queries) DeleteAccountRoles(ctx context.Context, account string) error 
 	return err
 }
 
+const endRent = `-- name: EndRent :exec
+UPDATE "Rent"
+SET time_end=$1
+WHERE id=$2
+`
+
+type EndRentParams struct {
+	TimeEnd sql.NullTime
+	ID      int32
+}
+
+func (q *Queries) EndRent(ctx context.Context, arg EndRentParams) error {
+	_, err := q.db.ExecContext(ctx, endRent, arg.TimeEnd, arg.ID)
+	return err
+}
+
 const getAccount = `-- name: GetAccount :one
 SELECT username, password, balance, deleted
 FROM "Account"

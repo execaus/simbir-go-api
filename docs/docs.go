@@ -866,6 +866,71 @@ const docTemplate = `{
                 }
             }
         },
+        "/Rent/End/{id}": {
+            "post": {
+                "description": "Completion of the rent of transport under the rent id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rent"
+                ],
+                "summary": "End rent",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "-",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.EndRentInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.EndRentOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Rent/MyHistory": {
             "get": {
                 "security": [
@@ -923,7 +988,7 @@ const docTemplate = `{
                     {
                         "type": "number",
                         "description": "-",
-                        "name": "radius",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },
@@ -1664,6 +1729,33 @@ const docTemplate = `{
             "properties": {
                 "transport": {
                     "$ref": "#/definitions/models.GetTransportOutput"
+                }
+            }
+        },
+        "models.EndRentInput": {
+            "type": "object",
+            "required": [
+                "lat",
+                "long"
+            ],
+            "properties": {
+                "lat": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "long": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                }
+            }
+        },
+        "models.EndRentOutput": {
+            "type": "object",
+            "properties": {
+                "rent": {
+                    "$ref": "#/definitions/models.GetRentOutput"
                 }
             }
         },

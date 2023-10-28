@@ -12,6 +12,18 @@ type RentPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *RentPostgres) End(id int32, timeEnd *time.Time) error {
+	if err := r.queries.EndRent(context.Background(), queries.EndRentParams{
+		TimeEnd: sqlnt.ToTimeNull(timeEnd),
+		ID:      id,
+	}); err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func (r *RentPostgres) Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*queries.Rent, error) {
 	rent, err := r.queries.CreateRent(context.Background(), queries.CreateRentParams{
 		Account:   username,
