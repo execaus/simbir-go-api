@@ -538,6 +538,52 @@
                 }
             }
         },
+        "/Admin/Rent/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Return rent information by id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-rent"
+                ],
+                "summary": "Rent information",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetAdminRentOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Admin/Transport": {
             "get": {
                 "security": [
@@ -1763,6 +1809,17 @@
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "models.GetAdminRentOutput": {
+            "type": "object",
+            "properties": {
+                "isDeleted": {
+                    "type": "boolean"
+                },
+                "rent": {
+                    "$ref": "#/definitions/models.GetRentOutput"
                 }
             }
         },

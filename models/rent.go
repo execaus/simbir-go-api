@@ -85,3 +85,8 @@ type EndRentInput struct {
 type EndRentOutput struct {
 	Rent GetRentOutput `json:"rent"`
 }
+
+type GetAdminRentOutput struct {
+	Rent      GetRentOutput `json:"rent"`
+	IsDeleted bool          `json:"isDeleted"`
+}

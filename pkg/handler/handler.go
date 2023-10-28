@@ -68,6 +68,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			adminTransport.PUT("/:id", h.AdminUpdateTransport)
 			adminTransport.DELETE("/:id", h.AdminDeleteTransport)
 		}
+
+		adminRent := admin.Group("Rent")
+		{
+			adminRent.GET("/:id", h.GetAdminRent)
+		}
 	}
 
 	return router

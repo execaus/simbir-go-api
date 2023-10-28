@@ -239,6 +239,13 @@ definitions:
       username:
         type: string
     type: object
+  models.GetAdminRentOutput:
+    properties:
+      isDeleted:
+        type: boolean
+      rent:
+        $ref: '#/definitions/models.GetRentOutput'
+    type: object
   models.GetRentOutput:
     properties:
       ID:
@@ -741,6 +748,35 @@ paths:
       summary: Update account
       tags:
       - admin-account
+  /Admin/Rent/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Return rent information by id.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetAdminRentOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Rent information
+      tags:
+      - admin-rent
   /Admin/Transport:
     get:
       consumes:
