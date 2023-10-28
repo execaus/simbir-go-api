@@ -90,3 +90,7 @@ type GetAdminRentOutput struct {
 	Rent      GetRentOutput `json:"rent"`
 	IsDeleted bool          `json:"isDeleted"`
 }
+
+type GetAdminUserHistoryOutput struct {
+	Rents []GetAdminRentOutput `json:"rents"`
+}

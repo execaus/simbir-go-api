@@ -905,6 +905,52 @@
                 }
             }
         },
+        "/Admin/UserHistory/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Return user rent history by id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-rent"
+                ],
+                "summary": "User rent history",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetAdminUserHistoryOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Rent/End/{id}": {
             "post": {
                 "description": "Completion of the rent of transport under the rent id.",
@@ -1820,6 +1866,17 @@
                 },
                 "rent": {
                     "$ref": "#/definitions/models.GetRentOutput"
+                }
+            }
+        },
+        "models.GetAdminUserHistoryOutput": {
+            "type": "object",
+            "properties": {
+                "rents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.GetAdminRentOutput"
+                    }
                 }
             }
         },

@@ -73,6 +73,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			adminRent.GET("/:id", h.GetAdminRent)
 		}
+		admin.GET("/UserHistory/:id", h.GetAdminUserRentHistory)
 	}
 
 	return router

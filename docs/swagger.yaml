@@ -246,6 +246,13 @@ definitions:
       rent:
         $ref: '#/definitions/models.GetRentOutput'
     type: object
+  models.GetAdminUserHistoryOutput:
+    properties:
+      rents:
+        items:
+          $ref: '#/definitions/models.GetAdminRentOutput'
+        type: array
+    type: object
   models.GetRentOutput:
     properties:
       ID:
@@ -984,6 +991,35 @@ paths:
       summary: Update transport
       tags:
       - admin-transport
+  /Admin/UserHistory/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Return user rent history by id.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetAdminUserHistoryOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: User rent history
+      tags:
+      - admin-rent
   /Rent/{id}:
     get:
       consumes:

@@ -41,12 +41,6 @@ func (h *Handler) GetAdminRent(c *gin.Context) {
 		return
 	}
 
-	isRemoved, err := h.services.Rent.IsRemoved(int32(rentID))
-	if err != nil {
-		h.sendGeneralException(c, err.Error())
-		return
-	}
-
 	h.sendOKWithBody(c, &models.GetAdminRentOutput{
 		Rent: models.GetRentOutput{
 			ID:        rent.ID,
@@ -57,6 +51,61 @@ func (h *Handler) GetAdminRent(c *gin.Context) {
 			PriceUnit: rent.PriceUnit,
 			PriceType: rent.PriceType,
 		},
-		IsDeleted: isRemoved,
+		IsDeleted: rent.IsDeleted,
 	})
+}
+
+// GetAdminUserRentHistory
+// @Summary      User rent history
+// @Description  Return user rent history by id.
+// @Tags         admin-rent
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.GetAdminUserHistoryOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Admin/UserHistory/{id} [get]
+func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
+	username, err := getStringParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isExist, err := h.services.Account.IsExist(username)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, accountIsNotExist)
+		return
+	}
+
+	rents, err := h.services.Rent.GetListFromUsername(username)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	var output models.GetAdminUserHistoryOutput
+	for _, rent := range rents {
+		output.Rents = append(output.Rents, models.GetAdminRentOutput{
+			Rent: models.GetRentOutput{
+				ID:        rent.ID,
+				Account:   rent.Account.Username,
+				Transport: rent.Transport.Identifier,
+				TimeStart: rent.TimeStart,
+				TimeEnd:   rent.TimeEnd,
+				PriceUnit: rent.PriceUnit,
+				PriceType: rent.PriceType,
+			},
+			IsDeleted: rent.IsDeleted,
+		})
+	}
+
+	h.sendOKWithBody(c, output)
 }
