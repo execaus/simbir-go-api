@@ -210,3 +210,15 @@ FROM "Rent"
 JOIN "Account" ON "Rent".account = "Account".username
 JOIN "Transport" ON "Rent".transport = "Transport".id
 WHERE "Transport".id=$1;
+
+-- name: IsExistCurrentRent :one
+SELECT EXISTS (
+    SELECT 1
+    FROM "Rent"
+    WHERE transport=$1 and time_end=null
+);
+
+-- name: CreateRent :one
+INSERT INTO "Rent" (account, transport, time_start, time_end, price_unit, price_type, deleted)
+VALUES ($1, $2, $3, $4, $5, $6, false)
+RETURNING *;

@@ -38,9 +38,14 @@ const (
 	transportIsNotExist        = "transport is not exist"
 	transportIsExist           = "transport is exist"
 	accountIsNotTransportOwner = "account is not transport owner"
+	accountIsTransportOwner    = "account is transport owner"
 	transportIsDeleted         = "transport is deleted"
 	accountIsNotRenter         = "account is not renter"
 	rentIsNotExist             = "rentIsNotExist"
+	transportIsNotRent         = "transport is not rent"
+	transportInRent            = "the transport in rent"
+	noMinutesPrice             = "no price per minutes has been set"
+	noDaysPrice                = "no price per days has been set"
 )
 
 type Error struct {

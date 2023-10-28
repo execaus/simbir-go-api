@@ -58,3 +58,21 @@ type GetRentsMyHistoryOutput struct {
 type GetRentTransportHistoryOutput struct {
 	Rents []GetRentOutput `json:"rents"`
 }
+
+type GetRentTransportNewInput struct {
+	RentType string `form:"rentType"`
+}
+
+func (i *GetRentTransportNewInput) Validate() error {
+	err := constants.CheckRentType(i.RentType)
+	if err != nil {
+		return err
+	}
+	i.RentType = strings.ToUpper(i.RentType)
+	return nil
+
+}
+
+type GetRentTransportNewOutput struct {
+	Rent GetRentOutput `json:"rent"`
+}

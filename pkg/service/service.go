@@ -5,6 +5,7 @@ import (
 	"simbir-go-api/pkg/cache"
 	"simbir-go-api/pkg/repository"
 	"simbir-go-api/queries"
+	"time"
 )
 
 type Account interface {
@@ -34,6 +35,7 @@ type Transport interface {
 	IsRemoved(identifier string) (bool, error)
 	GetList(start, count int32, transportType string) ([]models.Transport, error)
 	GetFromRadius(point *models.Point, radius float64, transportType string) ([]models.Transport, error)
+	IsAccessRent(identifier string) (bool, error)
 }
 
 type Rent interface {
@@ -43,6 +45,8 @@ type Rent interface {
 	Get(id int32) (*models.Rent, error)
 	GetListFromUsername(username string) ([]models.Rent, error)
 	GetListFromTransport(transportID string) ([]models.Rent, error)
+	TransportIsRented(transportID string) (bool, error)
+	Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*models.Rent, error)
 }
 
 type Service struct {

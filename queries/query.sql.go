@@ -64,6 +64,44 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 	return i, err
 }
 
+const createRent = `-- name: CreateRent :one
+INSERT INTO "Rent" (account, transport, time_start, time_end, price_unit, price_type, deleted)
+VALUES ($1, $2, $3, $4, $5, $6, false)
+RETURNING id, account, transport, time_start, time_end, price_unit, price_type, deleted
+`
+
+type CreateRentParams struct {
+	Account   string
+	Transport string
+	TimeStart time.Time
+	TimeEnd   sql.NullTime
+	PriceUnit float64
+	PriceType string
+}
+
+func (q *Queries) CreateRent(ctx context.Context, arg CreateRentParams) (Rent, error) {
+	row := q.db.QueryRowContext(ctx, createRent,
+		arg.Account,
+		arg.Transport,
+		arg.TimeStart,
+		arg.TimeEnd,
+		arg.PriceUnit,
+		arg.PriceType,
+	)
+	var i Rent
+	err := row.Scan(
+		&i.ID,
+		&i.Account,
+		&i.Transport,
+		&i.TimeStart,
+		&i.TimeEnd,
+		&i.PriceUnit,
+		&i.PriceType,
+		&i.Deleted,
+	)
+	return i, err
+}
+
 const createTransport = `-- name: CreateTransport :one
 INSERT INTO "Transport"
 (id, "owner", "type", can_ranted, model, color, "description", latitude, longitude, minute_price, day_price, deleted)
@@ -824,6 +862,21 @@ SELECT EXISTS (
 
 func (q *Queries) IsContainBlackListToken(ctx context.Context, token string) (bool, error) {
 	row := q.db.QueryRowContext(ctx, isContainBlackListToken, token)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const isExistCurrentRent = `-- name: IsExistCurrentRent :one
+SELECT EXISTS (
+    SELECT 1
+    FROM "Rent"
+    WHERE transport=$1 and time_end=null
+)
+`
+
+func (q *Queries) IsExistCurrentRent(ctx context.Context, transport string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isExistCurrentRent, transport)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

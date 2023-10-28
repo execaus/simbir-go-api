@@ -2,7 +2,9 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"simbir-go-api/constants"
 	"simbir-go-api/models"
+	"time"
 )
 
 // GetRentTransport
@@ -227,4 +229,125 @@ func (h *Handler) GetRentTransportHistory(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, output)
+}
+
+func (h *Handler) GetRentTransportNew(c *gin.Context) {
+	var input models.GetRentTransportNewInput
+
+	transportID, err := getStringParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	if err = c.ShouldBindQuery(&input); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	if err = input.Validate(); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	username, err := getAccountContext(c)
+	if err != nil {
+		h.sendUnAuthenticated(c, serverError)
+		return
+	}
+
+	isExist, err := h.services.Transport.IsExist(transportID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, transportIsNotExist)
+		return
+	}
+
+	isRemoved, err := h.services.Transport.IsRemoved(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if isRemoved {
+		h.sendResourceDeleted(c, transportIsDeleted)
+		return
+	}
+
+	isAccessRent, err := h.services.Transport.IsAccessRent(transportID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isAccessRent {
+		h.sendInvalidRequest(c, transportIsNotRent)
+		return
+	}
+
+	isOwner, err := h.services.Transport.IsOwner(transportID, username)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if isOwner {
+		h.sendAccessDenied(c, accountIsTransportOwner)
+		return
+	}
+
+	isRented, err := h.services.Rent.TransportIsRented(transportID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if isRented {
+		h.sendInvalidRequest(c, transportInRent)
+		return
+	}
+
+	transport, err := h.services.Transport.Get(transportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	var priceUnit float64
+	if input.RentType == constants.RentTypeMinutes {
+		if transport.MinutePrice == nil {
+			h.sendConditionNotMet(c, noMinutesPrice)
+			return
+		}
+		priceUnit = *transport.MinutePrice
+	} else if input.RentType == constants.RentTypeDays {
+		if transport.DayPrice == nil {
+			h.sendConditionNotMet(c, noDaysPrice)
+			return
+		}
+		priceUnit = *transport.DayPrice
+	}
+
+	timeStart := time.Now()
+	rent, err := h.services.Rent.Create(username, transportID, timeStart, nil, priceUnit, input.RentType)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOKWithBody(c, &models.GetRentTransportNewOutput{
+		Rent: models.GetRentOutput{
+			ID:        rent.ID,
+			Account:   rent.Account.Username,
+			Transport: rent.Transport.Identifier,
+			TimeStart: rent.TimeStart,
+			TimeEnd:   rent.TimeEnd,
+			PriceUnit: rent.PriceUnit,
+			PriceType: rent.PriceType,
+		},
+	})
 }

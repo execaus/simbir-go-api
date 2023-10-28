@@ -5,6 +5,7 @@ import (
 	"simbir-go-api/models"
 	"simbir-go-api/queries"
 	"simbir-go-api/types"
+	"time"
 )
 
 type Account interface {
@@ -53,6 +54,8 @@ type Rent interface {
 	Get(id int32) (*queries.GetRentRow, error)
 	GetListFromUsername(username string) ([]queries.GetRentsFromUsernameRow, error)
 	GetListFromTransport(transportID string) ([]queries.GetRentsFromTransportIDRow, error)
+	IsExistCurrentRented(transportID string) (bool, error)
+	Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*queries.Rent, error)
 }
 
 type Repository struct {

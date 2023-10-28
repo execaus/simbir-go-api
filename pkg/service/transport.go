@@ -13,6 +13,16 @@ type TransportService struct {
 	repo repository.TransportRepository
 }
 
+func (s *TransportService) IsAccessRent(identifier string) (bool, error) {
+	transport, err := s.repo.Get(identifier)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return transport.CanBeRented, nil
+}
+
 func (s *TransportService) GetFromRadius(point *models.Point, radius float64, transportType string) ([]models.Transport, error) {
 	var err error
 	var transports []models.Transport

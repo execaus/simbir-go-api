@@ -5,10 +5,65 @@ import (
 	"simbir-go-api/models"
 	"simbir-go-api/pkg/repository"
 	"simbir-go-api/pkg/repository/sqlnt"
+	"time"
 )
 
 type RentService struct {
 	repo repository.Rent
+}
+
+func (s *RentService) Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*models.Rent, error) {
+	createdRent, err := s.repo.Create(username, transportID, timeStart, timeEnd, priceUnit, rentType)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	rent, err := s.repo.Get(createdRent.ID)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &models.Rent{
+		ID: rent.ID,
+		Account: models.Account{
+			Username:  rent.Username,
+			Password:  "",
+			Balance:   rent.Balance,
+			Roles:     []string{},
+			IsDeleted: rent.Deleted_2,
+		},
+		Transport: models.Transport{
+			OwnerID:       rent.Owner,
+			CanBeRented:   rent.CanRanted,
+			TransportType: rent.Type,
+			Model:         rent.Model,
+			Color:         rent.Color,
+			Identifier:    rent.ID_2,
+			Description:   sqlnt.ToString(&rent.Description),
+			Latitude:      rent.Latitude,
+			Longitude:     rent.Longitude,
+			MinutePrice:   sqlnt.ToF64(&rent.MinutePrice),
+			DayPrice:      sqlnt.ToF64(&rent.DayPrice),
+			IsDeleted:     rent.Deleted_3,
+		},
+		TimeStart: rent.TimeStart,
+		TimeEnd:   sqlnt.ToTime(&rent.TimeEnd),
+		PriceUnit: rent.PriceUnit,
+		PriceType: rent.PriceType,
+		IsDeleted: rent.Deleted,
+	}, nil
+}
+
+func (s *RentService) TransportIsRented(transportID string) (bool, error) {
+	isExistRent, err := s.repo.IsExistCurrentRented(transportID)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, nil
+	}
+
+	return isExistRent, nil
 }
 
 func (s *RentService) GetListFromTransport(transportID string) ([]models.Rent, error) {

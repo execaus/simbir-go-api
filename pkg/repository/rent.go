@@ -3,11 +3,40 @@ package repository
 import (
 	"context"
 	"github.com/execaus/exloggo"
+	"simbir-go-api/pkg/repository/sqlnt"
 	"simbir-go-api/queries"
+	"time"
 )
 
 type RentPostgres struct {
 	queries *queries.Queries
+}
+
+func (r *RentPostgres) Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*queries.Rent, error) {
+	rent, err := r.queries.CreateRent(context.Background(), queries.CreateRentParams{
+		Account:   username,
+		Transport: transportID,
+		TimeStart: timeStart,
+		TimeEnd:   sqlnt.ToTimeNull(timeEnd),
+		PriceUnit: priceUnit,
+		PriceType: rentType,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &rent, nil
+}
+
+func (r *RentPostgres) IsExistCurrentRented(transportID string) (bool, error) {
+	isExist, err := r.queries.IsExistCurrentRent(context.Background(), transportID)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return isExist, nil
 }
 
 func (r *RentPostgres) GetListFromUsername(username string) ([]queries.GetRentsFromUsernameRow, error) {
