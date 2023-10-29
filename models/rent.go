@@ -7,14 +7,15 @@ import (
 )
 
 type Rent struct {
-	ID        int32
-	Account   Account
-	Transport Transport
-	TimeStart time.Time
-	TimeEnd   *time.Time
-	PriceUnit float64
-	PriceType string
-	IsDeleted bool
+	ID         int32
+	Account    int32
+	Transport  int32
+	TimeStart  time.Time
+	TimeEnd    *time.Time
+	PriceUnit  float64
+	PriceType  string
+	FinalPrice *float64
+	IsDeleted  bool
 }
 
 type GetRentTransportInput struct {
@@ -38,13 +39,14 @@ type GetRentTransportOutput struct {
 }
 
 type GetRentOutput struct {
-	ID        int32      `json:"ID"`
-	Account   string     `json:"account"`
-	Transport string     `json:"transport"`
-	TimeStart time.Time  `json:"timeStart"`
-	TimeEnd   *time.Time `json:"timeEnd"`
-	PriceUnit float64    `json:"priceUnit"`
-	PriceType string     `json:"priceType"`
+	ID         int32      `json:"ID"`
+	Account    int32      `json:"account"`
+	Transport  int32      `json:"transport"`
+	TimeStart  time.Time  `json:"timeStart"`
+	TimeEnd    *time.Time `json:"timeEnd"`
+	PriceUnit  float64    `json:"priceUnit"`
+	PriceType  string     `json:"priceType"`
+	FinalPrice *float64   `json:"finalPrice"`
 }
 
 type GetRentsOutput struct {

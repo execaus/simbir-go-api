@@ -7,42 +7,30 @@ import (
 )
 
 const (
-	usernameNotFound = "username not found"
-	rolesNotFound    = "roles not found"
+	userIDNotFound = "user id not found"
+	rolesNotFound  = "roles not found"
 )
 
 type AccountRoleCache struct {
 	Roles types.AccountRolesDictionary
 }
 
-func (c *AccountRoleCache) ReplaceRoles(username string, roles []string) error {
-	_, ok := c.Roles.Load(username)
+func (c *AccountRoleCache) ReplaceRoles(id int32, roles []string) error {
+	_, ok := c.Roles.Load(id)
 	if !ok {
-		exloggo.Error(usernameNotFound)
-		return errors.New(usernameNotFound)
+		exloggo.Error(userIDNotFound)
+		return errors.New(userIDNotFound)
 	}
 
-	c.Roles.Store(username, roles)
+	c.Roles.Store(id, roles)
 
 	return nil
 }
 
-func (c *AccountRoleCache) ReplaceUsername(username, newUsername string) error {
-	currentRoles, ok := c.Roles.Load(username)
+func (c *AccountRoleCache) AppendRole(id int32, newRole string) error {
+	currentRoles, ok := c.Roles.Load(id)
 	if !ok {
-		exloggo.Error(usernameNotFound)
-		return errors.New(usernameNotFound)
-	}
-
-	c.Roles.Delete(username)
-	c.Roles.Store(newUsername, currentRoles)
-	return nil
-}
-
-func (c *AccountRoleCache) AppendRole(username string, newRole string) error {
-	currentRoles, ok := c.Roles.Load(username)
-	if !ok {
-		c.Roles.Store(username, []string{newRole})
+		c.Roles.Store(id, []string{newRole})
 		return nil
 	}
 
@@ -52,7 +40,7 @@ func (c *AccountRoleCache) AppendRole(username string, newRole string) error {
 		}
 	}
 
-	c.Roles.Store(username, append(currentRoles.([]string), newRole))
+	c.Roles.Store(id, append(currentRoles.([]string), newRole))
 
 	return nil
 }
@@ -61,8 +49,8 @@ func (c *AccountRoleCache) Load(m types.AccountRolesDictionary) {
 	c.Roles = m
 }
 
-func (c *AccountRoleCache) GetRoles(username string) ([]string, error) {
-	roles, ok := c.Roles.Load(username)
+func (c *AccountRoleCache) GetRoles(id int32) ([]string, error) {
+	roles, ok := c.Roles.Load(id)
 	if !ok {
 		return nil, errors.New(rolesNotFound)
 	}

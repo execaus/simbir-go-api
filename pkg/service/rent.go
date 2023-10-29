@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/execaus/exloggo"
+	"simbir-go-api/constants"
 	"simbir-go-api/models"
 	"simbir-go-api/pkg/repository"
 	"simbir-go-api/pkg/repository/sqlnt"
@@ -12,10 +13,12 @@ type RentService struct {
 	repo repository.Rent
 }
 
-func (s *RentService) End(id int32) (*models.Rent, error) {
-	timeEnd := time.Now()
+const dayHours = float64(time.Hour * 24)
 
-	if err := s.repo.End(id, &timeEnd); err != nil {
+func (s *RentService) End(id int32) (*models.Rent, error) {
+	endTime := time.Now()
+
+	if err := s.repo.End(id, &endTime); err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
@@ -27,81 +30,41 @@ func (s *RentService) End(id int32) (*models.Rent, error) {
 	}
 
 	return &models.Rent{
-		ID: rent.ID,
-		Account: models.Account{
-			Username:  rent.Username,
-			Password:  "",
-			Balance:   rent.Balance,
-			Roles:     []string{},
-			IsDeleted: rent.Deleted_2,
-		},
-		Transport: models.Transport{
-			OwnerID:       rent.Owner,
-			CanBeRented:   rent.CanRanted,
-			TransportType: rent.Type,
-			Model:         rent.Model,
-			Color:         rent.Color,
-			Identifier:    rent.ID_2,
-			Description:   sqlnt.ToString(&rent.Description),
-			Latitude:      rent.Latitude,
-			Longitude:     rent.Longitude,
-			MinutePrice:   sqlnt.ToF64(&rent.MinutePrice),
-			DayPrice:      sqlnt.ToF64(&rent.DayPrice),
-			IsDeleted:     rent.Deleted_3,
-		},
-		TimeStart: rent.TimeStart,
-		TimeEnd:   sqlnt.ToTime(&rent.TimeEnd),
-		PriceUnit: rent.PriceUnit,
-		PriceType: rent.PriceType,
-		IsDeleted: rent.Deleted,
+		ID:         rent.ID,
+		Account:    rent.Account,
+		Transport:  rent.Transport,
+		TimeStart:  rent.TimeStart,
+		TimeEnd:    sqlnt.ToTime(&rent.TimeEnd),
+		PriceUnit:  rent.PriceUnit,
+		PriceType:  rent.PriceType,
+		FinalPrice: calculateFinalPrice(rent.PriceType, rent.PriceUnit, rent.TimeStart, &endTime),
+		IsDeleted:  rent.Deleted,
 	}, nil
 }
 
-func (s *RentService) Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*models.Rent, error) {
-	createdRent, err := s.repo.Create(username, transportID, timeStart, timeEnd, priceUnit, rentType)
+func (s *RentService) Create(rent *models.Rent) (*models.Rent, error) {
+	createdRent, err := s.repo.Create(rent)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
 
-	rent, err := s.repo.Get(createdRent.ID)
-	if err != nil {
-		exloggo.Error(err.Error())
-		return nil, err
-	}
+	timeEnd := sqlnt.ToTime(&createdRent.TimeEnd)
 
 	return &models.Rent{
-		ID: rent.ID,
-		Account: models.Account{
-			Username:  rent.Username,
-			Password:  "",
-			Balance:   rent.Balance,
-			Roles:     []string{},
-			IsDeleted: rent.Deleted_2,
-		},
-		Transport: models.Transport{
-			OwnerID:       rent.Owner,
-			CanBeRented:   rent.CanRanted,
-			TransportType: rent.Type,
-			Model:         rent.Model,
-			Color:         rent.Color,
-			Identifier:    rent.ID_2,
-			Description:   sqlnt.ToString(&rent.Description),
-			Latitude:      rent.Latitude,
-			Longitude:     rent.Longitude,
-			MinutePrice:   sqlnt.ToF64(&rent.MinutePrice),
-			DayPrice:      sqlnt.ToF64(&rent.DayPrice),
-			IsDeleted:     rent.Deleted_3,
-		},
-		TimeStart: rent.TimeStart,
-		TimeEnd:   sqlnt.ToTime(&rent.TimeEnd),
-		PriceUnit: rent.PriceUnit,
-		PriceType: rent.PriceType,
-		IsDeleted: rent.Deleted,
+		ID:         rent.ID,
+		Account:    rent.Account,
+		Transport:  rent.Transport,
+		TimeStart:  rent.TimeStart,
+		TimeEnd:    timeEnd,
+		PriceUnit:  rent.PriceUnit,
+		PriceType:  rent.PriceType,
+		IsDeleted:  rent.IsDeleted,
+		FinalPrice: calculateFinalPrice(createdRent.PriceType, createdRent.PriceUnit, createdRent.TimeStart, timeEnd),
 	}, nil
 }
 
-func (s *RentService) TransportIsRented(transportID string) (bool, error) {
+func (s *RentService) TransportIsRented(transportID int32) (bool, error) {
 	isExistRent, err := s.repo.IsExistCurrentRented(transportID)
 	if err != nil {
 		exloggo.Error(err.Error())
@@ -111,88 +74,54 @@ func (s *RentService) TransportIsRented(transportID string) (bool, error) {
 	return isExistRent, nil
 }
 
-func (s *RentService) GetListFromTransport(transportID string) ([]models.Rent, error) {
+func (s *RentService) GetListFromTransportID(transportID, start, count int32) ([]models.Rent, error) {
 	var rents []models.Rent
 
-	reposRents, err := s.repo.GetListFromTransport(transportID)
+	reposRents, err := s.repo.GetListFromTransportID(transportID, start, count)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
 
 	for _, reposResult := range reposRents {
+		endTime := sqlnt.ToTime(&reposResult.TimeEnd)
 		rents = append(rents, models.Rent{
-			ID: reposResult.ID,
-			Account: models.Account{
-				Username:  reposResult.Username,
-				Password:  "",
-				Balance:   reposResult.Balance,
-				Roles:     []string{},
-				IsDeleted: reposResult.Deleted_2,
-			},
-			Transport: models.Transport{
-				OwnerID:       reposResult.Owner,
-				CanBeRented:   reposResult.CanRanted,
-				TransportType: reposResult.Type,
-				Model:         reposResult.Model,
-				Color:         reposResult.Color,
-				Identifier:    reposResult.ID_2,
-				Description:   sqlnt.ToString(&reposResult.Description),
-				Latitude:      reposResult.Latitude,
-				Longitude:     reposResult.Longitude,
-				MinutePrice:   sqlnt.ToF64(&reposResult.MinutePrice),
-				DayPrice:      sqlnt.ToF64(&reposResult.DayPrice),
-				IsDeleted:     reposResult.Deleted_3,
-			},
-			TimeStart: reposResult.TimeStart,
-			TimeEnd:   sqlnt.ToTime(&reposResult.TimeEnd),
-			PriceUnit: reposResult.PriceUnit,
-			PriceType: reposResult.PriceType,
-			IsDeleted: reposResult.Deleted,
+			ID:         reposResult.ID,
+			Account:    reposResult.Account,
+			Transport:  reposResult.Transport,
+			TimeStart:  reposResult.TimeStart,
+			TimeEnd:    endTime,
+			PriceUnit:  reposResult.PriceUnit,
+			PriceType:  reposResult.PriceType,
+			FinalPrice: calculateFinalPrice(reposResult.PriceType, reposResult.PriceUnit, reposResult.TimeStart, endTime),
+			IsDeleted:  reposResult.Deleted,
 		})
 	}
 
 	return rents, nil
 }
 
-func (s *RentService) GetListFromUsername(username string) ([]models.Rent, error) {
+func (s *RentService) GetListFromUserID(userID, start, count int32) ([]models.Rent, error) {
 	var rents []models.Rent
 
-	reposRents, err := s.repo.GetListFromUsername(username)
+	reposRents, err := s.repo.GetListFromUserID(userID, start, count)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
 
 	for _, reposResult := range reposRents {
+		endTime := sqlnt.ToTime(&reposResult.TimeEnd)
 		rents = append(rents, models.Rent{
-			ID: reposResult.ID,
-			Account: models.Account{
-				Username:  reposResult.Username,
-				Password:  "",
-				Balance:   reposResult.Balance,
-				Roles:     []string{},
-				IsDeleted: reposResult.Deleted_2,
-			},
-			Transport: models.Transport{
-				OwnerID:       reposResult.Owner,
-				CanBeRented:   reposResult.CanRanted,
-				TransportType: reposResult.Type,
-				Model:         reposResult.Model,
-				Color:         reposResult.Color,
-				Identifier:    reposResult.ID_2,
-				Description:   sqlnt.ToString(&reposResult.Description),
-				Latitude:      reposResult.Latitude,
-				Longitude:     reposResult.Longitude,
-				MinutePrice:   sqlnt.ToF64(&reposResult.MinutePrice),
-				DayPrice:      sqlnt.ToF64(&reposResult.DayPrice),
-				IsDeleted:     reposResult.Deleted_3,
-			},
-			TimeStart: reposResult.TimeStart,
-			TimeEnd:   sqlnt.ToTime(&reposResult.TimeEnd),
-			PriceUnit: reposResult.PriceUnit,
-			PriceType: reposResult.PriceType,
-			IsDeleted: reposResult.Deleted,
+			ID:         reposResult.ID,
+			Account:    reposResult.Account,
+			Transport:  reposResult.Transport,
+			TimeStart:  reposResult.TimeStart,
+			TimeEnd:    endTime,
+			PriceUnit:  reposResult.PriceUnit,
+			PriceType:  reposResult.PriceType,
+			FinalPrice: calculateFinalPrice(reposResult.PriceType, reposResult.PriceUnit, reposResult.TimeStart, endTime),
+			IsDeleted:  reposResult.Deleted,
 		})
 	}
 
@@ -206,39 +135,23 @@ func (s *RentService) Get(id int32) (*models.Rent, error) {
 		return nil, err
 	}
 
+	endTime := sqlnt.ToTime(&reposResult.TimeEnd)
+
 	return &models.Rent{
-		ID: reposResult.ID,
-		Account: models.Account{
-			Username:  reposResult.Username,
-			Password:  "",
-			Balance:   reposResult.Balance,
-			Roles:     []string{},
-			IsDeleted: reposResult.Deleted_2,
-		},
-		Transport: models.Transport{
-			OwnerID:       reposResult.Owner,
-			CanBeRented:   reposResult.CanRanted,
-			TransportType: reposResult.Type,
-			Model:         reposResult.Model,
-			Color:         reposResult.Color,
-			Identifier:    reposResult.ID_2,
-			Description:   sqlnt.ToString(&reposResult.Description),
-			Latitude:      reposResult.Latitude,
-			Longitude:     reposResult.Longitude,
-			MinutePrice:   sqlnt.ToF64(&reposResult.MinutePrice),
-			DayPrice:      sqlnt.ToF64(&reposResult.DayPrice),
-			IsDeleted:     reposResult.Deleted_3,
-		},
-		TimeStart: reposResult.TimeStart,
-		TimeEnd:   sqlnt.ToTime(&reposResult.TimeEnd),
-		PriceUnit: reposResult.PriceUnit,
-		PriceType: reposResult.PriceType,
-		IsDeleted: reposResult.Deleted,
+		ID:         reposResult.ID,
+		Account:    reposResult.Account,
+		Transport:  reposResult.Transport,
+		TimeStart:  reposResult.TimeStart,
+		TimeEnd:    endTime,
+		PriceUnit:  reposResult.PriceUnit,
+		PriceType:  reposResult.PriceType,
+		FinalPrice: calculateFinalPrice(reposResult.PriceType, reposResult.PriceUnit, reposResult.TimeStart, endTime),
+		IsDeleted:  reposResult.Deleted,
 	}, nil
 }
 
-func (s *RentService) IsRenter(id int32, username string) (bool, error) {
-	return s.repo.IsRenter(id, username)
+func (s *RentService) IsRenter(id int32, userID int32) (bool, error) {
+	return s.repo.IsRenter(id, userID)
 }
 
 func (s *RentService) IsExist(id int32) (bool, error) {
@@ -251,4 +164,27 @@ func (s *RentService) IsRemoved(id int32) (bool, error) {
 
 func NewRentService(repo repository.Rent) *RentService {
 	return &RentService{repo: repo}
+}
+
+func calculateFinalPrice(rentType string, rentUnit float64, startTime time.Time, endTime *time.Time) *float64 {
+	if endTime == nil {
+		return nil
+	}
+
+	var duration time.Duration
+	var result float64
+	if rentType == constants.RentTypeMinutes {
+		duration = (*endTime).Sub(startTime)
+		minutes := duration.Minutes()
+		result = minutes * rentUnit
+		return &result
+	} else if rentType == constants.RentTypeDays {
+		duration = (*endTime).Sub(startTime)
+		days := duration.Hours()
+		result = days / dayHours * rentUnit
+		return &result
+	}
+
+	exloggo.Error("invalid rent type")
+	return nil
 }

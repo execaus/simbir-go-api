@@ -24,12 +24,16 @@ type AccountService struct {
 	env   *models.Environment
 }
 
-func (s *AccountService) IsRemoved(username string) (bool, error) {
-	return s.repo.IsRemoved(username)
+func (s *AccountService) IsRemovedByID(userID int32) (bool, error) {
+	return s.repo.IsRemovedByID(userID)
 }
 
-func (s *AccountService) Remove(username string) error {
-	return s.repo.RemoveAccount(username)
+func (s *AccountService) IsRemovedByUsername(username string) (bool, error) {
+	return s.repo.IsRemovedByUsername(username)
+}
+
+func (s *AccountService) Remove(userID int32) error {
+	return s.repo.RemoveAccount(userID)
 }
 
 func (s *AccountService) Create(username, password string, role string, balance float64) (*models.Account, error) {
@@ -38,14 +42,15 @@ func (s *AccountService) Create(username, password string, role string, balance 
 		return nil, err
 	}
 
+	var account *queries.Account
 	switch {
 	case role == constants.RoleAdmin:
-		_, err = s.repo.CreateAdmin(username, passwordHash, balance)
+		account, err = s.repo.CreateAdmin(username, passwordHash, balance)
 		if err != nil {
 			return nil, err
 		}
 	case role == constants.RoleUser:
-		_, err = s.repo.CreateUser(username, passwordHash, balance)
+		account, err = s.repo.CreateUser(username, passwordHash, balance)
 		if err != nil {
 			return nil, err
 		}
@@ -54,26 +59,27 @@ func (s *AccountService) Create(username, password string, role string, balance 
 		return nil, errors.New(roleNotExist)
 	}
 
-	account, err := s.repo.Get(username)
+	account, err = s.repo.GetByID(account.ID)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
 
-	roles, err := s.repo.GetRoles(username)
+	roles, err := s.repo.GetRoles(account.ID)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
 
 	for _, accountRole := range roles {
-		if err = s.cache.AppendRole(account.Username, accountRole); err != nil {
+		if err = s.cache.AppendRole(account.ID, accountRole); err != nil {
 			exloggo.Error(err.Error())
 			return nil, err
 		}
 	}
 
 	return &models.Account{
+		ID:        account.ID,
 		Username:  account.Username,
 		Password:  account.Password,
 		Balance:   account.Balance,
@@ -91,11 +97,11 @@ func (s *AccountService) GetList(start, count int32) ([]models.Account, error) {
 	return accounts, nil
 }
 
-func (s *AccountService) GetRoles(username string) ([]string, error) {
-	return s.cache.GetRoles(username)
+func (s *AccountService) GetRoles(userID int32) ([]string, error) {
+	return s.cache.GetRoles(userID)
 }
 
-func (s *AccountService) Update(username string, updatedAccount *models.Account) (*models.Account, error) {
+func (s *AccountService) Update(updatedAccount *models.Account) (*models.Account, error) {
 	passwordHash, err := getPasswordHash(updatedAccount.Username)
 	if err != nil {
 		return nil, err
@@ -103,24 +109,17 @@ func (s *AccountService) Update(username string, updatedAccount *models.Account)
 
 	updatedAccount.Password = passwordHash
 
-	if err = s.repo.Update(username, updatedAccount); err != nil {
+	if err = s.repo.Update(updatedAccount); err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
 
-	if username != updatedAccount.Username {
-		if err = s.cache.ReplaceUsername(username, updatedAccount.Username); err != nil {
-			exloggo.Error(err.Error())
-			return nil, err
-		}
-	}
-
-	if err = s.cache.ReplaceRoles(updatedAccount.Username, updatedAccount.Roles); err != nil {
+	if err = s.cache.ReplaceRoles(updatedAccount.ID, updatedAccount.Roles); err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
 
-	return s.GetByUsername(updatedAccount.Username)
+	return s.GetByID(updatedAccount.ID)
 }
 
 func (s *AccountService) IsValidToken(token string) (bool, error) {
@@ -136,18 +135,19 @@ func (s *AccountService) BlockToken(token string) error {
 	return s.repo.BlockToken(token)
 }
 
-func (s *AccountService) GetByUsername(username string) (*models.Account, error) {
-	account, err := s.repo.Get(username)
+func (s *AccountService) GetByID(userID int32) (*models.Account, error) {
+	account, err := s.repo.GetByID(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	roles, err := s.cache.GetRoles(username)
+	roles, err := s.cache.GetRoles(userID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &models.Account{
+		ID:        account.ID,
 		Username:  account.Username,
 		Password:  "",
 		Balance:   account.Balance,
@@ -156,7 +156,7 @@ func (s *AccountService) GetByUsername(username string) (*models.Account, error)
 	}, nil
 }
 
-func (s *AccountService) ParseToken(accessToken string) (string, error) {
+func (s *AccountService) ParseToken(accessToken string) (int32, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &models.JWTTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New(invalidJwtMethod)
@@ -165,19 +165,19 @@ func (s *AccountService) ParseToken(accessToken string) (string, error) {
 		return []byte(s.env.JWTSigningKey), nil
 	})
 	if err != nil {
-		return "", nil
+		return 0, nil
 	}
 
 	claims, ok := token.Claims.(*models.JWTTokenClaims)
 	if !ok {
-		return "", errors.New("token claims are not of type *tokenClaims")
+		return 0, errors.New("token claims are not of type *tokenClaims")
 	}
 
-	return claims.Username, nil
+	return claims.UserID, nil
 }
 
 func (s *AccountService) Authorize(username, password string) (*models.Account, error) {
-	account, err := s.repo.Get(username)
+	account, err := s.repo.GetByUsername(username)
 	if err != nil {
 		return nil, err
 	}
@@ -187,12 +187,13 @@ func (s *AccountService) Authorize(username, password string) (*models.Account, 
 		return nil, nil
 	}
 
-	roles, err := s.cache.GetRoles(username)
+	roles, err := s.cache.GetRoles(account.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &models.Account{
+		ID:        account.ID,
 		Username:  account.Username,
 		Password:  account.Password,
 		Roles:     roles,
@@ -201,9 +202,9 @@ func (s *AccountService) Authorize(username, password string) (*models.Account, 
 	}, nil
 }
 
-func (s *AccountService) GenerateToken(username string) (string, error) {
+func (s *AccountService) GenerateToken(userID int32) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &models.JWTTokenClaims{
-		Username: username,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -219,27 +220,46 @@ func (s *AccountService) GenerateToken(username string) (string, error) {
 	return signedString, nil
 }
 
-func (s *AccountService) IsExist(username string) (bool, error) {
-	return s.repo.IsExist(username)
+func (s *AccountService) IsExistByID(userID int32) (bool, error) {
+	return s.repo.IsExistByID(userID)
 }
 
-func (s *AccountService) SignUp(username, password string) (*queries.Account, error) {
+func (s *AccountService) IsExistByUsername(username string) (bool, error) {
+	return s.repo.IsExistByUsername(username)
+}
+
+func (s *AccountService) SignUp(username, password string) (*models.Account, error) {
 	passwordHash, err := getPasswordHash(password)
 	if err != nil {
+		exloggo.Error(err.Error())
 		return nil, err
 	}
 
 	account, err := s.repo.CreateUser(username, passwordHash, 0)
 	if err != nil {
-		return nil, err
-	}
-
-	if err = s.cache.AppendRole(account.Username, constants.RoleUser); err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
 
-	return account, nil
+	if err = s.cache.AppendRole(account.ID, constants.RoleUser); err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	roles, err := s.repo.GetRoles(account.ID)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &models.Account{
+		ID:        account.ID,
+		Username:  account.Username,
+		Password:  "",
+		Balance:   account.Balance,
+		Roles:     roles,
+		IsDeleted: account.Deleted,
+	}, nil
 }
 
 func NewAccountService(repo repository.Account, env *models.Environment, cache repository.Role) *AccountService {

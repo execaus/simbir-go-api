@@ -20,7 +20,7 @@ import (
 // @Security     BearerAuth
 // @Router       /Admin/Transport/{id} [get]
 func (h *Handler) AdminGetTransport(c *gin.Context) {
-	transportID, err := getStringParam(c, "id")
+	transportID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
@@ -32,7 +32,7 @@ func (h *Handler) AdminGetTransport(c *gin.Context) {
 		return
 	}
 
-	isExist, err := h.services.Transport.IsExist(transportID)
+	isExist, err := h.services.Transport.IsExistByID(transportID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -45,6 +45,7 @@ func (h *Handler) AdminGetTransport(c *gin.Context) {
 
 	h.sendOKWithBody(c, &models.AdminGetTransportOutput{
 		Transport: &models.GetTransportOutput{
+			ID:            transport.ID,
 			CanBeRented:   transport.CanBeRented,
 			TransportType: transport.TransportType,
 			Model:         transport.Model,
@@ -100,6 +101,7 @@ func (h *Handler) AdminGetTransports(c *gin.Context) {
 	for i, transport := range transports {
 		output.Transports[i] = &models.AdminGetTransportOutput{
 			Transport: &models.GetTransportOutput{
+				ID:            transport.ID,
 				OwnerID:       transport.OwnerID,
 				CanBeRented:   transport.CanBeRented,
 				TransportType: transport.TransportType,
@@ -147,7 +149,7 @@ func (h *Handler) AdminCreateTransport(c *gin.Context) {
 		return
 	}
 
-	isExist, err := h.services.Transport.IsExist(input.Identifier)
+	isExist, err := h.services.Transport.IsExistByIdentifier(input.Identifier)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -170,7 +172,6 @@ func (h *Handler) AdminCreateTransport(c *gin.Context) {
 		Longitude:     *input.Longitude,
 		MinutePrice:   input.MinutePrice,
 		DayPrice:      input.DayPrice,
-		IsDeleted:     false,
 	})
 	if err != nil {
 		h.sendGeneralException(c, err.Error())
@@ -179,6 +180,7 @@ func (h *Handler) AdminCreateTransport(c *gin.Context) {
 
 	h.sendOKWithBody(c, &models.AdminCreateTransportOutput{
 		Transport: &models.GetTransportOutput{
+			ID:            transport.ID,
 			OwnerID:       transport.OwnerID,
 			CanBeRented:   transport.CanBeRented,
 			TransportType: transport.TransportType,
@@ -212,7 +214,7 @@ func (h *Handler) AdminCreateTransport(c *gin.Context) {
 func (h *Handler) AdminUpdateTransport(c *gin.Context) {
 	var input models.AdminUpdateTransportInput
 
-	transportID, err := getStringParam(c, "id")
+	transportID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
@@ -228,7 +230,7 @@ func (h *Handler) AdminUpdateTransport(c *gin.Context) {
 		return
 	}
 
-	isExist, err := h.services.Transport.IsExist(input.Identifier)
+	isExist, err := h.services.Transport.IsExistByID(transportID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -239,7 +241,27 @@ func (h *Handler) AdminUpdateTransport(c *gin.Context) {
 		return
 	}
 
-	transport, err := h.services.Transport.Update(transportID, &models.Transport{
+	currentTransport, err := h.services.Transport.Get(transportID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if input.Identifier != currentTransport.Identifier {
+		isExist, err = h.services.Transport.IsExistByIdentifier(input.Identifier)
+		if err != nil {
+			h.sendGeneralException(c, serverError)
+			return
+		}
+
+		if isExist {
+			h.sendInvalidRequest(c, transportIdentifierIsExist)
+			return
+		}
+	}
+
+	transport, err := h.services.Transport.Update(&models.Transport{
+		ID:            transportID,
 		OwnerID:       input.OwnerID,
 		CanBeRented:   input.CanBeRented,
 		TransportType: input.TransportType,
@@ -251,7 +273,6 @@ func (h *Handler) AdminUpdateTransport(c *gin.Context) {
 		Longitude:     *input.Longitude,
 		MinutePrice:   input.MinutePrice,
 		DayPrice:      input.DayPrice,
-		IsDeleted:     false,
 	})
 	if err != nil {
 		h.sendGeneralException(c, err.Error())
@@ -260,6 +281,7 @@ func (h *Handler) AdminUpdateTransport(c *gin.Context) {
 
 	h.sendOKWithBody(c, &models.AdminUpdateTransportOutput{
 		Transport: &models.GetTransportOutput{
+			ID:            transport.ID,
 			OwnerID:       transport.OwnerID,
 			CanBeRented:   transport.CanBeRented,
 			TransportType: transport.TransportType,
@@ -290,13 +312,13 @@ func (h *Handler) AdminUpdateTransport(c *gin.Context) {
 // @Security     BearerAuth
 // @Router       /Admin/Transport/{id} [delete]
 func (h *Handler) AdminDeleteTransport(c *gin.Context) {
-	transportID, err := getStringParam(c, "id")
+	transportID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	isExist, err := h.services.Transport.IsExist(transportID)
+	isExist, err := h.services.Transport.IsExistByID(transportID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return

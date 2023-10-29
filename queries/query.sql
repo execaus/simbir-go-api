@@ -53,18 +53,32 @@ DELETE
 FROM "AccountRole"
 WHERE account=$1;
 
--- name: IsAccountExist :one
+-- name: IsAccountExistByID :one
 SELECT EXISTS (
   SELECT 1
   FROM "Account"
   WHERE id=$1
 );
 
--- name: IsAccountRemoved :one
+-- name: IsAccountExistByUsername :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Account"
+  WHERE username=$1
+);
+
+-- name: IsAccountRemovedByID :one
 SELECT EXISTS (
   SELECT 1
   FROM "Account"
   WHERE id=$1 and deleted=true
+);
+
+-- name: IsAccountRemovedByUsername :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Account"
+  WHERE username=$1 and deleted=true
 );
 
 -- name: RemoveAccount :exec
@@ -72,10 +86,15 @@ UPDATE "Account"
 SET deleted=true
 WHERE id=$1;
 
--- name: GetAccount :one
+-- name: GetAccountByID :one
 SELECT *
 FROM "Account"
 WHERE id=$1;
+
+-- name: GetAccountByUsername :one
+SELECT *
+FROM "Account"
+WHERE username=$1;
 
 -- name: GetAccountRoles :many
 SELECT "role"
@@ -103,11 +122,18 @@ INSERT INTO "Transport"
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false)
 RETURNING *;
 
--- name: IsExistTransport :one
+-- name: IsExistTransportByID :one
 SELECT EXISTS (
   SELECT 1
   FROM "Transport"
   WHERE id=$1
+);
+
+-- name: IsExistTransportByIdentifier :one
+SELECT EXISTS (
+  SELECT 1
+  FROM "Transport"
+  WHERE identifier=$1
 );
 
 -- name: GetTransport :one
@@ -158,7 +184,8 @@ SELECT *
 FROM "Transport"
 WHERE
     "can_ranted"=true and
-    (6371000 * ACOS(SIN(RADIANS($1)) * SIN(RADIANS("latitude")) + COS(RADIANS($1)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $2)))) <= $3;
+    (6371000 * ACOS(SIN(RADIANS($1)) * SIN(RADIANS("latitude")) + COS(RADIANS($1)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $2)))) <= $3
+OFFSET $4 LIMIT $5;
 
 -- name: GetTransportsFromRadiusOnlyType :many
 SELECT *
@@ -166,7 +193,8 @@ FROM "Transport"
 WHERE
     "can_ranted"=true and
     "type"=$1 and
-    (6371000 * ACOS(SIN(RADIANS($2)) * SIN(RADIANS("latitude")) + COS(RADIANS($2)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $3)))) <= $4;
+    (6371000 * ACOS(SIN(RADIANS($2)) * SIN(RADIANS("latitude")) + COS(RADIANS($2)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $3)))) <= $4
+OFFSET $5 LIMIT $6;
 
 -- name: IsRentRemoved :one
 SELECT EXISTS (
@@ -192,23 +220,19 @@ SELECT EXISTS (
 -- name: GetRent :one
 SELECT *
 FROM "Rent"
-JOIN "Account" ON "Rent".account = "Account".id
-JOIN "Transport" ON "Rent".transport = "Transport".id
 WHERE "Rent".id=$1;
 
--- name: GetRentsFromUsername :many
+-- name: GetRentsFromID :many
 SELECT *
 FROM "Rent"
-JOIN "Account" ON "Rent".account = "Account".id
-JOIN "Transport" ON "Rent".transport = "Transport".id
-WHERE "Account".username=$1;
+WHERE account=$1
+OFFSET $2 LIMIT $3;
 
 -- name: GetRentsFromTransportID :many
 SELECT *
 FROM "Rent"
-JOIN "Account" ON "Rent".account = "Account".id
-JOIN "Transport" ON "Rent".transport = "Transport".id
-WHERE "Transport".id=$1;
+WHERE transport=$1
+OFFSET $2 LIMIT $3;
 
 -- name: IsExistCurrentRent :one
 SELECT EXISTS (

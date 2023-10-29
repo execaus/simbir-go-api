@@ -15,8 +15,8 @@ type AccountPostgres struct {
 	queries *queries.Queries
 }
 
-func (r *AccountPostgres) IsRemoved(username string) (bool, error) {
-	isRemoved, err := r.queries.IsAccountRemoved(context.Background(), username)
+func (r *AccountPostgres) IsRemovedByUsername(username string) (bool, error) {
+	isRemoved, err := r.queries.IsAccountRemovedByUsername(context.Background(), username)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return false, err
@@ -25,8 +25,18 @@ func (r *AccountPostgres) IsRemoved(username string) (bool, error) {
 	return isRemoved, nil
 }
 
-func (r *AccountPostgres) RemoveAccount(username string) error {
-	if err := r.queries.RemoveAccount(context.Background(), username); err != nil {
+func (r *AccountPostgres) IsRemovedByID(id int32) (bool, error) {
+	isRemoved, err := r.queries.IsAccountRemovedByID(context.Background(), id)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return isRemoved, nil
+}
+
+func (r *AccountPostgres) RemoveAccount(id int32) error {
+	if err := r.queries.RemoveAccount(context.Background(), id); err != nil {
 		exloggo.Error(err.Error())
 		return err
 	}
@@ -34,15 +44,15 @@ func (r *AccountPostgres) RemoveAccount(username string) error {
 	return nil
 }
 
-func (r *AccountPostgres) ReplaceRoles(username string, roles []string) error {
-	if err := r.queries.DeleteAccountRoles(context.Background(), username); err != nil {
+func (r *AccountPostgres) ReplaceRoles(id int32, roles []string) error {
+	if err := r.queries.DeleteAccountRoles(context.Background(), id); err != nil {
 		exloggo.Error(err.Error())
 		return err
 	}
 
 	for _, role := range roles {
 		_, err := r.queries.AppendRoleAccount(context.Background(), queries.AppendRoleAccountParams{
-			Account: username,
+			Account: id,
 			Role:    role,
 		})
 		if err != nil {
@@ -86,24 +96,12 @@ func (r *AccountPostgres) GetList(start, count int32) ([]models.Account, error) 
 	return accounts, nil
 }
 
-func (r *AccountPostgres) ReplaceUsername(username, newUsername string) error {
-	if err := r.queries.ReplaceUsername(context.Background(), queries.ReplaceUsernameParams{
-		Username:   newUsername,
-		Username_2: username,
-	}); err != nil {
-		exloggo.Error(err.Error())
-		return err
-	}
-
-	return nil
-}
-
-func (r *AccountPostgres) Update(username string, updatedAccount *models.Account) error {
+func (r *AccountPostgres) Update(updatedAccount *models.Account) error {
 	if err := r.queries.UpdateAccount(context.Background(), queries.UpdateAccountParams{
-		Username:   updatedAccount.Username,
-		Password:   updatedAccount.Password,
-		Balance:    updatedAccount.Balance,
-		Username_2: username,
+		Username: updatedAccount.Username,
+		Password: updatedAccount.Password,
+		Balance:  updatedAccount.Balance,
+		ID:       updatedAccount.ID,
 	}); err != nil {
 		exloggo.Error(err.Error())
 		return err
@@ -131,9 +129,9 @@ func (r *AccountPostgres) IsContainBlackListToken(token string) (bool, error) {
 	return isContain, err
 }
 
-func (r *AccountPostgres) AppendRole(username string, role string) error {
+func (r *AccountPostgres) AppendRole(id int32, role string) error {
 	_, err := r.queries.AppendRoleAccount(context.Background(), queries.AppendRoleAccountParams{
-		Account: username,
+		Account: id,
 		Role:    role,
 	})
 	if err != nil {
@@ -142,8 +140,8 @@ func (r *AccountPostgres) AppendRole(username string, role string) error {
 	return err
 }
 
-func (r *AccountPostgres) GetRoles(username string) ([]string, error) {
-	roles, err := r.queries.GetAccountRoles(context.Background(), username)
+func (r *AccountPostgres) GetRoles(id int32) ([]string, error) {
+	roles, err := r.queries.GetAccountRoles(context.Background(), id)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
@@ -152,8 +150,8 @@ func (r *AccountPostgres) GetRoles(username string) ([]string, error) {
 	return roles, nil
 }
 
-func (r *AccountPostgres) Get(username string) (*queries.Account, error) {
-	account, err := r.queries.GetAccount(context.Background(), username)
+func (r *AccountPostgres) GetByID(id int32) (*queries.Account, error) {
+	account, err := r.queries.GetAccountByID(context.Background(), id)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
@@ -162,8 +160,29 @@ func (r *AccountPostgres) Get(username string) (*queries.Account, error) {
 	return &account, nil
 }
 
-func (r *AccountPostgres) IsExist(username string) (bool, error) {
-	isExist, err := r.queries.IsAccountExist(context.Background(), username)
+func (r *AccountPostgres) GetByUsername(username string) (*queries.Account, error) {
+	account, err := r.queries.GetAccountByUsername(context.Background(), username)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &account, nil
+}
+
+func (r *AccountPostgres) IsExistByID(id int32) (bool, error) {
+	isExist, err := r.queries.IsAccountExistByID(context.Background(), id)
+
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return isExist, nil
+}
+
+func (r *AccountPostgres) IsExistByUsername(username string) (bool, error) {
+	isExist, err := r.queries.IsAccountExistByUsername(context.Background(), username)
 
 	if err != nil {
 		exloggo.Error(err.Error())
@@ -202,13 +221,14 @@ func (r *AccountPostgres) create(username, password, role string, balance float6
 		},
 		func(tx *queries.Queries) error {
 			_, err := tx.AppendRoleAccount(context.Background(), queries.AppendRoleAccountParams{
-				Account: username,
+				Account: account.ID,
 				Role:    role,
 			})
 			if err != nil {
 				exloggo.Error(err.Error())
+				return err
 			}
-			return err
+			return nil
 		},
 		func(tx *queries.Queries) error {
 			if role == constants.RoleUser {
@@ -216,13 +236,14 @@ func (r *AccountPostgres) create(username, password, role string, balance float6
 			}
 
 			_, err := tx.AppendRoleAccount(context.Background(), queries.AppendRoleAccountParams{
-				Account: username,
+				Account: account.ID,
 				Role:    constants.RoleUser,
 			})
 			if err != nil {
 				exloggo.Error(err.Error())
+				return err
 			}
-			return err
+			return nil
 		},
 	}); err != nil {
 		exloggo.Error(err.Error())

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"github.com/execaus/exloggo"
+	"simbir-go-api/models"
 	"simbir-go-api/pkg/repository/sqlnt"
 	"simbir-go-api/queries"
 	"time"
@@ -24,24 +25,24 @@ func (r *RentPostgres) End(id int32, timeEnd *time.Time) error {
 	return nil
 }
 
-func (r *RentPostgres) Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*queries.Rent, error) {
-	rent, err := r.queries.CreateRent(context.Background(), queries.CreateRentParams{
-		Account:   username,
-		Transport: transportID,
-		TimeStart: timeStart,
-		TimeEnd:   sqlnt.ToTimeNull(timeEnd),
-		PriceUnit: priceUnit,
-		PriceType: rentType,
+func (r *RentPostgres) Create(rent *models.Rent) (*queries.Rent, error) {
+	reposRent, err := r.queries.CreateRent(context.Background(), queries.CreateRentParams{
+		Account:   rent.Account,
+		Transport: rent.Transport,
+		TimeStart: rent.TimeStart,
+		TimeEnd:   sqlnt.ToTimeNull(rent.TimeEnd),
+		PriceUnit: rent.PriceUnit,
+		PriceType: rent.PriceType,
 	})
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
 	}
 
-	return &rent, nil
+	return &reposRent, nil
 }
 
-func (r *RentPostgres) IsExistCurrentRented(transportID string) (bool, error) {
+func (r *RentPostgres) IsExistCurrentRented(transportID int32) (bool, error) {
 	isExist, err := r.queries.IsExistCurrentRent(context.Background(), transportID)
 	if err != nil {
 		exloggo.Error(err.Error())
@@ -51,8 +52,12 @@ func (r *RentPostgres) IsExistCurrentRented(transportID string) (bool, error) {
 	return isExist, nil
 }
 
-func (r *RentPostgres) GetListFromUsername(username string) ([]queries.GetRentsFromUsernameRow, error) {
-	rows, err := r.queries.GetRentsFromUsername(context.Background(), username)
+func (r *RentPostgres) GetListFromUserID(userID, start, count int32) ([]queries.Rent, error) {
+	rows, err := r.queries.GetRentsFromID(context.Background(), queries.GetRentsFromIDParams{
+		Account: userID,
+		Offset:  start,
+		Limit:   count,
+	})
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
@@ -61,8 +66,12 @@ func (r *RentPostgres) GetListFromUsername(username string) ([]queries.GetRentsF
 	return rows, nil
 }
 
-func (r *RentPostgres) GetListFromTransport(transportID string) ([]queries.GetRentsFromTransportIDRow, error) {
-	rows, err := r.queries.GetRentsFromTransportID(context.Background(), transportID)
+func (r *RentPostgres) GetListFromTransportID(transportID, start, count int32) ([]queries.Rent, error) {
+	rows, err := r.queries.GetRentsFromTransportID(context.Background(), queries.GetRentsFromTransportIDParams{
+		Transport: transportID,
+		Offset:    start,
+		Limit:     count,
+	})
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
@@ -71,7 +80,7 @@ func (r *RentPostgres) GetListFromTransport(transportID string) ([]queries.GetRe
 	return rows, nil
 }
 
-func (r *RentPostgres) Get(id int32) (*queries.GetRentRow, error) {
+func (r *RentPostgres) Get(id int32) (*queries.Rent, error) {
 	row, err := r.queries.GetRent(context.Background(), id)
 	if err != nil {
 		exloggo.Error(err.Error())
@@ -81,10 +90,10 @@ func (r *RentPostgres) Get(id int32) (*queries.GetRentRow, error) {
 	return &row, err
 }
 
-func (r *RentPostgres) IsRenter(id int32, username string) (bool, error) {
+func (r *RentPostgres) IsRenter(id int32, userID int32) (bool, error) {
 	isRenter, err := r.queries.IsRenter(context.Background(), queries.IsRenterParams{
 		ID:      id,
-		Account: username,
+		Account: userID,
 	})
 	if err != nil {
 		exloggo.Error(err.Error())

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"math"
 	"simbir-go-api/models"
 )
 
@@ -24,7 +25,7 @@ func (h *Handler) GetAdminRent(c *gin.Context) {
 		return
 	}
 
-	isExist, err := h.services.Rent.IsExist(int32(rentID))
+	isExist, err := h.services.Rent.IsExist(rentID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -35,7 +36,7 @@ func (h *Handler) GetAdminRent(c *gin.Context) {
 		return
 	}
 
-	rent, err := h.services.Rent.Get(int32(rentID))
+	rent, err := h.services.Rent.Get(rentID)
 	if err != nil {
 		h.sendGeneralException(c, err.Error())
 		return
@@ -43,13 +44,14 @@ func (h *Handler) GetAdminRent(c *gin.Context) {
 
 	h.sendOKWithBody(c, &models.GetAdminRentOutput{
 		Rent: models.GetRentOutput{
-			ID:        rent.ID,
-			Account:   rent.Account.Username,
-			Transport: rent.Transport.TransportType,
-			TimeStart: rent.TimeStart,
-			TimeEnd:   rent.TimeEnd,
-			PriceUnit: rent.PriceUnit,
-			PriceType: rent.PriceType,
+			ID:         rent.ID,
+			Account:    rent.Account,
+			Transport:  rent.Transport,
+			TimeStart:  rent.TimeStart,
+			TimeEnd:    rent.TimeEnd,
+			PriceUnit:  rent.PriceUnit,
+			PriceType:  rent.PriceType,
+			FinalPrice: rent.FinalPrice,
 		},
 		IsDeleted: rent.IsDeleted,
 	})
@@ -68,13 +70,13 @@ func (h *Handler) GetAdminRent(c *gin.Context) {
 // @Security     BearerAuth
 // @Router       /Admin/UserHistory/{id} [get]
 func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
-	username, err := getStringParam(c, "id")
+	userID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	isExist, err := h.services.Account.IsExist(username)
+	isExist, err := h.services.Account.IsExistByID(userID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -85,7 +87,7 @@ func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
 		return
 	}
 
-	rents, err := h.services.Rent.GetListFromUsername(username)
+	rents, err := h.services.Rent.GetListFromUserID(userID, 0, math.MaxInt32)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -95,13 +97,14 @@ func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
 	for _, rent := range rents {
 		output.Rents = append(output.Rents, models.GetAdminRentOutput{
 			Rent: models.GetRentOutput{
-				ID:        rent.ID,
-				Account:   rent.Account.Username,
-				Transport: rent.Transport.Identifier,
-				TimeStart: rent.TimeStart,
-				TimeEnd:   rent.TimeEnd,
-				PriceUnit: rent.PriceUnit,
-				PriceType: rent.PriceType,
+				ID:         rent.ID,
+				Account:    rent.Account,
+				Transport:  rent.Transport,
+				TimeStart:  rent.TimeStart,
+				TimeEnd:    rent.TimeEnd,
+				PriceUnit:  rent.PriceUnit,
+				PriceType:  rent.PriceType,
+				FinalPrice: rent.FinalPrice,
 			},
 			IsDeleted: rent.IsDeleted,
 		})
@@ -123,13 +126,13 @@ func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
 // @Security     BearerAuth
 // @Router       /Admin/TransportHistory/{id} [get]
 func (h *Handler) GetAdminTransportRentHistory(c *gin.Context) {
-	transportID, err := getStringParam(c, "id")
+	transportID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	isExist, err := h.services.Transport.IsExist(transportID)
+	isExist, err := h.services.Transport.IsExistByID(transportID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -140,7 +143,7 @@ func (h *Handler) GetAdminTransportRentHistory(c *gin.Context) {
 		return
 	}
 
-	rents, err := h.services.Rent.GetListFromTransport(transportID)
+	rents, err := h.services.Rent.GetListFromTransportID(transportID, 0, math.MaxInt32)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -150,13 +153,14 @@ func (h *Handler) GetAdminTransportRentHistory(c *gin.Context) {
 	for _, rent := range rents {
 		output.Rents = append(output.Rents, models.GetAdminRentOutput{
 			Rent: models.GetRentOutput{
-				ID:        rent.ID,
-				Account:   rent.Account.Username,
-				Transport: rent.Transport.Identifier,
-				TimeStart: rent.TimeStart,
-				TimeEnd:   rent.TimeEnd,
-				PriceUnit: rent.PriceUnit,
-				PriceType: rent.PriceType,
+				ID:         rent.ID,
+				Account:    rent.Account,
+				Transport:  rent.Transport,
+				TimeStart:  rent.TimeStart,
+				TimeEnd:    rent.TimeEnd,
+				PriceUnit:  rent.PriceUnit,
+				PriceType:  rent.PriceType,
+				FinalPrice: rent.FinalPrice,
 			},
 			IsDeleted: rent.IsDeleted,
 		})

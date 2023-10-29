@@ -3,6 +3,7 @@ package models
 import "simbir-go-api/constants"
 
 type Account struct {
+	ID        int32
 	Username  string
 	Password  string
 	Balance   float64
@@ -38,6 +39,7 @@ type SignInOutput struct {
 }
 
 type GetAccountOutput struct {
+	ID       int32   `json:"id"`
 	Username string  `json:"username"`
 	IsAdmin  bool    `json:"isAdmin"`
 	Balance  float64 `json:"balance"`
@@ -49,7 +51,7 @@ type UpdateAccountInput struct {
 }
 
 type UpdateAccountOutput struct {
-	Token string `json:"token"`
+	Account GetAccountOutput `json:"account"`
 }
 
 type AdminGetAccountsInput struct {

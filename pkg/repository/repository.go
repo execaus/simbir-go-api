@@ -12,21 +12,23 @@ type Account interface {
 	Role
 	CreateUser(username, password string, balance float64) (*queries.Account, error)
 	CreateAdmin(username, password string, balance float64) (*queries.Account, error)
-	IsExist(username string) (bool, error)
-	Get(username string) (*queries.Account, error)
+	IsExistByID(id int32) (bool, error)
+	IsExistByUsername(username string) (bool, error)
+	GetByID(id int32) (*queries.Account, error)
+	GetByUsername(username string) (*queries.Account, error)
 	IsContainBlackListToken(token string) (bool, error)
 	BlockToken(token string) error
-	Update(username string, updatedAccount *models.Account) error
-	GetList(start int32, count int32) ([]models.Account, error)
-	RemoveAccount(username string) error
-	IsRemoved(username string) (bool, error)
+	Update(updatedAccount *models.Account) error
+	GetList(start, count int32) ([]models.Account, error)
+	RemoveAccount(id int32) error
+	IsRemovedByID(id int32) (bool, error)
+	IsRemovedByUsername(username string) (bool, error)
 }
 
 type Role interface {
-	GetRoles(username string) ([]string, error)
-	AppendRole(username string, role string) error
-	ReplaceUsername(username, newUsername string) error
-	ReplaceRoles(username string, roles []string) error
+	GetRoles(id int32) ([]string, error)
+	AppendRole(id int32, role string) error
+	ReplaceRoles(id int32, roles []string) error
 }
 
 type CacheBuilder interface {
@@ -35,12 +37,13 @@ type CacheBuilder interface {
 
 type TransportRepository interface {
 	Create(transport *models.Transport) (*models.Transport, error)
-	IsExist(identifier string) (bool, error)
-	Get(identifier string) (*models.Transport, error)
-	IsOwner(identifier, username string) (bool, error)
-	Update(identifier string, transport *models.Transport) (*models.Transport, error)
-	Remove(identifier string) error
-	IsRemoved(identifier string) (bool, error)
+	IsExistByID(id int32) (bool, error)
+	IsExistByIdentifier(identifier string) (bool, error)
+	Get(id int32) (*models.Transport, error)
+	IsOwner(id, userID int32) (bool, error)
+	Update(transport *models.Transport) (*models.Transport, error)
+	Remove(id int32) error
+	IsRemoved(id int32) (bool, error)
 	GetList(start, count int32) ([]queries.Transport, error)
 	GetListOnlyType(start, count int32, transportType string) ([]queries.Transport, error)
 	GetFromRadiusAll(point *models.Point, radius float64, transportType string) ([]queries.Transport, error)
@@ -50,12 +53,12 @@ type TransportRepository interface {
 type Rent interface {
 	IsRemoved(id int32) (bool, error)
 	IsExist(id int32) (bool, error)
-	IsRenter(id int32, username string) (bool, error)
-	Get(id int32) (*queries.GetRentRow, error)
-	GetListFromUsername(username string) ([]queries.GetRentsFromUsernameRow, error)
-	GetListFromTransport(transportID string) ([]queries.GetRentsFromTransportIDRow, error)
-	IsExistCurrentRented(transportID string) (bool, error)
-	Create(username, transportID string, timeStart time.Time, timeEnd *time.Time, priceUnit float64, rentType string) (*queries.Rent, error)
+	IsRenter(id int32, userID int32) (bool, error)
+	Get(id int32) (*queries.Rent, error)
+	GetListFromUserID(id, start, count int32) ([]queries.Rent, error)
+	GetListFromTransportID(id, start, count int32) ([]queries.Rent, error)
+	IsExistCurrentRented(id int32) (bool, error)
+	Create(rent *models.Rent) (*queries.Rent, error)
 	End(id int32, timeEnd *time.Time) error
 }
 

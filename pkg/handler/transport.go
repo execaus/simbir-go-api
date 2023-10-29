@@ -27,7 +27,7 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 		return
 	}
 
-	username, err := getAccountContext(c)
+	userID, err := getAccountContext(c)
 	if err != nil {
 		h.sendUnAuthenticated(c, serverError)
 		return
@@ -38,7 +38,7 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 		return
 	}
 
-	isExist, err := h.services.Transport.IsExist(input.Identifier)
+	isExist, err := h.services.Transport.IsExistByIdentifier(input.Identifier)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -50,7 +50,7 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 	}
 
 	transport, err := h.services.Transport.Create(&models.Transport{
-		OwnerID:       username,
+		OwnerID:       userID,
 		CanBeRented:   input.CanBeRented,
 		TransportType: input.TransportType,
 		Model:         input.Model,
@@ -68,6 +68,7 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, &models.CreateTransportOutput{Transport: &models.GetTransportOutput{
+		ID:            transport.ID,
 		CanBeRented:   transport.CanBeRented,
 		TransportType: transport.TransportType,
 		Model:         transport.Model,
@@ -94,13 +95,13 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 // @Failure      500  {object}  handler.Error
 // @Router       /Transport/{id} [get]
 func (h *Handler) GetTransport(c *gin.Context) {
-	transportID, err := getStringParam(c, "id")
+	transportID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	isExist, err := h.services.Transport.IsExist(transportID)
+	isExist, err := h.services.Transport.IsExistByID(transportID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -129,6 +130,7 @@ func (h *Handler) GetTransport(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, &models.GetTransportOutput{
+		ID:            transport.ID,
 		CanBeRented:   transport.CanBeRented,
 		TransportType: transport.TransportType,
 		Model:         transport.Model,
@@ -165,19 +167,19 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 		return
 	}
 
-	username, err := getAccountContext(c)
+	userID, err := getAccountContext(c)
 	if err != nil {
 		h.sendUnAuthenticated(c, serverError)
 		return
 	}
 
-	transportID, err := getStringParam(c, "id")
+	transportID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	isExist, err := h.services.Transport.IsExist(transportID)
+	isExist, err := h.services.Transport.IsExistByID(transportID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -186,6 +188,25 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 	if !isExist {
 		h.sendInvalidRequest(c, transportIsNotExist)
 		return
+	}
+
+	currentTransport, err := h.services.Transport.Get(transportID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if input.Identifier != currentTransport.Identifier {
+		isExist, err = h.services.Transport.IsExistByIdentifier(input.Identifier)
+		if err != nil {
+			h.sendGeneralException(c, serverError)
+			return
+		}
+
+		if !isExist {
+			h.sendInvalidRequest(c, transportIdentifierIsExist)
+			return
+		}
 	}
 
 	isRemoved, err := h.services.Transport.IsRemoved(transportID)
@@ -199,7 +220,7 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 		return
 	}
 
-	isOwner, err := h.services.Transport.IsOwner(transportID, username)
+	isOwner, err := h.services.Transport.IsOwner(transportID, userID)
 	if err != nil {
 		h.sendGeneralException(c, err.Error())
 		return
@@ -210,14 +231,9 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 		return
 	}
 
-	currentTransport, err := h.services.Transport.Get(transportID)
-	if err != nil {
-		h.sendGeneralException(c, err.Error())
-		return
-	}
-
-	transport, err := h.services.Transport.Update(transportID, &models.Transport{
-		OwnerID:       username,
+	transport, err := h.services.Transport.Update(&models.Transport{
+		ID:            transportID,
+		OwnerID:       userID,
 		CanBeRented:   input.CanBeRented,
 		TransportType: currentTransport.TransportType,
 		Model:         input.Model,
@@ -235,6 +251,7 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, &models.UpdateTransportOutput{Transport: &models.GetTransportOutput{
+		ID:            transport.ID,
 		CanBeRented:   transport.CanBeRented,
 		TransportType: transport.TransportType,
 		Model:         transport.Model,
@@ -264,19 +281,19 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 // @Security     BearerAuth
 // @Router       /Transport/{id} [delete]
 func (h *Handler) DeleteTransport(c *gin.Context) {
-	transportID, err := getStringParam(c, "id")
+	transportID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	username, err := getAccountContext(c)
+	userID, err := getAccountContext(c)
 	if err != nil {
 		h.sendUnAuthenticated(c, serverError)
 		return
 	}
 
-	isExist, err := h.services.Transport.IsExist(transportID)
+	isExist, err := h.services.Transport.IsExistByID(transportID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -298,7 +315,7 @@ func (h *Handler) DeleteTransport(c *gin.Context) {
 		return
 	}
 
-	isOwner, err := h.services.Transport.IsOwner(transportID, username)
+	isOwner, err := h.services.Transport.IsOwner(transportID, userID)
 	if err != nil {
 		h.sendGeneralException(c, err.Error())
 		return

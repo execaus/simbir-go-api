@@ -2,5 +2,5 @@ package types
 
 import "sync"
 
-// AccountRolesDictionary map[string][]string
+// AccountRolesDictionary map[int32][]string
 type AccountRolesDictionary = *sync.Map

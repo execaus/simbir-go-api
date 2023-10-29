@@ -37,6 +37,7 @@ func (h *Handler) AdminGetAccounts(c *gin.Context) {
 	output := models.AdminGetAccountsOutput{Accounts: make([]*models.GetAccountOutput, 0)}
 	for _, account := range accounts {
 		output.Accounts = append(output.Accounts, &models.GetAccountOutput{
+			ID:       account.ID,
 			Username: account.Username,
 			IsAdmin:  account.IsAdmin(),
 			Balance:  account.Balance,
@@ -60,13 +61,13 @@ func (h *Handler) AdminGetAccounts(c *gin.Context) {
 // @Security     BearerAuth
 // @Router       /Admin/Account/{id} [get]
 func (h *Handler) AdminGetAccount(c *gin.Context) {
-	username, err := getStringParam(c, "id")
+	userID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	isExist, err := h.services.Account.IsExist(username)
+	isExist, err := h.services.Account.IsExistByID(userID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -77,7 +78,7 @@ func (h *Handler) AdminGetAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := h.services.Account.GetByUsername(username)
+	account, err := h.services.Account.GetByID(userID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -85,6 +86,7 @@ func (h *Handler) AdminGetAccount(c *gin.Context) {
 
 	h.sendOKWithBody(c, &models.AdminGetAccountOutput{
 		Account: models.GetAccountOutput{
+			ID:       account.ID,
 			Username: account.Username,
 			IsAdmin:  account.IsAdmin(),
 			Balance:  account.Balance,
@@ -113,7 +115,7 @@ func (h *Handler) AdminCreateAccount(c *gin.Context) {
 		return
 	}
 
-	isExist, err := h.services.Account.IsExist(input.Username)
+	isExist, err := h.services.Account.IsExistByUsername(input.Username)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -138,6 +140,7 @@ func (h *Handler) AdminCreateAccount(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, &models.AdminCreateAccountOutput{Account: models.GetAccountOutput{
+		ID:       account.ID,
 		Username: account.Username,
 		IsAdmin:  account.IsAdmin(),
 		Balance:  account.Balance,
@@ -167,13 +170,13 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 		return
 	}
 
-	username, err := getStringParam(c, "id")
+	userID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	isRemoved, err := h.services.Account.IsRemoved(username)
+	isRemoved, err := h.services.Account.IsRemovedByID(userID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -184,8 +187,14 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 		return
 	}
 
-	if username != input.Username {
-		isExist, err := h.services.Account.IsExist(input.Username)
+	currentAccount, err := h.services.Account.GetByID(userID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if currentAccount.Username != input.Username {
+		isExist, err := h.services.Account.IsExistByUsername(input.Username)
 		if err != nil {
 			h.sendGeneralException(c, serverError)
 			return
@@ -202,7 +211,7 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 		roles = append(roles, constants.RoleAdmin)
 	}
 
-	updatedAccount, err := h.services.Account.Update(username, &models.Account{
+	updatedAccount, err := h.services.Account.Update(&models.Account{
 		Username: input.Username,
 		Password: input.Password,
 		Balance:  *input.Balance,
@@ -214,6 +223,7 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, &models.AdminUpdateAccountOutput{Account: models.GetAccountOutput{
+		ID:       updatedAccount.ID,
 		Username: updatedAccount.Username,
 		IsAdmin:  updatedAccount.IsAdmin(),
 		Balance:  updatedAccount.Balance,
@@ -235,13 +245,13 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 // @Security     BearerAuth
 // @Router       /Admin/Account/{id} [delete]
 func (h *Handler) AdminRemoveAccount(c *gin.Context) {
-	username, err := getStringParam(c, "id")
+	userID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	isExist, err := h.services.Account.IsExist(username)
+	isExist, err := h.services.Account.IsExistByID(userID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -252,7 +262,7 @@ func (h *Handler) AdminRemoveAccount(c *gin.Context) {
 		return
 	}
 
-	isRemoved, err := h.services.Account.IsRemoved(username)
+	isRemoved, err := h.services.Account.IsRemovedByID(userID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -263,7 +273,7 @@ func (h *Handler) AdminRemoveAccount(c *gin.Context) {
 		return
 	}
 
-	if err = h.services.Account.Remove(username); err != nil {
+	if err = h.services.Account.Remove(userID); err != nil {
 		h.sendGeneralException(c, serverError)
 		return
 	}

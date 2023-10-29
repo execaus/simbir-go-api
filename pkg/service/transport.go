@@ -13,8 +13,8 @@ type TransportService struct {
 	repo repository.TransportRepository
 }
 
-func (s *TransportService) IsAccessRent(identifier string) (bool, error) {
-	transport, err := s.repo.Get(identifier)
+func (s *TransportService) IsAccessRent(id int32) (bool, error) {
+	transport, err := s.repo.Get(id)
 	if err != nil {
 		exloggo.Error(err.Error())
 		return false, err
@@ -44,12 +44,13 @@ func (s *TransportService) GetFromRadius(point *models.Point, radius float64, tr
 
 	for _, reposTransport := range reposTransports {
 		transports = append(transports, models.Transport{
+			ID:            reposTransport.ID,
 			OwnerID:       reposTransport.Owner,
-			CanBeRented:   reposTransport.CanRanted,
+			CanBeRented:   reposTransport.CanRented,
 			TransportType: reposTransport.Type,
 			Model:         reposTransport.Model,
 			Color:         reposTransport.Color,
-			Identifier:    reposTransport.ID,
+			Identifier:    reposTransport.Identifier,
 			Description:   sqlnt.ToString(&reposTransport.Description),
 			Latitude:      reposTransport.Latitude,
 			Longitude:     reposTransport.Longitude,
@@ -83,12 +84,13 @@ func (s *TransportService) GetList(start, count int32, transportType string) ([]
 
 	for _, transport := range reposTransports {
 		transports = append(transports, models.Transport{
+			ID:            transport.ID,
 			OwnerID:       transport.Owner,
-			CanBeRented:   transport.CanRanted,
+			CanBeRented:   transport.CanRented,
 			TransportType: transport.Type,
 			Model:         transport.Model,
 			Color:         transport.Color,
-			Identifier:    transport.ID,
+			Identifier:    transport.Identifier,
 			Description:   sqlnt.ToString(&transport.Description),
 			Latitude:      transport.Latitude,
 			Longitude:     transport.Longitude,
@@ -101,28 +103,32 @@ func (s *TransportService) GetList(start, count int32, transportType string) ([]
 	return transports, nil
 }
 
-func (s *TransportService) IsRemoved(identifier string) (bool, error) {
-	return s.repo.IsRemoved(identifier)
+func (s *TransportService) IsRemoved(id int32) (bool, error) {
+	return s.repo.IsRemoved(id)
 }
 
-func (s *TransportService) Remove(identifier string) error {
-	return s.repo.Remove(identifier)
+func (s *TransportService) Remove(id int32) error {
+	return s.repo.Remove(id)
 }
 
-func (s *TransportService) Update(identifier string, transport *models.Transport) (*models.Transport, error) {
-	return s.repo.Update(identifier, transport)
+func (s *TransportService) Update(transport *models.Transport) (*models.Transport, error) {
+	return s.repo.Update(transport)
 }
 
-func (s *TransportService) IsOwner(identifier, username string) (bool, error) {
-	return s.repo.IsOwner(identifier, username)
+func (s *TransportService) IsOwner(id, userID int32) (bool, error) {
+	return s.repo.IsOwner(id, userID)
 }
 
-func (s *TransportService) Get(identifier string) (*models.Transport, error) {
-	return s.repo.Get(identifier)
+func (s *TransportService) Get(id int32) (*models.Transport, error) {
+	return s.repo.Get(id)
 }
 
-func (s *TransportService) IsExist(identifier string) (bool, error) {
-	return s.repo.IsExist(identifier)
+func (s *TransportService) IsExistByID(id int32) (bool, error) {
+	return s.repo.IsExistByID(id)
+}
+
+func (s *TransportService) IsExistByIdentifier(identifier string) (bool, error) {
+	return s.repo.IsExistByIdentifier(identifier)
 }
 
 func (s *TransportService) Create(transport *models.Transport) (*models.Transport, error) {

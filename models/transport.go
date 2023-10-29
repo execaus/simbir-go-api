@@ -6,7 +6,8 @@ import (
 )
 
 type Transport struct {
-	OwnerID       string
+	ID            int32
+	OwnerID       int32
 	CanBeRented   bool
 	TransportType string
 	Model         string
@@ -43,7 +44,8 @@ type CreateTransportOutput struct {
 }
 
 type GetTransportOutput struct {
-	OwnerID       string   `json:"ownerId"`
+	ID            int32    `json:"id"`
+	OwnerID       int32    `json:"ownerId"`
 	CanBeRented   bool     `json:"canBeRented"`
 	TransportType string   `json:"transportType"`
 	Model         string   `json:"model"`
@@ -97,7 +99,7 @@ type AdminGetTransportsOutput struct {
 }
 
 type AdminCreateTransportInput struct {
-	OwnerID       string   `json:"ownerId" binding:"required"`
+	OwnerID       int32    `json:"ownerId" binding:"required"`
 	CanBeRented   bool     `json:"canBeRented" binding:"required"`
 	TransportType string   `json:"transportType" binding:"required"`
 	Model         string   `json:"model" binding:"required"`
@@ -119,7 +121,7 @@ type AdminCreateTransportOutput struct {
 }
 
 type AdminUpdateTransportInput struct {
-	OwnerID       string   `json:"ownerId" binding:"required"`
+	OwnerID       int32    `json:"ownerId" binding:"required"`
 	CanBeRented   bool     `json:"canBeRented" binding:"required"`
 	TransportType string   `json:"transportType" binding:"required"`
 	Model         string   `json:"model" binding:"required"`

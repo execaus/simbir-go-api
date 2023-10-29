@@ -25,7 +25,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 		return
 	}
 
-	isExist, err := h.services.Account.IsExist(input.Username)
+	isExist, err := h.services.Account.IsExistByUsername(input.Username)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -36,13 +36,13 @@ func (h *Handler) SignUp(c *gin.Context) {
 		return
 	}
 
-	_, err = h.services.Account.SignUp(input.Username, input.Password)
+	account, err := h.services.Account.SignUp(input.Username, input.Password)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
 	}
 
-	token, err := h.services.Account.GenerateToken(input.Username)
+	token, err := h.services.Account.GenerateToken(account.ID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -66,14 +66,14 @@ func (h *Handler) SignUp(c *gin.Context) {
 // @Failure      500  {object}  handler.Error
 // @Router       /Account/SignIn [post]
 func (h *Handler) SignIn(c *gin.Context) {
-	var input *models.SignInInput
+	var input models.SignInInput
 
 	if err := c.BindJSON(&input); err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
 
-	isExist, err := h.services.Account.IsExist(input.Username)
+	isExist, err := h.services.Account.IsExistByUsername(input.Username)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -84,7 +84,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 		return
 	}
 
-	isRemoved, err := h.services.Account.IsRemoved(input.Username)
+	isRemoved, err := h.services.Account.IsRemovedByUsername(input.Username)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -106,7 +106,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.services.Account.GenerateToken(account.Username)
+	token, err := h.services.Account.GenerateToken(account.ID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -130,13 +130,13 @@ func (h *Handler) SignIn(c *gin.Context) {
 // @Security     BearerAuth
 // @Router       /Account/Me [get]
 func (h *Handler) GetAccount(c *gin.Context) {
-	username, err := getAccountContext(c)
+	userID, err := getAccountContext(c)
 	if err != nil {
 		h.sendUnAuthenticated(c, serverError)
 		return
 	}
 
-	isExist, err := h.services.Account.IsExist(username)
+	isExist, err := h.services.Account.IsExistByID(userID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
@@ -147,13 +147,14 @@ func (h *Handler) GetAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := h.services.Account.GetByUsername(username)
+	account, err := h.services.Account.GetByID(userID)
 	if err != nil {
 		h.sendGeneralException(c, serverError)
 		return
 	}
 
 	h.sendOKWithBody(c, &models.GetAccountOutput{
+		ID:       userID,
 		Username: account.Username,
 		IsAdmin:  account.IsAdmin(),
 		Balance:  account.Balance,
@@ -187,14 +188,20 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 		return
 	}
 
-	username, err := getAccountContext(c)
+	userID, err := getAccountContext(c)
 	if err != nil {
 		h.sendUnAuthenticated(c, serverError)
 		return
 	}
 
-	if username != input.Username {
-		isExist, err := h.services.Account.IsExist(input.Username)
+	currentAccount, err := h.services.Account.GetByID(userID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if currentAccount.Username != input.Username {
+		isExist, err := h.services.Account.IsExistByUsername(input.Username)
 		if err != nil {
 			h.sendGeneralException(c, serverError)
 			return
@@ -206,13 +213,8 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 		}
 	}
 
-	currentAccount, err := h.services.Account.GetByUsername(input.Username)
-	if err != nil {
-		h.sendGeneralException(c, serverError)
-		return
-	}
-
-	updatedAccount, err := h.services.Account.Update(username, &models.Account{
+	updatedAccount, err := h.services.Account.Update(&models.Account{
+		ID:       userID,
 		Username: input.Username,
 		Password: input.Password,
 		Balance:  currentAccount.Balance,
@@ -228,14 +230,13 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 		return
 	}
 
-	newToken, err := h.services.Account.GenerateToken(updatedAccount.Username)
-	if err != nil {
-		h.sendGeneralException(c, serverError)
-		return
-	}
-
 	h.sendOKWithBody(c, &models.UpdateAccountOutput{
-		Token: newToken,
+		Account: models.GetAccountOutput{
+			ID:       updatedAccount.ID,
+			Username: updatedAccount.Username,
+			IsAdmin:  updatedAccount.IsAdmin(),
+			Balance:  updatedAccount.Balance,
+		},
 	})
 }
 
