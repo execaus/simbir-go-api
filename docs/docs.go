@@ -570,7 +570,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateAdminRentInput"
+                            "$ref": "#/definitions/models.AdminCreateRentInput"
                         }
                     }
                 ],
@@ -578,7 +578,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.CreateAdminRentOutput"
+                            "$ref": "#/definitions/models.AdminCreateRentOutput"
                         }
                     },
                     "400": {
@@ -629,7 +629,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.EndAdminRentInput"
+                            "$ref": "#/definitions/models.AdminEndRentInput"
                         }
                     }
                 ],
@@ -637,7 +637,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.EndAdminRentOutput"
+                            "$ref": "#/definitions/models.AdminEndRentOutput"
                         }
                     },
                     "400": {
@@ -689,7 +689,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.GetAdminRentOutput"
+                            "$ref": "#/definitions/models.AdminGetRentOutput"
                         }
                     },
                     "400": {
@@ -700,6 +700,69 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Changing a lease record by id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-rent"
+                ],
+                "summary": "Update rent",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "-",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AdminUpdateRentInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AdminUpdateRentOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -1056,7 +1119,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.GetAdminTransportHistoryOutput"
+                            "$ref": "#/definitions/models.AdminGetTransportHistoryOutput"
                         }
                     },
                     "400": {
@@ -1102,7 +1165,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.GetAdminUserHistoryOutput"
+                            "$ref": "#/definitions/models.AdminGetUserHistoryOutput"
                         }
                     },
                     "400": {
@@ -1734,6 +1797,44 @@ const docTemplate = `{
                 }
             }
         },
+        "models.AdminCreateRentInput": {
+            "type": "object",
+            "required": [
+                "priceOfUnit",
+                "priceType",
+                "timeStart",
+                "transportId",
+                "userId"
+            ],
+            "properties": {
+                "priceOfUnit": {
+                    "type": "number"
+                },
+                "priceType": {
+                    "type": "string"
+                },
+                "timeEnd": {
+                    "type": "string"
+                },
+                "timeStart": {
+                    "type": "string"
+                },
+                "transportId": {
+                    "type": "integer"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.AdminCreateRentOutput": {
+            "type": "object",
+            "properties": {
+                "rent": {
+                    "$ref": "#/definitions/models.AdminGetRentOutput"
+                }
+            }
+        },
         "models.AdminCreateTransportInput": {
             "type": "object",
             "required": [
@@ -1796,6 +1897,33 @@ const docTemplate = `{
                 }
             }
         },
+        "models.AdminEndRentInput": {
+            "type": "object",
+            "required": [
+                "lat",
+                "long"
+            ],
+            "properties": {
+                "lat": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "long": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                }
+            }
+        },
+        "models.AdminEndRentOutput": {
+            "type": "object",
+            "properties": {
+                "rent": {
+                    "$ref": "#/definitions/models.AdminGetRentOutput"
+                }
+            }
+        },
         "models.AdminGetAccountOutput": {
             "type": "object",
             "properties": {
@@ -1818,6 +1946,28 @@ const docTemplate = `{
                 }
             }
         },
+        "models.AdminGetRentOutput": {
+            "type": "object",
+            "properties": {
+                "isDeleted": {
+                    "type": "boolean"
+                },
+                "rent": {
+                    "$ref": "#/definitions/models.GetRentOutput"
+                }
+            }
+        },
+        "models.AdminGetTransportHistoryOutput": {
+            "type": "object",
+            "properties": {
+                "rents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AdminGetRentOutput"
+                    }
+                }
+            }
+        },
         "models.AdminGetTransportOutput": {
             "type": "object",
             "properties": {
@@ -1836,6 +1986,17 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.AdminGetTransportOutput"
+                    }
+                }
+            }
+        },
+        "models.AdminGetUserHistoryOutput": {
+            "type": "object",
+            "properties": {
+                "rents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AdminGetRentOutput"
                     }
                 }
             }
@@ -1869,6 +2030,44 @@ const docTemplate = `{
             "properties": {
                 "account": {
                     "$ref": "#/definitions/models.GetAccountOutput"
+                }
+            }
+        },
+        "models.AdminUpdateRentInput": {
+            "type": "object",
+            "required": [
+                "priceOfUnit",
+                "priceType",
+                "timeStart",
+                "transportId",
+                "userId"
+            ],
+            "properties": {
+                "priceOfUnit": {
+                    "type": "number"
+                },
+                "priceType": {
+                    "type": "string"
+                },
+                "timeEnd": {
+                    "type": "string"
+                },
+                "timeStart": {
+                    "type": "string"
+                },
+                "transportId": {
+                    "type": "integer"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.AdminUpdateRentOutput": {
+            "type": "object",
+            "properties": {
+                "rent": {
+                    "$ref": "#/definitions/models.AdminGetRentOutput"
                 }
             }
         },
@@ -1934,44 +2133,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreateAdminRentInput": {
-            "type": "object",
-            "required": [
-                "priceOfUnit",
-                "priceType",
-                "timeStart",
-                "transportId",
-                "userId"
-            ],
-            "properties": {
-                "priceOfUnit": {
-                    "type": "number"
-                },
-                "priceType": {
-                    "type": "string"
-                },
-                "timeEnd": {
-                    "type": "string"
-                },
-                "timeStart": {
-                    "type": "string"
-                },
-                "transportId": {
-                    "type": "integer"
-                },
-                "userId": {
-                    "type": "integer"
-                }
-            }
-        },
-        "models.CreateAdminRentOutput": {
-            "type": "object",
-            "properties": {
-                "rent": {
-                    "$ref": "#/definitions/models.GetAdminRentOutput"
-                }
-            }
-        },
         "models.CreateTransportInput": {
             "type": "object",
             "required": [
@@ -2030,33 +2191,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.EndAdminRentInput": {
-            "type": "object",
-            "required": [
-                "lat",
-                "long"
-            ],
-            "properties": {
-                "lat": {
-                    "type": "number",
-                    "maximum": 180,
-                    "minimum": -180
-                },
-                "long": {
-                    "type": "number",
-                    "maximum": 180,
-                    "minimum": -180
-                }
-            }
-        },
-        "models.EndAdminRentOutput": {
-            "type": "object",
-            "properties": {
-                "rent": {
-                    "$ref": "#/definitions/models.GetAdminRentOutput"
-                }
-            }
-        },
         "models.EndRentInput": {
             "type": "object",
             "required": [
@@ -2098,39 +2232,6 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
-                }
-            }
-        },
-        "models.GetAdminRentOutput": {
-            "type": "object",
-            "properties": {
-                "isDeleted": {
-                    "type": "boolean"
-                },
-                "rent": {
-                    "$ref": "#/definitions/models.GetRentOutput"
-                }
-            }
-        },
-        "models.GetAdminTransportHistoryOutput": {
-            "type": "object",
-            "properties": {
-                "rents": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.GetAdminRentOutput"
-                    }
-                }
-            }
-        },
-        "models.GetAdminUserHistoryOutput": {
-            "type": "object",
-            "properties": {
-                "rents": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.GetAdminRentOutput"
-                    }
                 }
             }
         },

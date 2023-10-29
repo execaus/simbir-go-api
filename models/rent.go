@@ -88,20 +88,20 @@ type EndRentOutput struct {
 	Rent GetRentOutput `json:"rent"`
 }
 
-type GetAdminRentOutput struct {
+type AdminGetRentOutput struct {
 	Rent      GetRentOutput `json:"rent"`
 	IsDeleted bool          `json:"isDeleted"`
 }
 
-type GetAdminUserHistoryOutput struct {
-	Rents []GetAdminRentOutput `json:"rents"`
+type AdminGetUserHistoryOutput struct {
+	Rents []AdminGetRentOutput `json:"rents"`
 }
 
-type GetAdminTransportHistoryOutput struct {
-	Rents []GetAdminRentOutput `json:"rents"`
+type AdminGetTransportHistoryOutput struct {
+	Rents []AdminGetRentOutput `json:"rents"`
 }
 
-type CreateAdminRentInput struct {
+type AdminCreateRentInput struct {
 	TransportID int32      `json:"transportId" binding:"required"`
 	UserID      int32      `json:"userId" binding:"required"`
 	TimeStart   time.Time  `json:"timeStart" binding:"required" time_format:"2006-01-02T15:04:05Z07:00"`
@@ -110,15 +110,28 @@ type CreateAdminRentInput struct {
 	PriceType   string     `json:"priceType" binding:"required"`
 }
 
-type CreateAdminRentOutput struct {
-	Rent GetAdminRentOutput `json:"rent"`
+type AdminCreateRentOutput struct {
+	Rent AdminGetRentOutput `json:"rent"`
 }
 
-type EndAdminRentInput struct {
+type AdminEndRentInput struct {
 	Latitude  *float64 `json:"lat" binding:"required,min=-180,max=180"`
 	Longitude *float64 `form:"long" binding:"required,min=-180,max=180"`
 }
 
-type EndAdminRentOutput struct {
-	Rent GetAdminRentOutput `json:"rent"`
+type AdminEndRentOutput struct {
+	Rent AdminGetRentOutput `json:"rent"`
+}
+
+type AdminUpdateRentInput struct {
+	TransportID int32      `json:"transportId" binding:"required"`
+	UserID      int32      `json:"userId" binding:"required"`
+	TimeStart   time.Time  `json:"timeStart" binding:"required" time_format:"2006-01-02T15:04:05Z07:00"`
+	TimeEnd     *time.Time `json:"timeEnd" binding:"omitempty" time_format:"2006-01-02T15:04:05Z07:00"`
+	PriceUnit   float64    `json:"priceOfUnit" binding:"required"`
+	PriceType   string     `json:"priceType" binding:"required"`
+}
+
+type AdminUpdateRentOutput struct {
+	Rent AdminGetRentOutput `json:"rent"`
 }

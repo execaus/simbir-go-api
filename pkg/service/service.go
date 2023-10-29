@@ -49,6 +49,7 @@ type Rent interface {
 	TransportIsRented(id int32) (bool, error)
 	Create(rent *models.Rent) (*models.Rent, error)
 	End(id int32) (*models.Rent, error)
+	Update(rent *models.Rent) (*models.Rent, error)
 }
 
 type Service struct {

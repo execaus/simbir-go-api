@@ -250,3 +250,9 @@ RETURNING *;
 UPDATE "Rent"
 SET time_end=$1
 WHERE id=$2;
+
+-- name: UpdateRent :one
+UPDATE "Rent"
+SET account=$1, transport=$2, time_start=$3, time_end=$4, price_unit=$5, price_type=$6
+WHERE id=$7
+RETURNING *;

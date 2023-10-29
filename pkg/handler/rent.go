@@ -467,6 +467,20 @@ func (h *Handler) EndRent(c *gin.Context) {
 		return
 	}
 
+	transport, err := h.services.Transport.Get(rent.Transport)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	transport.Latitude = *input.Latitude
+	transport.Longitude = *input.Longitude
+	_, err = h.services.Transport.Update(transport)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
 	h.sendOKWithBody(c, &models.EndRentOutput{Rent: models.GetRentOutput{
 		ID:         rent.ID,
 		Account:    rent.Account,

@@ -15,6 +15,28 @@ type RentService struct {
 
 const dayHours = float64(time.Hour * 24)
 
+func (s *RentService) Update(rent *models.Rent) (*models.Rent, error) {
+	updatedRent, err := s.repo.Update(rent)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	endTime := sqlnt.ToTime(&updatedRent.TimeEnd)
+
+	return &models.Rent{
+		ID:         updatedRent.ID,
+		Account:    updatedRent.Account,
+		Transport:  updatedRent.Transport,
+		TimeStart:  updatedRent.TimeStart,
+		TimeEnd:    endTime,
+		PriceUnit:  updatedRent.PriceUnit,
+		PriceType:  updatedRent.PriceType,
+		FinalPrice: calculateFinalPrice(updatedRent.PriceType, updatedRent.PriceUnit, updatedRent.TimeStart, endTime),
+		IsDeleted:  updatedRent.Deleted,
+	}, nil
+}
+
 func (s *RentService) End(id int32) (*models.Rent, error) {
 	endTime := time.Now()
 

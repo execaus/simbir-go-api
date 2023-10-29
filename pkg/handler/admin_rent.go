@@ -7,19 +7,19 @@ import (
 	"simbir-go-api/models"
 )
 
-// GetAdminRent
+// AdminGetRent
 // @Summary      Rent information
 // @Description  Return rent information by id.
 // @Tags         admin-rent
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  models.GetAdminRentOutput
+// @Success      200  {object}  models.AdminGetRentOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Security     BearerAuth
 // @Router       /Admin/Rent/{id} [get]
-func (h *Handler) GetAdminRent(c *gin.Context) {
+func (h *Handler) AdminGetRent(c *gin.Context) {
 	rentID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
@@ -43,7 +43,7 @@ func (h *Handler) GetAdminRent(c *gin.Context) {
 		return
 	}
 
-	h.sendOKWithBody(c, &models.GetAdminRentOutput{
+	h.sendOKWithBody(c, &models.AdminGetRentOutput{
 		Rent: models.GetRentOutput{
 			ID:         rent.ID,
 			Account:    rent.Account,
@@ -58,19 +58,19 @@ func (h *Handler) GetAdminRent(c *gin.Context) {
 	})
 }
 
-// GetAdminUserRentHistory
+// AdminGetUserRentHistory
 // @Summary      User rent history
 // @Description  Return user rent history by id.
 // @Tags         admin-rent
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  models.GetAdminUserHistoryOutput
+// @Success      200  {object}  models.AdminGetUserHistoryOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Security     BearerAuth
 // @Router       /Admin/UserHistory/{id} [get]
-func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
+func (h *Handler) AdminGetUserRentHistory(c *gin.Context) {
 	userID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
@@ -94,9 +94,9 @@ func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
 		return
 	}
 
-	var output models.GetAdminUserHistoryOutput
+	var output models.AdminGetUserHistoryOutput
 	for _, rent := range rents {
-		output.Rents = append(output.Rents, models.GetAdminRentOutput{
+		output.Rents = append(output.Rents, models.AdminGetRentOutput{
 			Rent: models.GetRentOutput{
 				ID:         rent.ID,
 				Account:    rent.Account,
@@ -114,19 +114,19 @@ func (h *Handler) GetAdminUserRentHistory(c *gin.Context) {
 	h.sendOKWithBody(c, output)
 }
 
-// GetAdminTransportRentHistory
+// AdminGetTransportRentHistory
 // @Summary      Transport rent history
 // @Description  Return transport rent history by id.
 // @Tags         admin-rent
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  models.GetAdminTransportHistoryOutput
+// @Success      200  {object}  models.AdminGetTransportHistoryOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Security     BearerAuth
 // @Router       /Admin/TransportHistory/{id} [get]
-func (h *Handler) GetAdminTransportRentHistory(c *gin.Context) {
+func (h *Handler) AdminGetTransportRentHistory(c *gin.Context) {
 	transportID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
@@ -150,9 +150,9 @@ func (h *Handler) GetAdminTransportRentHistory(c *gin.Context) {
 		return
 	}
 
-	var output models.GetAdminTransportHistoryOutput
+	var output models.AdminGetTransportHistoryOutput
 	for _, rent := range rents {
-		output.Rents = append(output.Rents, models.GetAdminRentOutput{
+		output.Rents = append(output.Rents, models.AdminGetRentOutput{
 			Rent: models.GetRentOutput{
 				ID:         rent.ID,
 				Account:    rent.Account,
@@ -170,21 +170,21 @@ func (h *Handler) GetAdminTransportRentHistory(c *gin.Context) {
 	h.sendOKWithBody(c, output)
 }
 
-// CreateAdminRent
+// AdminCreateRent
 // @Summary      Create rent
 // @Description  Create new rent.
 // @Tags         admin-rent
 // @Accept       json
 // @Produce      json
-// @Param        input body models.CreateAdminRentInput true "-"
-// @Success      200  {object}  models.CreateAdminRentOutput
+// @Param        input body models.AdminCreateRentInput true "-"
+// @Success      200  {object}  models.AdminCreateRentOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Security     BearerAuth
 // @Router       /Admin/Rent [post]
-func (h *Handler) CreateAdminRent(c *gin.Context) {
-	var input models.CreateAdminRentInput
+func (h *Handler) AdminCreateRent(c *gin.Context) {
+	var input models.AdminCreateRentInput
 
 	if err := c.BindJSON(&input); err != nil {
 		h.sendInvalidRequest(c, err.Error())
@@ -234,8 +234,8 @@ func (h *Handler) CreateAdminRent(c *gin.Context) {
 		return
 	}
 
-	h.sendOKWithBody(c, &models.CreateAdminRentOutput{
-		Rent: models.GetAdminRentOutput{
+	h.sendOKWithBody(c, &models.AdminCreateRentOutput{
+		Rent: models.AdminGetRentOutput{
 			Rent: models.GetRentOutput{
 				ID:         rent.ID,
 				Account:    rent.Account,
@@ -259,15 +259,15 @@ func (h *Handler) CreateAdminRent(c *gin.Context) {
 // @Produce      json
 // @Success      200
 // @Param        id query number true "-"
-// @Param        input body models.EndAdminRentInput true "-"
-// @Success      200  {object}  models.EndAdminRentOutput
+// @Param        input body models.AdminEndRentInput true "-"
+// @Success      200  {object}  models.AdminEndRentOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      403  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
 // @Router       /Admin/Rent/End/{id} [post]
 func (h *Handler) AdminEndRent(c *gin.Context) {
-	var input models.EndAdminRentInput
+	var input models.AdminEndRentInput
 
 	rentID, err := getNumberParam(c, "id")
 	if err != nil {
@@ -310,7 +310,21 @@ func (h *Handler) AdminEndRent(c *gin.Context) {
 		return
 	}
 
-	h.sendOKWithBody(c, &models.EndAdminRentOutput{Rent: models.GetAdminRentOutput{
+	transport, err := h.services.Transport.Get(rent.Transport)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	transport.Latitude = *input.Latitude
+	transport.Longitude = *input.Longitude
+	_, err = h.services.Transport.Update(transport)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOKWithBody(c, &models.AdminEndRentOutput{Rent: models.AdminGetRentOutput{
 		Rent: models.GetRentOutput{
 			ID:         rent.ID,
 			Account:    rent.Account,
@@ -323,4 +337,75 @@ func (h *Handler) AdminEndRent(c *gin.Context) {
 		},
 		IsDeleted: rent.IsDeleted,
 	}})
+}
+
+// AdminUpdateRent
+// @Summary      Update rent
+// @Description  Changing a lease record by id.
+// @Tags         admin-rent
+// @Accept       json
+// @Produce      json
+// @Success      200
+// @Param        id query number true "-"
+// @Param        input body models.AdminUpdateRentInput true "-"
+// @Success      200  {object}  models.AdminUpdateRentOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      403  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Router       /Admin/Rent/{id} [put]
+func (h *Handler) AdminUpdateRent(c *gin.Context) {
+	var input models.AdminUpdateRentInput
+
+	rentID, err := getNumberParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	if err = c.BindJSON(&input); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isRentExist, err := h.services.Rent.IsExist(rentID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isRentExist {
+		h.sendInvalidRequest(c, rentIsNotExist)
+		return
+	}
+
+	rent, err := h.services.Rent.Update(&models.Rent{
+		ID:        rentID,
+		Account:   input.UserID,
+		Transport: input.TransportID,
+		TimeStart: input.TimeStart,
+		TimeEnd:   input.TimeEnd,
+		PriceUnit: input.PriceUnit,
+		PriceType: input.PriceType,
+	})
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOKWithBody(c, &models.AdminUpdateRentOutput{
+		Rent: models.AdminGetRentOutput{
+			Rent: models.GetRentOutput{
+				ID:         rent.ID,
+				Account:    rent.Account,
+				Transport:  rent.Transport,
+				TimeStart:  rent.TimeStart,
+				TimeEnd:    rent.TimeEnd,
+				PriceUnit:  rent.PriceUnit,
+				PriceType:  rent.PriceType,
+				FinalPrice: rent.FinalPrice,
+			},
+			IsDeleted: rent.IsDeleted,
+		},
+	})
 }

@@ -60,6 +60,7 @@ type Rent interface {
 	IsExistCurrentRented(id int32) (bool, error)
 	Create(rent *models.Rent) (*queries.Rent, error)
 	End(id int32, timeEnd *time.Time) error
+	Update(rent *models.Rent) (*queries.Rent, error)
 }
 
 type Repository struct {

@@ -29,6 +29,32 @@ definitions:
       account:
         $ref: '#/definitions/models.GetAccountOutput'
     type: object
+  models.AdminCreateRentInput:
+    properties:
+      priceOfUnit:
+        type: number
+      priceType:
+        type: string
+      timeEnd:
+        type: string
+      timeStart:
+        type: string
+      transportId:
+        type: integer
+      userId:
+        type: integer
+    required:
+    - priceOfUnit
+    - priceType
+    - timeStart
+    - transportId
+    - userId
+    type: object
+  models.AdminCreateRentOutput:
+    properties:
+      rent:
+        $ref: '#/definitions/models.AdminGetRentOutput'
+    type: object
   models.AdminCreateTransportInput:
     properties:
       canBeRented:
@@ -74,6 +100,25 @@ definitions:
       transport:
         $ref: '#/definitions/models.GetTransportOutput'
     type: object
+  models.AdminEndRentInput:
+    properties:
+      lat:
+        maximum: 180
+        minimum: -180
+        type: number
+      long:
+        maximum: 180
+        minimum: -180
+        type: number
+    required:
+    - lat
+    - long
+    type: object
+  models.AdminEndRentOutput:
+    properties:
+      rent:
+        $ref: '#/definitions/models.AdminGetRentOutput'
+    type: object
   models.AdminGetAccountOutput:
     properties:
       account:
@@ -88,6 +133,20 @@ definitions:
           $ref: '#/definitions/models.GetAccountOutput'
         type: array
     type: object
+  models.AdminGetRentOutput:
+    properties:
+      isDeleted:
+        type: boolean
+      rent:
+        $ref: '#/definitions/models.GetRentOutput'
+    type: object
+  models.AdminGetTransportHistoryOutput:
+    properties:
+      rents:
+        items:
+          $ref: '#/definitions/models.AdminGetRentOutput'
+        type: array
+    type: object
   models.AdminGetTransportOutput:
     properties:
       isDeleted:
@@ -100,6 +159,13 @@ definitions:
       transports:
         items:
           $ref: '#/definitions/models.AdminGetTransportOutput'
+        type: array
+    type: object
+  models.AdminGetUserHistoryOutput:
+    properties:
+      rents:
+        items:
+          $ref: '#/definitions/models.AdminGetRentOutput'
         type: array
     type: object
   models.AdminUpdateAccountInput:
@@ -123,6 +189,32 @@ definitions:
     properties:
       account:
         $ref: '#/definitions/models.GetAccountOutput'
+    type: object
+  models.AdminUpdateRentInput:
+    properties:
+      priceOfUnit:
+        type: number
+      priceType:
+        type: string
+      timeEnd:
+        type: string
+      timeStart:
+        type: string
+      transportId:
+        type: integer
+      userId:
+        type: integer
+    required:
+    - priceOfUnit
+    - priceType
+    - timeStart
+    - transportId
+    - userId
+    type: object
+  models.AdminUpdateRentOutput:
+    properties:
+      rent:
+        $ref: '#/definitions/models.AdminGetRentOutput'
     type: object
   models.AdminUpdateTransportInput:
     properties:
@@ -169,32 +261,6 @@ definitions:
       transport:
         $ref: '#/definitions/models.GetTransportOutput'
     type: object
-  models.CreateAdminRentInput:
-    properties:
-      priceOfUnit:
-        type: number
-      priceType:
-        type: string
-      timeEnd:
-        type: string
-      timeStart:
-        type: string
-      transportId:
-        type: integer
-      userId:
-        type: integer
-    required:
-    - priceOfUnit
-    - priceType
-    - timeStart
-    - transportId
-    - userId
-    type: object
-  models.CreateAdminRentOutput:
-    properties:
-      rent:
-        $ref: '#/definitions/models.GetAdminRentOutput'
-    type: object
   models.CreateTransportInput:
     properties:
       canBeRented:
@@ -237,25 +303,6 @@ definitions:
       transport:
         $ref: '#/definitions/models.GetTransportOutput'
     type: object
-  models.EndAdminRentInput:
-    properties:
-      lat:
-        maximum: 180
-        minimum: -180
-        type: number
-      long:
-        maximum: 180
-        minimum: -180
-        type: number
-    required:
-    - lat
-    - long
-    type: object
-  models.EndAdminRentOutput:
-    properties:
-      rent:
-        $ref: '#/definitions/models.GetAdminRentOutput'
-    type: object
   models.EndRentInput:
     properties:
       lat:
@@ -285,27 +332,6 @@ definitions:
         type: boolean
       username:
         type: string
-    type: object
-  models.GetAdminRentOutput:
-    properties:
-      isDeleted:
-        type: boolean
-      rent:
-        $ref: '#/definitions/models.GetRentOutput'
-    type: object
-  models.GetAdminTransportHistoryOutput:
-    properties:
-      rents:
-        items:
-          $ref: '#/definitions/models.GetAdminRentOutput'
-        type: array
-    type: object
-  models.GetAdminUserHistoryOutput:
-    properties:
-      rents:
-        items:
-          $ref: '#/definitions/models.GetAdminRentOutput'
-        type: array
     type: object
   models.GetRentOutput:
     properties:
@@ -824,14 +850,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/models.CreateAdminRentInput'
+          $ref: '#/definitions/models.AdminCreateRentInput'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.CreateAdminRentOutput'
+            $ref: '#/definitions/models.AdminCreateRentOutput'
         "400":
           description: Bad Request
           schema:
@@ -860,7 +886,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.GetAdminRentOutput'
+            $ref: '#/definitions/models.AdminGetRentOutput'
         "400":
           description: Bad Request
           schema:
@@ -876,6 +902,48 @@ paths:
       security:
       - BearerAuth: []
       summary: Rent information
+      tags:
+      - admin-rent
+    put:
+      consumes:
+      - application/json
+      description: Changing a lease record by id.
+      parameters:
+      - description: '-'
+        in: query
+        name: id
+        required: true
+        type: number
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.AdminUpdateRentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminUpdateRentOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Update rent
       tags:
       - admin-rent
   /Admin/Rent/End/{id}:
@@ -894,14 +962,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/models.EndAdminRentInput'
+          $ref: '#/definitions/models.AdminEndRentInput'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.EndAdminRentOutput'
+            $ref: '#/definitions/models.AdminEndRentOutput'
         "400":
           description: Bad Request
           schema:
@@ -1139,7 +1207,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.GetAdminTransportHistoryOutput'
+            $ref: '#/definitions/models.AdminGetTransportHistoryOutput'
         "400":
           description: Bad Request
           schema:
@@ -1168,7 +1236,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.GetAdminUserHistoryOutput'
+            $ref: '#/definitions/models.AdminGetUserHistoryOutput'
         "400":
           description: Bad Request
           schema:

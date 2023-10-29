@@ -1029,6 +1029,47 @@ func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) er
 	return err
 }
 
+const updateRent = `-- name: UpdateRent :one
+UPDATE "Rent"
+SET account=$1, transport=$2, time_start=$3, time_end=$4, price_unit=$5, price_type=$6
+WHERE id=$7
+RETURNING id, account, transport, time_start, time_end, price_unit, price_type, deleted
+`
+
+type UpdateRentParams struct {
+	Account   int32
+	Transport int32
+	TimeStart time.Time
+	TimeEnd   sql.NullTime
+	PriceUnit float64
+	PriceType string
+	ID        int32
+}
+
+func (q *Queries) UpdateRent(ctx context.Context, arg UpdateRentParams) (Rent, error) {
+	row := q.db.QueryRowContext(ctx, updateRent,
+		arg.Account,
+		arg.Transport,
+		arg.TimeStart,
+		arg.TimeEnd,
+		arg.PriceUnit,
+		arg.PriceType,
+		arg.ID,
+	)
+	var i Rent
+	err := row.Scan(
+		&i.ID,
+		&i.Account,
+		&i.Transport,
+		&i.TimeStart,
+		&i.TimeEnd,
+		&i.PriceUnit,
+		&i.PriceType,
+		&i.Deleted,
+	)
+	return i, err
+}
+
 const updateTransport = `-- name: UpdateTransport :one
 UPDATE "Transport"
 SET id=$1, can_rented=$2, model=$3, color=$4, "description"=$5, latitude=$6, longitude=$7, minute_price=$8, day_price=$9, identifier=$10

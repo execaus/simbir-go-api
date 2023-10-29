@@ -13,6 +13,24 @@ type RentPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *RentPostgres) Update(rent *models.Rent) (*queries.Rent, error) {
+	updatedRent, err := r.queries.UpdateRent(context.Background(), queries.UpdateRentParams{
+		Account:   rent.Account,
+		Transport: rent.Transport,
+		TimeStart: rent.TimeStart,
+		TimeEnd:   sqlnt.ToTimeNull(rent.TimeEnd),
+		PriceUnit: rent.PriceUnit,
+		PriceType: rent.PriceType,
+		ID:        rent.ID,
+	})
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &updatedRent, nil
+}
+
 func (r *RentPostgres) End(id int32, timeEnd *time.Time) error {
 	if err := r.queries.EndRent(context.Background(), queries.EndRentParams{
 		TimeEnd: sqlnt.ToTimeNull(timeEnd),
