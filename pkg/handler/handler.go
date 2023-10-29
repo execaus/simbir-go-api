@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"github.com/execaus/exloggo"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"simbir-go-api/input_validator"
 	"simbir-go-api/pkg/service"
 )
 
@@ -17,6 +21,8 @@ func NewHandler(services *service.Service) *Handler {
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.Default()
+
+	setFieldValidator()
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -72,11 +78,19 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		adminRent := admin.Group("Rent")
 		{
 			adminRent.GET("/:id", h.GetAdminRent)
-			adminRent.GET("", h.CreateAdminRent)
+			adminRent.POST("", h.CreateAdminRent)
 		}
 		admin.GET("/UserHistory/:id", h.GetAdminUserRentHistory)
 		admin.GET("/TransportHistory/:id", h.GetAdminTransportRentHistory)
 	}
 
 	return router
+}
+
+func setFieldValidator() {
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		if err := v.RegisterValidation("iso8601", input_validator.IsISO8601Date); err != nil {
+			exloggo.Fatal(err.Error())
+		}
+	}
 }

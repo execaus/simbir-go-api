@@ -49,6 +49,7 @@ const (
 	noMinutesPrice             = "no price per minutes has been set"
 	noDaysPrice                = "no price per days has been set"
 	notRentOwner               = "is not rent owner"
+	invalidTimeRange           = "invalid time range"
 )
 
 type Error struct {

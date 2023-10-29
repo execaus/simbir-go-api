@@ -102,4 +102,14 @@ type GetAdminTransportHistoryOutput struct {
 }
 
 type CreateAdminRentInput struct {
+	TransportID int32      `json:"transportId" binding:"required"`
+	UserID      int32      `json:"userId" binding:"required"`
+	TimeStart   time.Time  `json:"timeStart" binding:"required" time_format:"2006-01-02T15:04:05Z07:00"`
+	TimeEnd     *time.Time `json:"timeEnd" binding:"omitempty" time_format:"2006-01-02T15:04:05Z07:00"`
+	PriceUnit   float64    `json:"priceOfUnit" binding:"required"`
+	PriceType   string     `json:"priceType" binding:"required"`
+}
+
+type CreateAdminRentOutput struct {
+	Rent GetAdminRentOutput `json:"rent"`
 }

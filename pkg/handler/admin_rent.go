@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/execaus/exloggo"
 	"github.com/gin-gonic/gin"
 	"math"
 	"simbir-go-api/models"
@@ -169,6 +170,19 @@ func (h *Handler) GetAdminTransportRentHistory(c *gin.Context) {
 	h.sendOKWithBody(c, output)
 }
 
+// CreateAdminRent
+// @Summary      Create rent
+// @Description  Create new rent.
+// @Tags         admin-rent
+// @Accept       json
+// @Produce      json
+// @Param        input body models.CreateAdminRentInput true "-"
+// @Success      200  {object}  models.CreateAdminRentOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
+// @Router       /Admin/Rent [post]
 func (h *Handler) CreateAdminRent(c *gin.Context) {
 	var input models.CreateAdminRentInput
 
@@ -176,4 +190,60 @@ func (h *Handler) CreateAdminRent(c *gin.Context) {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
+
+	if input.TimeEnd != nil {
+		if input.TimeStart.After(*input.TimeEnd) {
+			exloggo.Error(invalidTimeRange)
+			h.sendInvalidRequest(c, invalidTimeRange)
+			return
+		}
+	}
+
+	isTransportExist, err := h.services.Transport.IsExistByID(input.TransportID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isTransportExist {
+		h.sendInvalidRequest(c, transportIsNotExist)
+		return
+	}
+
+	isAccountExist, err := h.services.Account.IsExistByID(input.UserID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isAccountExist {
+		h.sendGeneralException(c, accountIsNotExist)
+		return
+	}
+
+	rent, err := h.services.Rent.Create(&models.Rent{
+		Account:   input.UserID,
+		Transport: input.TransportID,
+		TimeStart: input.TimeStart,
+		TimeEnd:   input.TimeEnd,
+		PriceUnit: input.PriceUnit,
+		PriceType: input.PriceType,
+	})
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOKWithBody(c, &models.CreateAdminRentOutput{
+		Rent: models.GetRentOutput{
+			ID:         rent.ID,
+			Account:    rent.Account,
+			Transport:  rent.Transport,
+			TimeStart:  rent.TimeStart,
+			TimeEnd:    rent.TimeEnd,
+			PriceUnit:  rent.PriceUnit,
+			PriceType:  rent.PriceType,
+			FinalPrice: rent.FinalPrice,
+		},
+	})
 }

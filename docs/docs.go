@@ -545,6 +545,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/Admin/Rent": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create new rent.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-rent"
+                ],
+                "summary": "Create rent",
+                "parameters": [
+                    {
+                        "description": "-",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateAdminRentInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateAdminRentInput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/Admin/Rent/{id}": {
             "get": {
                 "security": [
@@ -1659,7 +1716,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "ownerId": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "transportType": {
                     "type": "string"
@@ -1797,7 +1854,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "ownerId": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "transportType": {
                     "type": "string"
@@ -1809,6 +1866,37 @@ const docTemplate = `{
             "properties": {
                 "transport": {
                     "$ref": "#/definitions/models.GetTransportOutput"
+                }
+            }
+        },
+        "models.CreateAdminRentInput": {
+            "type": "object",
+            "required": [
+                "priceOfUnit",
+                "priceType",
+                "timeEnd",
+                "timeStart",
+                "transportId",
+                "userId"
+            ],
+            "properties": {
+                "priceOfUnit": {
+                    "type": "number"
+                },
+                "priceType": {
+                    "type": "string"
+                },
+                "timeEnd": {
+                    "type": "string"
+                },
+                "timeStart": {
+                    "type": "string"
+                },
+                "transportId": {
+                    "type": "integer"
+                },
+                "userId": {
+                    "type": "integer"
                 }
             }
         },
@@ -1903,6 +1991,9 @@ const docTemplate = `{
                 "balance": {
                     "type": "number"
                 },
+                "id": {
+                    "type": "integer"
+                },
                 "isAdmin": {
                     "type": "boolean"
                 },
@@ -1951,7 +2042,10 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "account": {
-                    "type": "string"
+                    "type": "integer"
+                },
+                "finalPrice": {
+                    "type": "number"
                 },
                 "priceType": {
                     "type": "string"
@@ -1966,7 +2060,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "transport": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -2034,6 +2128,9 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "integer"
+                },
                 "identifier": {
                     "type": "string"
                 },
@@ -2050,7 +2147,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "ownerId": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "transportType": {
                     "type": "string"
@@ -2121,8 +2218,8 @@ const docTemplate = `{
         "models.UpdateAccountOutput": {
             "type": "object",
             "properties": {
-                "token": {
-                    "type": "string"
+                "account": {
+                    "$ref": "#/definitions/models.GetAccountOutput"
                 }
             }
         },

@@ -56,7 +56,7 @@ definitions:
       model:
         type: string
       ownerId:
-        type: string
+        type: integer
       transportType:
         type: string
     required:
@@ -151,7 +151,7 @@ definitions:
       model:
         type: string
       ownerId:
-        type: string
+        type: integer
       transportType:
         type: string
     required:
@@ -168,6 +168,28 @@ definitions:
     properties:
       transport:
         $ref: '#/definitions/models.GetTransportOutput'
+    type: object
+  models.CreateAdminRentInput:
+    properties:
+      priceOfUnit:
+        type: number
+      priceType:
+        type: string
+      timeEnd:
+        type: string
+      timeStart:
+        type: string
+      transportId:
+        type: integer
+      userId:
+        type: integer
+    required:
+    - priceOfUnit
+    - priceType
+    - timeEnd
+    - timeStart
+    - transportId
+    - userId
     type: object
   models.CreateTransportInput:
     properties:
@@ -234,6 +256,8 @@ definitions:
     properties:
       balance:
         type: number
+      id:
+        type: integer
       isAdmin:
         type: boolean
       username:
@@ -265,7 +289,9 @@ definitions:
       ID:
         type: integer
       account:
-        type: string
+        type: integer
+      finalPrice:
+        type: number
       priceType:
         type: string
       priceUnit:
@@ -275,7 +301,7 @@ definitions:
       timeStart:
         type: string
       transport:
-        type: string
+        type: integer
     type: object
   models.GetRentTransportHistoryOutput:
     properties:
@@ -318,6 +344,8 @@ definitions:
         type: number
       description:
         type: string
+      id:
+        type: integer
       identifier:
         type: string
       latitude:
@@ -329,7 +357,7 @@ definitions:
       model:
         type: string
       ownerId:
-        type: string
+        type: integer
       transportType:
         type: string
     type: object
@@ -375,8 +403,8 @@ definitions:
     type: object
   models.UpdateAccountOutput:
     properties:
-      token:
-        type: string
+      account:
+        $ref: '#/definitions/models.GetAccountOutput'
     type: object
   models.UpdateTransportInput:
     properties:
@@ -762,6 +790,42 @@ paths:
       summary: Update account
       tags:
       - admin-account
+  /Admin/Rent:
+    post:
+      consumes:
+      - application/json
+      description: Create new rent.
+      parameters:
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateAdminRentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CreateAdminRentInput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Create rent
+      tags:
+      - admin-rent
   /Admin/Rent/{id}:
     get:
       consumes:
