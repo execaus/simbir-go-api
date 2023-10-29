@@ -61,6 +61,7 @@ type Rent interface {
 	Create(rent *models.Rent) (*queries.Rent, error)
 	End(id int32, timeEnd *time.Time) error
 	Update(rent *models.Rent) (*queries.Rent, error)
+	Remove(id int32) error
 }
 
 type Repository struct {

@@ -13,6 +13,15 @@ type RentPostgres struct {
 	queries *queries.Queries
 }
 
+func (r *RentPostgres) Remove(id int32) error {
+	if err := r.queries.RemoveRent(context.Background(), id); err != nil {
+		exloggo.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func (r *RentPostgres) Update(rent *models.Rent) (*queries.Rent, error) {
 	updatedRent, err := r.queries.UpdateRent(context.Background(), queries.UpdateRentParams{
 		Account:   rent.Account,

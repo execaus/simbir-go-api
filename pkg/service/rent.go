@@ -15,6 +15,10 @@ type RentService struct {
 
 const dayHours = float64(time.Hour * 24)
 
+func (s *RentService) Remove(id int32) error {
+	return s.repo.Remove(id)
+}
+
 func (s *RentService) Update(rent *models.Rent) (*models.Rent, error) {
 	updatedRent, err := s.repo.Update(rent)
 	if err != nil {

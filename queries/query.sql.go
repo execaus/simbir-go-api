@@ -979,6 +979,17 @@ func (q *Queries) RemoveAccount(ctx context.Context, id int32) error {
 	return err
 }
 
+const removeRent = `-- name: RemoveRent :exec
+UPDATE "Rent"
+SET deleted=true
+WHERE id=$1
+`
+
+func (q *Queries) RemoveRent(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, removeRent, id)
+	return err
+}
+
 const removeTransport = `-- name: RemoveTransport :exec
 UPDATE "Transport"
 SET deleted=true

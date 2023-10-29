@@ -713,7 +713,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Changing a lease record by id.",
+                "description": "Deleting rental information by id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -723,7 +723,7 @@ const docTemplate = `{
                 "tags": [
                     "admin-rent"
                 ],
-                "summary": "Update rent",
+                "summary": "Delete rent",
                 "parameters": [
                     {
                         "type": "number",
@@ -731,23 +731,14 @@ const docTemplate = `{
                         "name": "id",
                         "in": "query",
                         "required": true
-                    },
-                    {
-                        "description": "-",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.AdminUpdateRentInput"
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.AdminUpdateRentOutput"
-                        }
+                        "description": "OK"
+                    },
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",

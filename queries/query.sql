@@ -256,3 +256,8 @@ UPDATE "Rent"
 SET account=$1, transport=$2, time_start=$3, time_end=$4, price_unit=$5, price_type=$6
 WHERE id=$7
 RETURNING *;
+
+-- name: RemoveRent :exec
+UPDATE "Rent"
+SET deleted=true
+WHERE id=$1;

@@ -50,6 +50,7 @@ type Rent interface {
 	Create(rent *models.Rent) (*models.Rent, error)
 	End(id int32) (*models.Rent, error)
 	Update(rent *models.Rent) (*models.Rent, error)
+	Remove(id int32) error
 }
 
 type Service struct {

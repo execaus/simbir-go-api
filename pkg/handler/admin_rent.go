@@ -409,3 +409,54 @@ func (h *Handler) AdminUpdateRent(c *gin.Context) {
 		},
 	})
 }
+
+// AdminDeleteRent
+// @Summary      Delete rent
+// @Description  Deleting rental information by id.
+// @Tags         admin-rent
+// @Accept       json
+// @Produce      json
+// @Success      200
+// @Param        id query number true "-"
+// @Success      204
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      403  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Router       /Admin/Rent/{id} [put]
+func (h *Handler) AdminDeleteRent(c *gin.Context) {
+	rentID, err := getNumberParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isExist, err := h.services.Rent.IsExist(rentID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, rentIsNotExist)
+		return
+	}
+
+	isRemoved, err := h.services.Rent.IsRemoved(rentID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isRemoved {
+		h.sendInvalidRequest(c, rentIsRemoved)
+		return
+	}
+
+	if err = h.services.Rent.Remove(rentID); err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOK(c)
+}
