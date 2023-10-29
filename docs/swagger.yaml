@@ -186,10 +186,14 @@ definitions:
     required:
     - priceOfUnit
     - priceType
-    - timeEnd
     - timeStart
     - transportId
     - userId
+    type: object
+  models.CreateAdminRentOutput:
+    properties:
+      rent:
+        $ref: '#/definitions/models.GetAdminRentOutput'
     type: object
   models.CreateTransportInput:
     properties:
@@ -232,6 +236,25 @@ definitions:
     properties:
       transport:
         $ref: '#/definitions/models.GetTransportOutput'
+    type: object
+  models.EndAdminRentInput:
+    properties:
+      lat:
+        maximum: 180
+        minimum: -180
+        type: number
+      long:
+        maximum: 180
+        minimum: -180
+        type: number
+    required:
+    - lat
+    - long
+    type: object
+  models.EndAdminRentOutput:
+    properties:
+      rent:
+        $ref: '#/definitions/models.GetAdminRentOutput'
     type: object
   models.EndRentInput:
     properties:
@@ -808,7 +831,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.CreateAdminRentInput'
+            $ref: '#/definitions/models.CreateAdminRentOutput'
         "400":
           description: Bad Request
           schema:
@@ -853,6 +876,49 @@ paths:
       security:
       - BearerAuth: []
       summary: Rent information
+      tags:
+      - admin-rent
+  /Admin/Rent/End/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Completion of the lease of transportation under the lease id.
+      parameters:
+      - description: '-'
+        in: query
+        name: id
+        required: true
+        type: number
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.EndAdminRentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.EndAdminRentOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: End rent
       tags:
       - admin-rent
   /Admin/Transport:

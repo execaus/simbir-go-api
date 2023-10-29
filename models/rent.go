@@ -113,3 +113,12 @@ type CreateAdminRentInput struct {
 type CreateAdminRentOutput struct {
 	Rent GetAdminRentOutput `json:"rent"`
 }
+
+type EndAdminRentInput struct {
+	Latitude  *float64 `json:"lat" binding:"required,min=-180,max=180"`
+	Longitude *float64 `form:"long" binding:"required,min=-180,max=180"`
+}
+
+type EndAdminRentOutput struct {
+	Rent GetAdminRentOutput `json:"rent"`
+}

@@ -235,6 +235,82 @@ func (h *Handler) CreateAdminRent(c *gin.Context) {
 	}
 
 	h.sendOKWithBody(c, &models.CreateAdminRentOutput{
+		Rent: models.GetAdminRentOutput{
+			Rent: models.GetRentOutput{
+				ID:         rent.ID,
+				Account:    rent.Account,
+				Transport:  rent.Transport,
+				TimeStart:  rent.TimeStart,
+				TimeEnd:    rent.TimeEnd,
+				PriceUnit:  rent.PriceUnit,
+				PriceType:  rent.PriceType,
+				FinalPrice: rent.FinalPrice,
+			},
+			IsDeleted: rent.IsDeleted,
+		},
+	})
+}
+
+// AdminEndRent
+// @Summary      End rent
+// @Description  Completion of the lease of transportation under the lease id.
+// @Tags         admin-rent
+// @Accept       json
+// @Produce      json
+// @Success      200
+// @Param        id query number true "-"
+// @Param        input body models.EndAdminRentInput true "-"
+// @Success      200  {object}  models.EndAdminRentOutput
+// @Failure      400  {object}  handler.Error
+// @Failure      401  {object}  handler.Error
+// @Failure      403  {object}  handler.Error
+// @Failure      500  {object}  handler.Error
+// @Router       /Admin/Rent/End/{id} [post]
+func (h *Handler) AdminEndRent(c *gin.Context) {
+	var input models.EndAdminRentInput
+
+	rentID, err := getNumberParam(c, "id")
+	if err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	if err = c.BindJSON(&input); err != nil {
+		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isRentExist, err := h.services.Rent.IsExist(rentID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isRentExist {
+		h.sendInvalidRequest(c, rentIsNotExist)
+		return
+	}
+
+	rent, err := h.services.Rent.End(rentID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	account, err := h.services.Account.GetByID(rent.Account)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	account.Balance -= *rent.FinalPrice
+	_, err = h.services.Account.Update(account)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	h.sendOKWithBody(c, &models.EndAdminRentOutput{Rent: models.GetAdminRentOutput{
 		Rent: models.GetRentOutput{
 			ID:         rent.ID,
 			Account:    rent.Account,
@@ -245,5 +321,6 @@ func (h *Handler) CreateAdminRent(c *gin.Context) {
 			PriceType:  rent.PriceType,
 			FinalPrice: rent.FinalPrice,
 		},
-	})
+		IsDeleted: rent.IsDeleted,
+	}})
 }

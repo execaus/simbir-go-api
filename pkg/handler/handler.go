@@ -79,6 +79,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			adminRent.GET("/:id", h.GetAdminRent)
 			adminRent.POST("", h.CreateAdminRent)
+			adminRent.POST("/End/:id", h.AdminEndRent)
 		}
 		admin.GET("/UserHistory/:id", h.GetAdminUserRentHistory)
 		admin.GET("/TransportHistory/:id", h.GetAdminTransportRentHistory)

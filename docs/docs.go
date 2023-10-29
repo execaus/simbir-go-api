@@ -578,7 +578,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.CreateAdminRentInput"
+                            "$ref": "#/definitions/models.CreateAdminRentOutput"
                         }
                     },
                     "400": {
@@ -589,6 +589,71 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/Admin/Rent/End/{id}": {
+            "post": {
+                "description": "Completion of the lease of transportation under the lease id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-rent"
+                ],
+                "summary": "End rent",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "-",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.EndAdminRentInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.EndAdminRentOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -1874,7 +1939,6 @@ const docTemplate = `{
             "required": [
                 "priceOfUnit",
                 "priceType",
-                "timeEnd",
                 "timeStart",
                 "transportId",
                 "userId"
@@ -1897,6 +1961,14 @@ const docTemplate = `{
                 },
                 "userId": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.CreateAdminRentOutput": {
+            "type": "object",
+            "properties": {
+                "rent": {
+                    "$ref": "#/definitions/models.GetAdminRentOutput"
                 }
             }
         },
@@ -1955,6 +2027,33 @@ const docTemplate = `{
             "properties": {
                 "transport": {
                     "$ref": "#/definitions/models.GetTransportOutput"
+                }
+            }
+        },
+        "models.EndAdminRentInput": {
+            "type": "object",
+            "required": [
+                "lat",
+                "long"
+            ],
+            "properties": {
+                "lat": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "long": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                }
+            }
+        },
+        "models.EndAdminRentOutput": {
+            "type": "object",
+            "properties": {
+                "rent": {
+                    "$ref": "#/definitions/models.GetAdminRentOutput"
                 }
             }
         },

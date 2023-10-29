@@ -420,6 +420,17 @@ func (h *Handler) EndRent(c *gin.Context) {
 		return
 	}
 
+	isRentExist, err := h.services.Rent.IsExist(rentID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if !isRentExist {
+		h.sendInvalidRequest(c, rentIsNotExist)
+		return
+	}
+
 	userID, err := getAccountContext(c)
 	if err != nil {
 		h.sendUnAuthenticated(c, serverError)
