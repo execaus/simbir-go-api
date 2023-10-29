@@ -423,7 +423,7 @@ func (h *Handler) AdminUpdateRent(c *gin.Context) {
 // @Failure      401  {object}  handler.Error
 // @Failure      403  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
-// @Router       /Admin/Rent/{id} [put]
+// @Router       /Admin/Rent/{id} [delete]
 func (h *Handler) AdminDeleteRent(c *gin.Context) {
 	rentID, err := getNumberParam(c, "id")
 	if err != nil {

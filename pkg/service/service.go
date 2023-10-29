@@ -23,6 +23,7 @@ type Account interface {
 	Remove(id int32) error
 	IsRemovedByID(id int32) (bool, error)
 	IsRemovedByUsername(username string) (bool, error)
+	Hesoyam(id int32) (*models.Account, error)
 }
 
 type Transport interface {

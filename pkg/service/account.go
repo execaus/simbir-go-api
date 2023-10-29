@@ -13,15 +13,51 @@ import (
 )
 
 const (
-	invalidJwtMethod = "invalid signing method"
-	roleNotExist     = "role is not exist"
-	tokenTTL         = 12 * time.Hour
+	invalidJwtMethod    = "invalid signing method"
+	roleNotExist        = "role is not exist"
+	tokenTTL            = 12 * time.Hour
+	BalanceHesoyamValue = 250_000
 )
 
 type AccountService struct {
 	cache repository.Role
 	repo  repository.Account
 	env   *models.Environment
+}
+
+func (s *AccountService) Hesoyam(id int32) (*models.Account, error) {
+	account, err := s.repo.GetByID(id)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	account.Balance += BalanceHesoyamValue
+
+	if err = s.repo.Update(&models.Account{
+		ID:       account.ID,
+		Username: account.Username,
+		Password: account.Password,
+		Balance:  account.Balance,
+	}); err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	roles, err := s.repo.GetRoles(id)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return nil, err
+	}
+
+	return &models.Account{
+		ID:        account.ID,
+		Username:  account.Username,
+		Password:  "",
+		Balance:   account.Balance,
+		Roles:     roles,
+		IsDeleted: account.Deleted,
+	}, nil
 }
 
 func (s *AccountService) IsRemovedByID(userID int32) (bool, error) {

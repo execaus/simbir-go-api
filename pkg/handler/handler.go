@@ -87,6 +87,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		admin.GET("/TransportHistory/:id", h.AdminGetTransportRentHistory)
 	}
 
+	payment := api.Group("/Payment", h.accountIdentity)
+	{
+		payment.POST("/Hesoyam/:id", h.PaymentHesoyam)
+	}
+
 	return router
 }
 

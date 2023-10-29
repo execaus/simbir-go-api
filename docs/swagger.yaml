@@ -410,6 +410,16 @@ definitions:
       transportType:
         type: string
     type: object
+  models.PaymentHesoyamAdminOutput:
+    properties:
+      account:
+        $ref: '#/definitions/models.AdminGetAccountOutput'
+    type: object
+  models.PaymentHesoyamUserOutput:
+    properties:
+      account:
+        $ref: '#/definitions/models.GetAccountOutput'
+    type: object
   models.SignInInput:
     properties:
       password:
@@ -876,35 +886,7 @@ paths:
       tags:
       - admin-rent
   /Admin/Rent/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Return rent information by id.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.AdminGetRentOutput'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.Error'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handler.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.Error'
-      security:
-      - BearerAuth: []
-      summary: Rent information
-      tags:
-      - admin-rent
-    put:
+    delete:
       consumes:
       - application/json
       description: Deleting rental information by id.
@@ -938,6 +920,76 @@ paths:
           schema:
             $ref: '#/definitions/handler.Error'
       summary: Delete rent
+      tags:
+      - admin-rent
+    get:
+      consumes:
+      - application/json
+      description: Return rent information by id.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminGetRentOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Rent information
+      tags:
+      - admin-rent
+    put:
+      consumes:
+      - application/json
+      description: Changing a lease record by id.
+      parameters:
+      - description: '-'
+        in: query
+        name: id
+        required: true
+        type: number
+      - description: '-'
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.AdminUpdateRentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminUpdateRentOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Update rent
       tags:
       - admin-rent
   /Admin/Rent/End/{id}:
@@ -1248,6 +1300,39 @@ paths:
       summary: User rent history
       tags:
       - admin-rent
+  /Payment/Hesoyam/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Adds 250,000 cash units to the balance of the account with id={accountId}..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaymentHesoyamUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
+      summary: Hesoyam
+      tags:
+      - payment
   /Rent/{id}:
     get:
       consumes:
