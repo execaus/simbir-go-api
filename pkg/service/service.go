@@ -52,6 +52,7 @@ type Rent interface {
 	End(id int32) (*models.Rent, error)
 	Update(rent *models.Rent) (*models.Rent, error)
 	Remove(id int32) error
+	IsComplete(id int32) (bool, error)
 }
 
 type Service struct {

@@ -22,7 +22,7 @@ type Transport struct {
 }
 
 type CreateTransportInput struct {
-	CanBeRented   bool     `json:"canBeRented" binding:"required"`
+	CanBeRented   *bool    `json:"canBeRented" binding:"required"`
 	TransportType string   `json:"transportType" binding:"required"`
 	Model         string   `json:"model" binding:"required"`
 	Color         string   `json:"color" binding:"required"`

@@ -13,6 +13,8 @@ type TransportService struct {
 	repo repository.TransportRepository
 }
 
+const metersInMile = 1609
+
 func (s *TransportService) IsAccessRent(id int32) (bool, error) {
 	transport, err := s.repo.Get(id)
 	if err != nil {
@@ -28,14 +30,16 @@ func (s *TransportService) GetFromRadius(point *models.Point, radius float64, tr
 	var transports []models.Transport
 	var reposTransports []queries.Transport
 
+	radiusForMile := radius * metersInMile
+
 	if transportType == constants.TransportTypeAll {
-		reposTransports, err = s.repo.GetFromRadiusAll(point, radius, transportType)
+		reposTransports, err = s.repo.GetFromRadiusAll(point, radiusForMile)
 		if err != nil {
 			exloggo.Error(err.Error())
 			return nil, err
 		}
 	} else {
-		reposTransports, err = s.repo.GetFromRadiusOnlyType(point, radius, transportType)
+		reposTransports, err = s.repo.GetFromRadiusOnlyType(point, radiusForMile, transportType)
 		if err != nil {
 			exloggo.Error(err.Error())
 			return nil, err

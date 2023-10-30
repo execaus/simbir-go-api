@@ -21,7 +21,7 @@ type Rent struct {
 type GetRentTransportInput struct {
 	Latitude      *float64 `form:"lat" binding:"required,min=-180,max=180"`
 	Longitude     *float64 `form:"long" binding:"required,min=-180,max=180"`
-	Radius        *float64 `form:"radius" binding:"required,min=-180,max=180"`
+	Radius        *float64 `form:"radius" binding:"required"`
 	TransportType string   `form:"type" binding:"required"`
 }
 
@@ -80,7 +80,7 @@ type GetRentTransportNewOutput struct {
 }
 
 type EndRentInput struct {
-	Latitude  *float64 `json:"lat" binding:"required,min=-180,max=180"`
+	Latitude  *float64 `form:"lat" binding:"required,min=-180,max=180"`
 	Longitude *float64 `form:"long" binding:"required,min=-180,max=180"`
 }
 

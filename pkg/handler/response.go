@@ -43,6 +43,7 @@ const (
 	transportIsDeleted         = "transport is deleted"
 	accountIsNotRenter         = "account is not renter"
 	rentIsNotExist             = "rent is not exist"
+	rentIsCompleted            = "rent is completed"
 	rentIsRemoved              = "rent is removed"
 	transportIsNotRent         = "transport is not rent"
 	transportInRent            = "the transport in rent"

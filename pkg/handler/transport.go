@@ -45,13 +45,13 @@ func (h *Handler) CreateTransport(c *gin.Context) {
 	}
 
 	if isExist {
-		h.sendInvalidRequest(c, transportIsNotExist)
+		h.sendInvalidRequest(c, transportIsExist)
 		return
 	}
 
 	transport, err := h.services.Transport.Create(&models.Transport{
 		OwnerID:       userID,
-		CanBeRented:   input.CanBeRented,
+		CanBeRented:   *input.CanBeRented,
 		TransportType: input.TransportType,
 		Model:         input.Model,
 		Color:         input.Color,
@@ -203,7 +203,7 @@ func (h *Handler) UpdateTransport(c *gin.Context) {
 			return
 		}
 
-		if !isExist {
+		if isExist {
 			h.sendInvalidRequest(c, transportIdentifierIsExist)
 			return
 		}

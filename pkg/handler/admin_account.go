@@ -53,7 +53,7 @@ func (h *Handler) AdminGetAccounts(c *gin.Context) {
 // @Tags         admin-account
 // @Accept       json
 // @Produce      json
-// @Param        username path string true "-"
+// @Param        id path string true "-"
 // @Success      200  {object}  models.AdminGetAccountOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
@@ -153,7 +153,7 @@ func (h *Handler) AdminCreateAccount(c *gin.Context) {
 // @Tags         admin-account
 // @Accept       json
 // @Produce      json
-// @Param        username path string true "-"
+// @Param        id path string true "-"
 // @Param        input body models.AdminUpdateAccountInput true "-"
 // @Success      200  {object}  models.AdminUpdateAccountOutput
 // @Failure      400  {object}  handler.Error
@@ -173,6 +173,17 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 	userID, err := getNumberParam(c, "id")
 	if err != nil {
 		h.sendInvalidRequest(c, err.Error())
+		return
+	}
+
+	isExist, err := h.services.Account.IsExistByID(userID)
+	if err != nil {
+		h.sendGeneralException(c, serverError)
+		return
+	}
+
+	if !isExist {
+		h.sendInvalidRequest(c, accountIsNotExist)
 		return
 	}
 
@@ -212,6 +223,7 @@ func (h *Handler) AdminUpdateAccount(c *gin.Context) {
 	}
 
 	updatedAccount, err := h.services.Account.Update(&models.Account{
+		ID:       userID,
 		Username: input.Username,
 		Password: input.Password,
 		Balance:  *input.Balance,

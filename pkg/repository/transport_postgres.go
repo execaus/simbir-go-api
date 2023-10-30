@@ -12,11 +12,11 @@ type TransportPostgres struct {
 	queries *queries.Queries
 }
 
-func (r *TransportPostgres) GetFromRadiusAll(point *models.Point, radius float64, transportType string) ([]queries.Transport, error) {
+func (r *TransportPostgres) GetFromRadiusAll(point *models.Point, radiusForMile float64) ([]queries.Transport, error) {
 	transports, err := r.queries.GetTransportsFromRadiusAll(context.Background(), queries.GetTransportsFromRadiusAllParams{
-		Radians:   point.Latitude,
-		Longitude: point.Longitude,
-		Latitude:  radius,
+		Point:     point.Longitude,
+		Point_2:   point.Latitude,
+		Longitude: radiusForMile,
 	})
 	if err != nil {
 		exloggo.Error(err.Error())
@@ -26,13 +26,14 @@ func (r *TransportPostgres) GetFromRadiusAll(point *models.Point, radius float64
 	return transports, nil
 }
 
-func (r *TransportPostgres) GetFromRadiusOnlyType(point *models.Point, radius float64, transportType string) ([]queries.Transport, error) {
-	transports, err := r.queries.GetTransportsFromRadiusOnlyType(context.Background(), queries.GetTransportsFromRadiusOnlyTypeParams{
-		Type:      transportType,
-		Radians:   point.Latitude,
-		Longitude: point.Longitude,
-		Latitude:  radius,
-	})
+func (r *TransportPostgres) GetFromRadiusOnlyType(point *models.Point, radiusForMile float64, transportType string) ([]queries.Transport, error) {
+	transports, err :=
+		r.queries.GetTransportsFromRadiusOnlyType(context.Background(), queries.GetTransportsFromRadiusOnlyTypeParams{
+			Type:      transportType,
+			Point:     point.Longitude,
+			Point_2:   point.Latitude,
+			Longitude: radiusForMile,
+		})
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
@@ -98,7 +99,7 @@ func (r *TransportPostgres) Update(transport *models.Transport) (*models.Transpo
 		Longitude:   transport.Longitude,
 		MinutePrice: sqlnt.ToF64Null(transport.MinutePrice),
 		DayPrice:    sqlnt.ToF64Null(transport.DayPrice),
-		ID_2:        transport.ID,
+		ID:          transport.ID,
 	})
 	if err != nil {
 		exloggo.Error(err.Error())
@@ -179,7 +180,6 @@ func (r *TransportPostgres) IsExistByIdentifier(identifier string) (bool, error)
 
 func (r *TransportPostgres) Create(transport *models.Transport) (*models.Transport, error) {
 	result, err := r.queries.CreateTransport(context.Background(), queries.CreateTransportParams{
-		ID:          transport.ID,
 		Identifier:  transport.Identifier,
 		Owner:       transport.OwnerID,
 		Type:        transport.TransportType,
@@ -198,7 +198,7 @@ func (r *TransportPostgres) Create(transport *models.Transport) (*models.Transpo
 	}
 
 	return &models.Transport{
-		ID:            transport.ID,
+		ID:            result.ID,
 		OwnerID:       result.Owner,
 		CanBeRented:   result.CanRented,
 		TransportType: result.Type,

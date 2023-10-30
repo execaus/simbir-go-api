@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/execaus/exloggo"
+	"math"
 	"simbir-go-api/constants"
 	"simbir-go-api/models"
 	"simbir-go-api/pkg/repository"
@@ -9,11 +10,21 @@ import (
 	"time"
 )
 
+const dayHours = float64(time.Hour * 24)
+
 type RentService struct {
 	repo repository.Rent
 }
 
-const dayHours = float64(time.Hour * 24)
+func (s *RentService) IsComplete(id int32) (bool, error) {
+	rent, err := s.repo.Get(id)
+	if err != nil {
+		exloggo.Error(err.Error())
+		return false, err
+	}
+
+	return sqlnt.ToTime(&rent.TimeEnd) != nil, err
+}
 
 func (s *RentService) Remove(id int32) error {
 	return s.repo.Remove(id)
@@ -42,7 +53,7 @@ func (s *RentService) Update(rent *models.Rent) (*models.Rent, error) {
 }
 
 func (s *RentService) End(id int32) (*models.Rent, error) {
-	endTime := time.Now()
+	endTime := time.Now().UTC()
 
 	if err := s.repo.End(id, &endTime); err != nil {
 		exloggo.Error(err.Error())
@@ -78,14 +89,14 @@ func (s *RentService) Create(rent *models.Rent) (*models.Rent, error) {
 	timeEnd := sqlnt.ToTime(&createdRent.TimeEnd)
 
 	return &models.Rent{
-		ID:         rent.ID,
-		Account:    rent.Account,
-		Transport:  rent.Transport,
-		TimeStart:  rent.TimeStart,
+		ID:         createdRent.ID,
+		Account:    createdRent.Account,
+		Transport:  createdRent.Transport,
+		TimeStart:  createdRent.TimeStart,
 		TimeEnd:    timeEnd,
-		PriceUnit:  rent.PriceUnit,
-		PriceType:  rent.PriceType,
-		IsDeleted:  rent.IsDeleted,
+		PriceUnit:  createdRent.PriceUnit,
+		PriceType:  createdRent.PriceType,
+		IsDeleted:  createdRent.Deleted,
 		FinalPrice: calculateFinalPrice(createdRent.PriceType, createdRent.PriceUnit, createdRent.TimeStart, timeEnd),
 	}, nil
 }
@@ -201,12 +212,12 @@ func calculateFinalPrice(rentType string, rentUnit float64, startTime time.Time,
 	var result float64
 	if rentType == constants.RentTypeMinutes {
 		duration = (*endTime).Sub(startTime)
-		minutes := duration.Minutes()
+		minutes := math.Abs(duration.Minutes())
 		result = minutes * rentUnit
 		return &result
 	} else if rentType == constants.RentTypeDays {
 		duration = (*endTime).Sub(startTime)
-		days := duration.Hours()
+		days := math.Abs(duration.Hours())
 		result = days / dayHours * rentUnit
 		return &result
 	}

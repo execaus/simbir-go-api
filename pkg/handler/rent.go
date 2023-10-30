@@ -41,13 +41,14 @@ func (h *Handler) GetRentTransport(c *gin.Context) {
 		Latitude:  *input.Latitude,
 	}, *input.Radius, input.TransportType)
 	if err != nil {
-		h.sendGeneralException(c, err.Error())
+		h.sendGeneralException(c, serverError)
 		return
 	}
 
 	var outputTransports []models.GetTransportOutput
 	for _, transport := range transports {
 		outputTransports = append(outputTransports, models.GetTransportOutput{
+			ID:            transport.ID,
 			OwnerID:       transport.OwnerID,
 			CanBeRented:   transport.CanBeRented,
 			TransportType: transport.TransportType,
@@ -71,6 +72,7 @@ func (h *Handler) GetRentTransport(c *gin.Context) {
 // @Tags         rent
 // @Accept       json
 // @Produce      json
+// @Param        id path string true "-"
 // @Success      200  {object}  models.GetRentOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
@@ -182,6 +184,7 @@ func (h *Handler) GetRentMyHistory(c *gin.Context) {
 // @Tags         rent
 // @Accept       json
 // @Produce      json
+// @Param        id path string true "-"
 // @Success      200  {object}  models.GetRentTransportHistoryOutput
 // @Failure      401  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
@@ -241,7 +244,7 @@ func (h *Handler) GetRentTransportHistory(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200
-// @Param        id query number true "-"
+// @Param        id path string true "-"
 // @Param        input body models.GetRentTransportNewInput true "-"
 // @Success      200  {object}  models.GetRentTransportNewOutput
 // @Failure      400  {object}  handler.Error
@@ -250,6 +253,7 @@ func (h *Handler) GetRentTransportHistory(c *gin.Context) {
 // @Failure      410  {object}  handler.Error
 // @Failure      412  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
 // @Router       /Rent/New/{id} [post]
 func (h *Handler) CreateRent(c *gin.Context) {
 	var input models.GetRentTransportNewInput
@@ -362,7 +366,7 @@ func (h *Handler) CreateRent(c *gin.Context) {
 		priceUnit = *transport.DayPrice
 	}
 
-	timeStart := time.Now()
+	timeStart := time.Now().UTC()
 	rent, err := h.services.Rent.Create(&models.Rent{
 		Account:    userID,
 		Transport:  transportID,
@@ -398,13 +402,14 @@ func (h *Handler) CreateRent(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200
-// @Param        id query number true "-"
-// @Param        input body models.EndRentInput true "-"
+// @Param        id path number true "-"
+// @Param        input query models.EndRentInput true "-"
 // @Success      200  {object}  models.EndRentOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      403  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
 // @Router       /Rent/End/{id} [post]
 func (h *Handler) EndRent(c *gin.Context) {
 	var input models.EndRentInput
@@ -415,7 +420,7 @@ func (h *Handler) EndRent(c *gin.Context) {
 		return
 	}
 
-	if err = c.BindJSON(&input); err != nil {
+	if err = c.ShouldBindQuery(&input); err != nil {
 		h.sendInvalidRequest(c, err.Error())
 		return
 	}
@@ -428,6 +433,17 @@ func (h *Handler) EndRent(c *gin.Context) {
 
 	if !isRentExist {
 		h.sendInvalidRequest(c, rentIsNotExist)
+		return
+	}
+
+	isRentEnded, err := h.services.Rent.IsComplete(rentID)
+	if err != nil {
+		h.sendGeneralException(c, err.Error())
+		return
+	}
+
+	if isRentEnded {
+		h.sendInvalidRequest(c, rentIsCompleted)
 		return
 	}
 

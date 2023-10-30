@@ -13,6 +13,7 @@ import (
 // @Tags         admin-rent
 // @Accept       json
 // @Produce      json
+// @Param        id path number true "-"
 // @Success      200  {object}  models.AdminGetRentOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
@@ -64,6 +65,7 @@ func (h *Handler) AdminGetRent(c *gin.Context) {
 // @Tags         admin-rent
 // @Accept       json
 // @Produce      json
+// @Param        id path number true "-"
 // @Success      200  {object}  models.AdminGetUserHistoryOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
@@ -120,6 +122,7 @@ func (h *Handler) AdminGetUserRentHistory(c *gin.Context) {
 // @Tags         admin-rent
 // @Accept       json
 // @Produce      json
+// @Param        id path number true "-"
 // @Success      200  {object}  models.AdminGetTransportHistoryOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
@@ -258,13 +261,14 @@ func (h *Handler) AdminCreateRent(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200
-// @Param        id query number true "-"
+// @Param        id path number true "-"
 // @Param        input body models.AdminEndRentInput true "-"
 // @Success      200  {object}  models.AdminEndRentOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      403  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
 // @Router       /Admin/Rent/End/{id} [post]
 func (h *Handler) AdminEndRent(c *gin.Context) {
 	var input models.AdminEndRentInput
@@ -346,13 +350,14 @@ func (h *Handler) AdminEndRent(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200
-// @Param        id query number true "-"
+// @Param        id path number true "-"
 // @Param        input body models.AdminUpdateRentInput true "-"
 // @Success      200  {object}  models.AdminUpdateRentOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      403  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
 // @Router       /Admin/Rent/{id} [put]
 func (h *Handler) AdminUpdateRent(c *gin.Context) {
 	var input models.AdminUpdateRentInput
@@ -417,12 +422,13 @@ func (h *Handler) AdminUpdateRent(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200
-// @Param        id query number true "-"
+// @Param        id path number true "-"
 // @Success      204
 // @Failure      400  {object}  handler.Error
 // @Failure      401  {object}  handler.Error
 // @Failure      403  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
+// @Security     BearerAuth
 // @Router       /Admin/Rent/{id} [delete]
 func (h *Handler) AdminDeleteRent(c *gin.Context) {
 	rentID, err := getNumberParam(c, "id")

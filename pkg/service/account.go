@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/execaus/exloggo"
 	"github.com/golang-jwt/jwt/v5"
@@ -125,9 +126,29 @@ func (s *AccountService) Create(username, password string, role string, balance 
 }
 
 func (s *AccountService) GetList(start, count int32) ([]models.Account, error) {
-	accounts, err := s.repo.GetList(start, count)
+	var accounts []models.Account
+
+	reposAccounts, err := s.repo.GetList(start, count)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, account := range reposAccounts {
+		var roles []string
+
+		if err = json.Unmarshal(account.Roles, &roles); err != nil {
+			exloggo.Error(err.Error())
+			return nil, err
+		}
+
+		accounts = append(accounts, models.Account{
+			ID:        account.ID,
+			Username:  account.Username,
+			Password:  account.Password,
+			Balance:   account.Balance,
+			Roles:     roles,
+			IsDeleted: account.Deleted,
+		})
 	}
 
 	return accounts, nil
@@ -242,8 +263,8 @@ func (s *AccountService) GenerateToken(userID int32) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &models.JWTTokenClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenTTL)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(tokenTTL)),
+			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		},
 	})
 

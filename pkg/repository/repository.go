@@ -19,7 +19,7 @@ type Account interface {
 	IsContainBlackListToken(token string) (bool, error)
 	BlockToken(token string) error
 	Update(updatedAccount *models.Account) error
-	GetList(start, count int32) ([]models.Account, error)
+	GetList(start, count int32) ([]queries.GetExistAccountsRow, error)
 	RemoveAccount(id int32) error
 	IsRemovedByID(id int32) (bool, error)
 	IsRemovedByUsername(username string) (bool, error)
@@ -46,8 +46,8 @@ type TransportRepository interface {
 	IsRemoved(id int32) (bool, error)
 	GetList(start, count int32) ([]queries.Transport, error)
 	GetListOnlyType(start, count int32, transportType string) ([]queries.Transport, error)
-	GetFromRadiusAll(point *models.Point, radius float64, transportType string) ([]queries.Transport, error)
-	GetFromRadiusOnlyType(point *models.Point, radius float64, transportType string) ([]queries.Transport, error)
+	GetFromRadiusAll(point *models.Point, radiusForMile float64) ([]queries.Transport, error)
+	GetFromRadiusOnlyType(point *models.Point, radiusForMile float64, transportType string) ([]queries.Transport, error)
 }
 
 type Rent interface {

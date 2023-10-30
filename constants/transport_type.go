@@ -26,11 +26,10 @@ func CheckTransportType(value string) error {
 
 func CheckTransportTypeWithAll(value string) error {
 	if strings.ToUpper(value) == TransportTypeAll {
-
 		return nil
 	}
 	for _, transportType := range transportTypes {
-		if value == transportType {
+		if strings.ToUpper(value) == transportType {
 			return nil
 		}
 	}

@@ -7,10 +7,11 @@ import (
 
 // PaymentHesoyam
 // @Summary      Hesoyam
-// @Description  Adds 250,000 cash units to the balance of the account with id={accountId}..
+// @Description  Adds 250,000 cash units to the balance of the account with id.
 // @Tags         payment
 // @Accept       json
 // @Produce      json
+// @Param        id path string true "-"
 // @Success      200  {object}  models.PaymentHesoyamAdminOutput
 // @Success      200  {object}  models.PaymentHesoyamUserOutput
 // @Failure      400  {object}  handler.Error

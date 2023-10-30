@@ -381,7 +381,7 @@
                     {
                         "type": "string",
                         "description": "-",
-                        "name": "username",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -434,7 +434,7 @@
                     {
                         "type": "string",
                         "description": "-",
-                        "name": "username",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
@@ -597,6 +597,11 @@
         },
         "/Admin/Rent/End/{id}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Completion of the lease of transportation under the lease id.",
                 "consumes": [
                     "application/json"
@@ -613,7 +618,7 @@
                         "type": "number",
                         "description": "-",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -678,6 +683,15 @@
                     "admin-rent"
                 ],
                 "summary": "Rent information",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -706,6 +720,11 @@
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Changing a lease record by id.",
                 "consumes": [
                     "application/json"
@@ -722,7 +741,7 @@
                         "type": "number",
                         "description": "-",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -769,6 +788,11 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Deleting rental information by id.",
                 "consumes": [
                     "application/json"
@@ -785,7 +809,7 @@
                         "type": "number",
                         "description": "-",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -1162,6 +1186,15 @@
                     "admin-rent"
                 ],
                 "summary": "Transport rent history",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1208,6 +1241,15 @@
                     "admin-rent"
                 ],
                 "summary": "User rent history",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1243,7 +1285,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Adds 250,000 cash units to the balance of the account with id={accountId}..",
+                "description": "Adds 250,000 cash units to the balance of the account with id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1254,6 +1296,15 @@
                     "payment"
                 ],
                 "summary": "Hesoyam",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1290,6 +1341,11 @@
         },
         "/Rent/End/{id}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Completion of the rent of transport under the rent id.",
                 "consumes": [
                     "application/json"
@@ -1306,17 +1362,24 @@
                         "type": "number",
                         "description": "-",
                         "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                        "name": "lat",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "description": "-",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.EndRentInput"
-                        }
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                        "name": "long",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1395,6 +1458,11 @@
         },
         "/Rent/New/{id}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Renting the transport for personal use.",
                 "consumes": [
                     "application/json"
@@ -1408,10 +1476,10 @@
                 "summary": "Create rent",
                 "parameters": [
                     {
-                        "type": "number",
+                        "type": "string",
                         "description": "-",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -1558,6 +1626,15 @@
                     "rent"
                 ],
                 "summary": "Transport rent history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1598,6 +1675,15 @@
                     "rent"
                 ],
                 "summary": "Rent information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2287,25 +2373,6 @@
             "properties": {
                 "transport": {
                     "$ref": "#/definitions/models.GetTransportOutput"
-                }
-            }
-        },
-        "models.EndRentInput": {
-            "type": "object",
-            "required": [
-                "lat",
-                "long"
-            ],
-            "properties": {
-                "lat": {
-                    "type": "number",
-                    "maximum": 180,
-                    "minimum": -180
-                },
-                "long": {
-                    "type": "number",
-                    "maximum": 180,
-                    "minimum": -180
                 }
             }
         },

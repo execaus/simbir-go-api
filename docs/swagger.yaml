@@ -303,20 +303,6 @@ definitions:
       transport:
         $ref: '#/definitions/models.GetTransportOutput'
     type: object
-  models.EndRentInput:
-    properties:
-      lat:
-        maximum: 180
-        minimum: -180
-        type: number
-      long:
-        maximum: 180
-        minimum: -180
-        type: number
-    required:
-    - lat
-    - long
-    type: object
   models.EndRentOutput:
     properties:
       rent:
@@ -778,7 +764,7 @@ paths:
       parameters:
       - description: '-'
         in: path
-        name: username
+        name: id
         required: true
         type: string
       produces:
@@ -812,7 +798,7 @@ paths:
       parameters:
       - description: '-'
         in: path
-        name: username
+        name: id
         required: true
         type: string
       - description: '-'
@@ -892,7 +878,7 @@ paths:
       description: Deleting rental information by id.
       parameters:
       - description: '-'
-        in: query
+        in: path
         name: id
         required: true
         type: number
@@ -919,6 +905,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
       summary: Delete rent
       tags:
       - admin-rent
@@ -926,6 +914,12 @@ paths:
       consumes:
       - application/json
       description: Return rent information by id.
+      parameters:
+      - description: '-'
+        in: path
+        name: id
+        required: true
+        type: number
       produces:
       - application/json
       responses:
@@ -956,7 +950,7 @@ paths:
       description: Changing a lease record by id.
       parameters:
       - description: '-'
-        in: query
+        in: path
         name: id
         required: true
         type: number
@@ -989,6 +983,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
       summary: Update rent
       tags:
       - admin-rent
@@ -999,7 +995,7 @@ paths:
       description: Completion of the lease of transportation under the lease id.
       parameters:
       - description: '-'
-        in: query
+        in: path
         name: id
         required: true
         type: number
@@ -1032,6 +1028,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
       summary: End rent
       tags:
       - admin-rent
@@ -1247,6 +1245,12 @@ paths:
       consumes:
       - application/json
       description: Return transport rent history by id.
+      parameters:
+      - description: '-'
+        in: path
+        name: id
+        required: true
+        type: number
       produces:
       - application/json
       responses:
@@ -1276,6 +1280,12 @@ paths:
       consumes:
       - application/json
       description: Return user rent history by id.
+      parameters:
+      - description: '-'
+        in: path
+        name: id
+        required: true
+        type: number
       produces:
       - application/json
       responses:
@@ -1304,7 +1314,13 @@ paths:
     post:
       consumes:
       - application/json
-      description: Adds 250,000 cash units to the balance of the account with id={accountId}..
+      description: Adds 250,000 cash units to the balance of the account with id.
+      parameters:
+      - description: '-'
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1338,6 +1354,12 @@ paths:
       consumes:
       - application/json
       description: Return rent by id.
+      parameters:
+      - description: '-'
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1373,16 +1395,22 @@ paths:
       description: Completion of the rent of transport under the rent id.
       parameters:
       - description: '-'
-        in: query
+        in: path
         name: id
         required: true
         type: number
-      - description: '-'
-        in: body
-        name: input
+      - in: query
+        maximum: 180
+        minimum: -180
+        name: lat
         required: true
-        schema:
-          $ref: '#/definitions/models.EndRentInput'
+        type: number
+      - in: query
+        maximum: 180
+        minimum: -180
+        name: long
+        required: true
+        type: number
       produces:
       - application/json
       responses:
@@ -1406,6 +1434,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
       summary: End rent
       tags:
       - rent
@@ -1441,10 +1471,10 @@ paths:
       description: Renting the transport for personal use.
       parameters:
       - description: '-'
-        in: query
+        in: path
         name: id
         required: true
-        type: number
+        type: string
       - description: '-'
         in: body
         name: input
@@ -1482,6 +1512,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.Error'
+      security:
+      - BearerAuth: []
       summary: Create rent
       tags:
       - rent
@@ -1536,6 +1568,12 @@ paths:
       consumes:
       - application/json
       description: Returns the transport rental history.
+      parameters:
+      - description: '-'
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:

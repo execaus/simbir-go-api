@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"github.com/execaus/exloggo"
 	"simbir-go-api/constants"
 	"simbir-go-api/models"
@@ -64,33 +63,14 @@ func (r *AccountPostgres) ReplaceRoles(id int32, roles []string) error {
 	return nil
 }
 
-func (r *AccountPostgres) GetList(start, count int32) ([]models.Account, error) {
-	var accounts []models.Account
-
-	accountRows, err := r.queries.GetExistAccounts(context.Background(), queries.GetExistAccountsParams{
+func (r *AccountPostgres) GetList(start, count int32) ([]queries.GetExistAccountsRow, error) {
+	accounts, err := r.queries.GetExistAccounts(context.Background(), queries.GetExistAccountsParams{
 		Offset: start,
 		Limit:  count,
 	})
 	if err != nil {
 		exloggo.Error(err.Error())
 		return nil, err
-	}
-
-	for _, account := range accountRows {
-		var roles []string
-
-		if err = json.Unmarshal(account.Roles, &roles); err != nil {
-			exloggo.Error(err.Error())
-			return nil, err
-		}
-
-		accounts = append(accounts, models.Account{
-			Username:  account.Username,
-			Password:  account.Password,
-			Balance:   account.Balance,
-			Roles:     roles,
-			IsDeleted: account.Deleted,
-		})
 	}
 
 	return accounts, nil

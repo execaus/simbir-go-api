@@ -118,8 +118,8 @@ SELECT EXISTS (
 
 -- name: CreateTransport :one
 INSERT INTO "Transport"
-(id, "owner", "type", can_rented, model, color, "description", identifier, latitude, longitude, minute_price, day_price, deleted)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false)
+("owner", "type", can_rented, model, color, "description", identifier, latitude, longitude, minute_price, day_price, deleted)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false)
 RETURNING *;
 
 -- name: IsExistTransportByID :one
@@ -150,8 +150,8 @@ SELECT EXISTS (
 
 -- name: UpdateTransport :one
 UPDATE "Transport"
-SET id=$1, can_rented=$2, model=$3, color=$4, "description"=$5, latitude=$6, longitude=$7, minute_price=$8, day_price=$9, identifier=$10
-WHERE id=$11
+SET can_rented=$1, model=$2, color=$3, "description"=$4, latitude=$5, longitude=$6, minute_price=$7, day_price=$8, identifier=$9
+WHERE id=$10
 RETURNING *;
 
 -- name: RemoveTransport :exec
@@ -183,18 +183,16 @@ OFFSET $2 LIMIT $3;
 SELECT *
 FROM "Transport"
 WHERE
-    "can_ranted"=true and
-    (6371000 * ACOS(SIN(RADIANS($1)) * SIN(RADIANS("latitude")) + COS(RADIANS($1)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $2)))) <= $3
-OFFSET $4 LIMIT $5;
+    "can_rented"=true
+    and point(longitude, latitude) <@> point($1, $2) <= $3;
 
 -- name: GetTransportsFromRadiusOnlyType :many
 SELECT *
 FROM "Transport"
 WHERE
-    "can_ranted"=true and
-    "type"=$1 and
-    (6371000 * ACOS(SIN(RADIANS($2)) * SIN(RADIANS("latitude")) + COS(RADIANS($2)) * COS(RADIANS("latitude")) * COS(RADIANS("longitude" - $3)))) <= $4
-OFFSET $5 LIMIT $6;
+    "can_rented"=true
+    and "type"=$1
+    and point(longitude, latitude) <@> point($2, $3) <= $4;
 
 -- name: IsRentRemoved :one
 SELECT EXISTS (

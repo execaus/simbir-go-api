@@ -388,7 +388,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "-",
-                        "name": "username",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -441,7 +441,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "-",
-                        "name": "username",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
@@ -604,6 +604,11 @@ const docTemplate = `{
         },
         "/Admin/Rent/End/{id}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Completion of the lease of transportation under the lease id.",
                 "consumes": [
                     "application/json"
@@ -620,7 +625,7 @@ const docTemplate = `{
                         "type": "number",
                         "description": "-",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -685,6 +690,15 @@ const docTemplate = `{
                     "admin-rent"
                 ],
                 "summary": "Rent information",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -713,6 +727,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Changing a lease record by id.",
                 "consumes": [
                     "application/json"
@@ -729,7 +748,7 @@ const docTemplate = `{
                         "type": "number",
                         "description": "-",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -776,6 +795,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Deleting rental information by id.",
                 "consumes": [
                     "application/json"
@@ -792,7 +816,7 @@ const docTemplate = `{
                         "type": "number",
                         "description": "-",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -1169,6 +1193,15 @@ const docTemplate = `{
                     "admin-rent"
                 ],
                 "summary": "Transport rent history",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1215,6 +1248,15 @@ const docTemplate = `{
                     "admin-rent"
                 ],
                 "summary": "User rent history",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1250,7 +1292,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Adds 250,000 cash units to the balance of the account with id={accountId}..",
+                "description": "Adds 250,000 cash units to the balance of the account with id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1261,6 +1303,15 @@ const docTemplate = `{
                     "payment"
                 ],
                 "summary": "Hesoyam",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1297,6 +1348,11 @@ const docTemplate = `{
         },
         "/Rent/End/{id}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Completion of the rent of transport under the rent id.",
                 "consumes": [
                     "application/json"
@@ -1313,17 +1369,24 @@ const docTemplate = `{
                         "type": "number",
                         "description": "-",
                         "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                        "name": "lat",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "description": "-",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.EndRentInput"
-                        }
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                        "name": "long",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1402,6 +1465,11 @@ const docTemplate = `{
         },
         "/Rent/New/{id}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Renting the transport for personal use.",
                 "consumes": [
                     "application/json"
@@ -1415,10 +1483,10 @@ const docTemplate = `{
                 "summary": "Create rent",
                 "parameters": [
                     {
-                        "type": "number",
+                        "type": "string",
                         "description": "-",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -1565,6 +1633,15 @@ const docTemplate = `{
                     "rent"
                 ],
                 "summary": "Transport rent history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1605,6 +1682,15 @@ const docTemplate = `{
                     "rent"
                 ],
                 "summary": "Rent information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "-",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2294,25 +2380,6 @@ const docTemplate = `{
             "properties": {
                 "transport": {
                     "$ref": "#/definitions/models.GetTransportOutput"
-                }
-            }
-        },
-        "models.EndRentInput": {
-            "type": "object",
-            "required": [
-                "lat",
-                "long"
-            ],
-            "properties": {
-                "lat": {
-                    "type": "number",
-                    "maximum": 180,
-                    "minimum": -180
-                },
-                "long": {
-                    "type": "number",
-                    "maximum": 180,
-                    "minimum": -180
                 }
             }
         },
