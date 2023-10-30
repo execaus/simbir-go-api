@@ -2,17 +2,16 @@ version: '3.9'
 services:
   # Сервис для разворачивания контейнера с базой данных
   database:
-    image: it_planeta_postgres
+    image: simbir-go-postgres
     volumes:
       - /var/lib/postgresql/data/
     environment:
-      - POSTGRES_DB=2023_it_planeta
+      - POSTGRES_DB=simbir-go
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=1234
-      - JWT_KEY=744db172ac69d4a88983b88f97f69ee6
   # Сервис для разворачивания контейнера с приложением
   webapi:
-    image: it_planeta_api
+    image: simbir-go-api
     ports:
       - "8080:8080"
     depends_on:
@@ -20,3 +19,4 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=1234
+      - JWT_KEY=744db172ac69d4a88983b88f97f69ee6
