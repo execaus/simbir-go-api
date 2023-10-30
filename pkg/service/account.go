@@ -236,6 +236,7 @@ func (s *AccountService) ParseToken(accessToken string) (int32, error) {
 func (s *AccountService) Authorize(username, password string) (*models.Account, error) {
 	account, err := s.repo.GetByUsername(username)
 	if err != nil {
+		exloggo.Error(err.Error())
 		return nil, err
 	}
 
@@ -246,6 +247,7 @@ func (s *AccountService) Authorize(username, password string) (*models.Account, 
 
 	roles, err := s.cache.GetRoles(account.ID)
 	if err != nil {
+		exloggo.Error(err.Error())
 		return nil, err
 	}
 

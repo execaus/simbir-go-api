@@ -1558,8 +1558,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.Error'
-      security:
-      - BearerAuth: []
       summary: Get transport list
       tags:
       - rent

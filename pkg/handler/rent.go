@@ -21,7 +21,6 @@ import (
 // @Success      200  {object}  models.GetRentTransportOutput
 // @Failure      400  {object}  handler.Error
 // @Failure      500  {object}  handler.Error
-// @Security     BearerAuth
 // @Router       /Rent/Transport [get]
 func (h *Handler) GetRentTransport(c *gin.Context) {
 	var input models.GetRentTransportInput

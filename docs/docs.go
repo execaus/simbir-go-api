@@ -1547,11 +1547,6 @@ const docTemplate = `{
         },
         "/Rent/Transport": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Getting transport available for rent by parameters.",
                 "consumes": [
                     "application/json"
