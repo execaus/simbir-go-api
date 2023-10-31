@@ -5,16 +5,12 @@
 - [Установка](#установка)
     - [Конфигурация сервера](#конфигурация-сервера)
     - [Конфигурация базы данных](#конфигурация-базы-данных)
-    - [Запуск .go пакета](#запуск-go-пакета)
-    - [Docker (опционально)](#docker-(опционально))
+    - [Запуск .go пакета (рекомендуется)](#запуск-go-пакета)
+    - [Docker](#docker)
 - [Использование](#использование)
     - [Swagger](#swagger)
     - [Аутентификация](#аутентификация)
-- Изменения
-    - Статус "Удален"
-    - Единицы измерения радиуса поиска
-    - Логирование
-    - Кеширование ролей
+- [Изменения](#изменения)
 
 # Установка
 
@@ -53,7 +49,7 @@ go mod tidy
 go run cmd/main.go
 ```
 
-## Docker (опционально)
+## Docker
 Собрать образ сервера:
 ```
 make docker_api_build
@@ -67,6 +63,8 @@ make docker_postgres_build
 docker compose up
 ```
 
+В случае отсутствия `make` запустить соответсвующие команды в файле `Makefile`.
+
 
 # Использование
 
@@ -78,11 +76,22 @@ http://localhost:{порт_сервера}/swagger/index.html
 ```
 ## Аутентификация
 Аутентификация происходит по адресу `/Account/SignIn`
-![img.png](pictures/sign-in.png)
+<p align="center">
+<img  src="pictures/sign-in.png"  width="600" alt="auth"/>
+</p>
 
 1. Получить jwt токен
-![img.png](pictures/jwt-token.png)
+<p align="center">
+<img  src="pictures/token.png"  width="600" alt="auth"/>
+</p>
 2. Отрыть окно для вставки заголовка авторизации
-![img.png](pictures/authorize-button.png)
+<p align="center">
+<img  src="pictures/authorize-button.png"  width="600" alt="auth"/>
+</p>
 3. Вставить токен авторизации в формате `Bearer {token}`
-![img.png](pictures/bearer-token.png)
+<p align="center">
+<img  src="pictures/bearer-token.png"  width="600" alt="auth"/>
+</p>
+
+# Изменения
+* При поиске транспорта радиус указывается в метрах.
